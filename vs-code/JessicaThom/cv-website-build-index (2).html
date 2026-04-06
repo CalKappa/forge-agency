@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jessica Baillet — Portfolio & CV</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- NAVIGATION -->
+  <nav id="navbar">
+    <div class="nav-container">
+      <a href="#hero" class="nav-logo">Jessica Baillet</a>
+      <div class="nav-links">
+        <a href="#about" data-section="about">À Propos</a>
+        <a href="#experience" data-section="experience">Expérience</a>
+        <a href="#skills" data-section="skills">Compétences</a>
+        <a href="#education" data-section="education">Formation</a>
+        <a href="#testimonials" data-section="testimonials">Recommandations</a>
+        <a href="#contact" data-section="contact">Contact</a>
+        <div class="lang-toggle">
+          <button data-lang="fr" class="active-lang">FR</button>
+          <span class="lang-divider">|</span>
+          <button data-lang="en">EN</button>
+        </div>
+      </div>
+      <button class="nav-hamburger" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-container">
+      <div class="hero-text">
+        <span class="hero-eyebrow" data-i18n="hero.eyebrow">Portfolio & CV</span>
+        <h1 class="hero-title" data-i18n="hero.title">Jessica Baillet</h1>
+        <p class="hero-subtitle" data-i18n="hero.subtitle">Chef de Projet Marketing · Stratégie Digitale & Innovation</p>
+        <div class="hero-buttons">
+          <a href="#about" class="btn btn-primary">
+            <span data-i18n="hero.btnPrimary">Découvrir mon parcours</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
+          </a>
+          <a href="#" class="btn btn-secondary">
+            <span data-i18n="hero.btnSecondary">Télécharger mon CV</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          </a>
+        </div>
+        <div class="hero-social">
+          <a href="#" aria-label="LinkedIn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+          </a>
+          <a href="mailto:jessica.baillet@email.com" aria-label="Email">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+          </a>
+        </div>
+      </div>
+      <div class="hero-image">
+        <div class="hero-image-wrapper">
+          <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=420&h=520&fit=crop&crop=face" alt="Jessica Baillet">
+        </div>
+        <div class="hero-image-decoration"></div>
+      </div>
+    </div>
+    <div class="scroll-indicator">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about" class="section section-bg-secondary">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-left">
+          <div class="section-header">
+            <span class="section-number" data-i18n="about.number">01</span>
+            <h2 data-i18n="about.title">À Propos</h2>
+          </div>
+        </div>
+        <div class="about-right">
+          <p class="intro-text fade-in-up" data-i18n="about.intro">Passionnée par le marketing digital et l'innovation, je conçois et pilote des stratégies qui transforment les ambitions en résultats mesurables. Mon approche allie créativité, rigueur analytique et une profonde compréhension des enjeux business.</p>
+          <p class="body-text fade-in-up delay-1" data-i18n="about.body">Avec plus de <strong>10 ans d'expérience</strong> dans le marketing digital, j'ai accompagné des entreprises de toutes tailles — des startups ambitieuses aux grands groupes internationaux. Spécialisée en <strong>stratégie de contenu</strong>, <strong>acquisition digitale</strong> et <strong>gestion de projets transversaux</strong>, je m'engage à créer de la valeur durable et à conduire le changement avec impact.</p>
+          <div class="stats-row fade-in-up delay-2">
+            <div class="stat-item">
+              <span class="stat-number" data-i18n="about.stat.number.0">10+</span>
+              <span class="stat-label" data-i18n="about.stat.label.0">Années d'expérience</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number" data-i18n="about.stat.number.1">15+</span>
+              <span class="stat-label" data-i18n="about.stat.label.1">Projets majeurs</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number" data-i18n="about.stat.number.2">3</span>
+              <span class="stat-label" data-i18n="about.stat.label.2">Secteurs d'industrie</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number" data-i18n="about.stat.number.3">98%</span>
+              <span class="stat-label" data-i18n="about.stat.label.3">Clients satisfaits</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPERIENCE -->
+  <section id="experience" class="section section-bg-primary">
+    <div class="container">
+      <div class="section-header" style="">
+        <span class="section-number" data-i18n="experience.number">02</span>
+        <h2 data-i18n="experience.title">Expérience Professionnelle</h2>
+      </div>
+      <div class="timeline">
+        <!-- Item 1 -->
+        <div class="timeline-item">
+          <div class="timeline-node"></div>
+          <div class="timeline-card">
+            <div class="timeline-card-header">
+              <img src="https://ui-avatars.com/api/?name=GL&background=1A535C&color=fff&size=40&rounded=true&bold=true" alt="Groupe Lumière Digital" class="timeline-company-logo">
+              <span class="timeline-company-name">Groupe Lumière Digital</span>
+              <span class="timeline-date">2021 — Présent</span>
+            </div>
+            <h3>Directrice Marketing Digital</h3>
+            <ul class="timeline-description">
+              <li>Pilotage de la stratégie digitale globale avec un budget de 2M€</li>
+              <li>Augmentation du trafic organique de 185% en 18 mois</li>
+              <li>Management d'une équipe pluridisciplinaire de 8 personnes</li>
+            </ul>
+            <div class="timeline-tags">
+              <span class="timeline-tag">Stratégie Digitale</span>
+              <span class="timeline-tag">SEO/SEA</span>
+              <span class="timeline-tag">Management</span>
+              <span class="timeline-tag">Analytics</span>
+            </div>
+          </div>
+        </div>
+        <!-- Item 2 -->
+        <div class="timeline-item">
+          <div class="timeline-node"></div>
+          <div class="timeline-card">
+            <div class="timeline-card-header">
+              <img src="https://ui-avatars.com/api/?name=CN&background=E8836B&color=fff&size=40&rounded=true&bold=true" alt="Agence Créative Nova" class="timeline-company-logo">
+              <span class="timeline-company-name">Agence Créative Nova</span>
+              <span class="timeline-date">2018 — 2021</span>
+            </div>
+            <h3>Chef de Projet Marketing Senior</h3>
+            <ul class="timeline-description">
+              <li>Gestion simultanée de 5 à 8 comptes clients grands comptes</li>
+              <li>Conception et déploiement de campagnes multi-canal innovantes</li>
+              <li>Mise en place de processus agiles réduisant les délais de 30%</li>
+            </ul>
+            <div class="timeline-tags">
+              <span class="timeline-tag">Gestion de Projet</span>
+              <span class="timeline-tag">Campagnes Multi-canal</span>
+              <span class="timeline-tag">Agile</span>
+              <span class="timeline-tag">CRM</span>
+            </div>
+          </div>
+        </div>
+        <!-- Item 3 -->
+        <div class="timeline-item">
+          <div class="timeline-node"></div>
+          <div class="timeline-card">
+            <div class="timeline-card-header">
+              <img src="https://ui-avatars.com/api/?name=TS&background=0F3D44&color=fff&size=40&rounded=true&bold=true" alt="TechStart Solutions" class="timeline-company-logo">
+              <span class="timeline-company-name">TechStart Solutions</span>
+              <span class="timeline-date">2015 — 2018</span>
+            </div>
+            <h3>Responsable Communication & Marketing</h3>
+            <ul class="timeline-description">
+              <li>Création de la stratégie de marque et de l'identité visuelle</li>
+              <li>Lancement de 3 produits SaaS avec des campagnes go-to-market</li>
+              <li>Développement des partenariats stratégiques B2B</li>
+            </ul>
+            <div class="timeline-tags">
+              <span class="timeline-tag">Branding</span>
+              <span class="timeline-tag">SaaS</span>
+              <span class="timeline-tag">B2B</span>
+              <span class="timeline-tag">Content Marketing</span>
+            </div>
+          </div>
+        </div>
+        <!-- Item 4 -->
+        <div class="timeline-item">
+          <div class="timeline-node"></div>
+          <div class="timeline-card">
+            <div class="timeline-card-header">
+              <img src="https://ui-avatars.com/api/?name=MP&background=6B7280&color=fff&size=40&rounded=true&bold=true" alt="MediaPlus International" class="timeline-company-logo">
+              <span class="timeline-company-name">MediaPlus International</span>
+              <span class="timeline-date">2013 — 2015</span>
+            </div>
+            <h3>Chargée de Marketing Digital</h3>
+            <ul class="timeline-description">
+              <li>Gestion des réseaux sociaux et de la stratégie de contenu</li>
+              <li>Analyse des performances et reporting mensuel</li>
+              <li>Coordination avec les équipes créatives et techniques</li>
+            </ul>
+            <div class="timeline-tags">
+              <span class="timeline-tag">Social Media</span>
+              <span class="timeline-tag">Content</span>
+              <span class="timeline-tag">Reporting</span>
+              <span class="timeline-tag">Coordination</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SKILLS -->
+  <section id="skills" class="section section-bg-secondary">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-number" data-i18n="skills.number">03</span>
+        <h2 data-i18n="skills.title">Compétences</h2>
+      </div>
+      <div class="skills-grid">
+        <!-- Card 1: Strategy -->
+        <div class="skill-card fade-in-up">
+          <div class="skill-card-header">
+            <div class="skill-card-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+            </div>
+            <span class="skill-card-title">Stratégie & Marketing</span>
+          </div>
+          <ul class="skill-list">
+            <li><span class="skill-name">Stratégie digitale</span> <span class="skill-level skill-level--expert">Expert</span></li>
+            <li><span class="skill-name">Marketing de contenu</span> <span class="skill-level skill-level--expert">Expert</span></li>
+            <li><span class="skill-name">SEO / SEA</span> <span class="skill-level skill-level--advanced">Avancé</span></li>
+            <li><span class="skill-name">Branding & positionnement</span> <span class="skill-level skill-level--expert">Expert</span></li>
+            <li><span class="skill-name">Marketing automation</span> <span class="skill-level skill-level--advanced">Avancé</span></li>
+          </ul>
+        </div>
+        <!-- Card 2: Tools -->
+        <div class="skill-card fade-in-up delay-1">
+          <div class="skill-card-header">
+            <div class="skill-card-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+            </div>
+            <span class="skill-card-title">Outils & Technologies</span>
+          </div>
+          <ul class="skill-list">
+            <li><span class="skill-name">Google Analytics / GA4</span> <span class="skill-level skill-level--expert">Expert</span></li>
+            <li><span class="skill-name">HubSpot / Salesforce</span> <span class="skill-level skill-level--advanced">Avancé</span></li>
+            <li><span class="skill-name">Adobe Creative Suite</span> <span class="skill-level skill-level--intermediate">Intermédiaire</span></li>
+            <li><span class="skill-name">WordPress / CMS</span> <span class="skill-level skill-level--advanced">Avancé</span></li>
+            <li><span class="skill-name">Notion / Asana / Trello</span> <span class="skill-level skill-level--expert">Expert</span></li>
+          </ul>
+        </div>
+        <!-- Card 3: Leadership -->
+        <div class="skill-card fade-in-up delay-2">
+          <div class="skill-card-header">
+            <div class="skill-card-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            </div>
+            <span class="skill-card-title">Leadership & Soft Skills</span>
+          </div>
+          <ul class="skill-list">
+            <li><span class="skill-name">Management d'équipe</span> <span class="skill-level skill-level--expert">Expert</span></li>
+            <li><span class="skill-name">Gestion de projet agile</span> <span class="skill-level skill-level--expert">Expert</span></li>
+            <li><span class="skill-name">Communication</span> <span class="skill-level skill-level--expert">Expert</span></li>
+            <li><span class="skill-name">Résolution de problèmes</span> <span class="skill-level skill-level--advanced">Avancé</span></li>
+            <li><span class="skill-name">Négociation</span> <span class="skill-level skill-level--advanced">Avancé</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="tools-row fade-in-up">
+        <img src="https://img.icons8.com/color/96/google-analytics.png" alt="Google Analytics">
+        <img src="https://img.icons8.com/color/96/hubspot.png" alt="HubSpot">
+        <img src="https://img.icons8.com/color/96/salesforce.png" alt="Salesforce">
+        <img src="https://img.icons8.com/color/96/adobe-creative-cloud.png" alt="Adobe Creative Suite">
+        <img src="https://img.icons8.com/color/96/wordpress.png" alt="WordPress">
+        <img src="https://img.icons8.com/color/96/notion.png" alt="Notion">
+        <img src="https://img.icons8.com/color/96/trello.png" alt="Trello">
+      </div>
+    </div>
+  </section>
+
+  <!-- EDUCATION -->
+  <section id="education" class="section section-bg-primary">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-number" data-i18n="education.number">04</span>
+        <h2 data-i18n="education.title">Formation</h2>
+      </div>
+      <div class="education-grid">
+        <div class="education-card fade-in-up">
+          <img src="https://ui-avatars.com/api/?name=HEC&background=1A535C&color=fff&size=48&rounded=true&bold=true&font-size=0.4" alt="HEC Paris" class="education-logo">
+          <div class="education-degree">Master Marketing Digital & Innovation</div>
+          <div class="education-institution">HEC Paris</div>
+          <div class="education-year">2013</div>
+        </div>
+        <div class="education-card fade-in-up delay-1">
+          <img src="https://ui-avatars.com/api/?name=PS&background=0F3D44&color=fff&size=48&rounded=true&bold=true&font-size=0.4" alt="Université Paris-Sorbonne" class="education-logo">
+          <div class="education-degree">Licence Communication & Médias</div>
+          <div class="education-institution">Université Paris-Sorbonne</div>
+          <div class="education-year">2011</div>
+        </div>
+        <div class="education-card fade-in-up delay-2">
+          <img src="https://ui-avatars.com/api/?name=G&background=E8836B&color=fff&size=48&rounded=true&bold=true&font-size=0.4" alt="Google" class="education-logo">
+          <div class="education-degree">Certification Google Analytics</div>
+          <div class="education-institution">Google</div>
+          <div class="education-year">2020</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section id="testimonials" class="section section-bg-dark">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-number" data-i18n="testimonials.number">05</span>
+        <h2 data-i18n="testimonials.title">Recommandations</h2>
+      </div>
+      <div class="testimonials-carousel">
+        <span class="testimonial-quote-mark">&ldquo;</span>
+        <!-- Slide 1 -->
+        <div class="testimonial-slide active">
+          <img src="https://ui-avatars.com/api/?name=MD&background=E8836B&color=fff&size=48&rounded=true" alt="Marie Dupont" class="testimonial-avatar">
+          <p class="testimonial-text">« Jessica possède une rare combinaison de vision stratégique et d'excellence opérationnelle. Son leadership a transformé notre approche digitale et généré des résultats exceptionnels. »</p>
+          <span class="testimonial-name">Marie Dupont</span>
+          <span class="testimonial-role">Directrice Générale, Groupe Lumière Digital</span>
+        </div>
+        <!-- Slide 2 -->
+        <div class="testimonial-slide">
+          <img src="https://ui-avatars.com/api/?name=TB&background=1A535C&color=fff&size=48&rounded=true" alt="Thomas Bernard" class="testimonial-avatar">
+          <p class="testimonial-text">« Travailler avec Jessica a été une révélation. Sa capacité à comprendre les enjeux business et à les traduire en actions marketing concrètes est tout simplement remarquable. »</p>
+          <span class="testimonial-name">Thomas Bernard</span>
+          <span class="testimonial-role">Fondateur & CEO, TechStart Solutions</span>
+        </div>
+        <!-- Slide 3 -->
+        <div class="testimonial-slide">
+          <img src="https://ui-avatars.com/api/?name=SM&background=0F3D44&color=fff&size=48&rounded=true" alt="Sophie Martin" class="testimonial-avatar">
+          <p class="testimonial-text">« Jessica apporte une énergie et une rigueur uniques à chaque projet. Elle sait fédérer les équipes et maintenir un cap stratégique clair, même dans les situations complexes. »</p>
+          <span class="testimonial-name">Sophie Martin</span>
+          <span class="testimonial-role">Directrice de Clientèle, Agence Créative Nova</span>
+        </div>
+        <div class="carousel-dots">
+          <button class="carousel-dot active" aria-label="Slide 1"></button>
+          <button class="carousel-dot" aria-label="Slide 2"></button>
+          <button class="carousel-dot" aria-label="Slide 3"></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact" class="section section-bg-primary">
+    <div class="container">
+      <div class="contact-header">
+        <span class="section-number" data-i18n="contact.number">06</span>
+        <h2 data-i18n="contact.title">Contact</h2>
+        <p class="contact-subtext" data-i18n="contact.subtext">Vous souhaitez échanger ? N'hésitez pas à me contacter.</p>
+      </div>
+      <div class="contact-grid">
+        <div class="contact-info fade-in-up">
+          <div class="contact-info-item">
+            <div class="contact-info-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            </div>
+            <a href="mailto:jessica.baillet@email.com" data-i18n="contact.email">jessica.baillet@email.com</a>
+          </div>
+          <div class="contact-info-item">
+            <div class="contact-info-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+            </div>
+            <a href="#" data-i18n="contact.linkedin">Voir mon profil LinkedIn</a>
+          </div>
+          <div class="contact-info-item">
+            <div class="contact-info-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            </div>
+            <span class="contact-info-static" data-i18n="contact.location">Paris, France</span>
+          </div>
+          <div class="contact-info-item">
+            <div class="contact-info-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            </div>
+            <a href="#" data-i18n="contact.download">Télécharger mon CV (PDF)</a>
+          </div>
+        </div>
+        <form class="contact-form fade-in-up delay-1">
+          <div class="form-group">
+            <label data-i18n="contact.form.name">Nom</label>
+            <input type="text" name="name" data-i18n-placeholder="contact.form.namePlaceholder" placeholder="Votre nom complet">
+          </div>
+          <div class="form-group">
+            <label data-i18n="contact.form.email">Email</label>
+            <input type="email" name="email" data-i18n-placeholder="contact.form.emailPlaceholder" placeholder="votre@email.com">
+          </div>
+          <div class="form-group">
+            <label data-i18n="contact.form.subject">Objet</label>
+            <input type="text" name="subject" data-i18n-placeholder="contact.form.subjectPlaceholder" placeholder="Sujet de votre message">
+          </div>
+          <div class="form-group">
+            <label data-i18n="contact.form.message">Message</label>
+            <textarea name="message" data-i18n-placeholder="contact.form.messagePlaceholder" placeholder="Votre message..."></textarea>
+          </div>
+          <div class="form-submit">
+            <button type="submit" class="btn btn-primary" data-i18n="contact.form.submit">Envoyer le message</button>
+          </div>
+          <p class="form-gdpr" data-i18n="contact.form.gdpr">Vos données sont traitées conformément au RGPD. Consultez notre <a href="#">politique de confidentialité</a>.</p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer id="footer">
+    <div class="footer-container">
+      <div class="footer-social">
+        <a href="#" aria-label="LinkedIn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+        </a>
+        <a href="mailto:jessica.baillet@email.com" aria-label="Email">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+        </a>
+        <a href="#" aria-label="Twitter">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg>
+        </a>
+      </div>
+      <p class="footer-copy" data-i18n="footer.copy">© 2025 Jessica Baillet. Tous droits réservés.</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

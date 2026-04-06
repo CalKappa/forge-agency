@@ -1,0 +1,444 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gaming & Esports Animation Showcase</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tsparticles/2.12.0/tsparticles.bundle.min.js"></script>
+</head>
+<body>
+    <!-- Particle Background -->
+    <section class="particle-background">
+        <div id="particles-js"></div>
+        <h1>Gaming & Esports Animation Showcase</h1>
+    </section>
+
+    <!-- Word by Word Text Reveal -->
+    <section class="word-reveal">
+        <h2>Word by Word Text Reveal</h2>
+        <p class="reveal-text">Welcome to the ultimate gaming experience where legends are born and champions rise to glory</p>
+    </section>
+
+    <!-- Animated Progress Bars -->
+    <section class="progress-bars">
+        <h2>Animated Progress Bars</h2>
+        <div class="progress-container">
+            <div class="progress-item">
+                <span class="progress-label">Player Level</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" data-width="85"></div>
+                    <span class="progress-value">85%</span>
+                </div>
+            </div>
+            <div class="progress-item">
+                <span class="progress-label">XP Progress</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" data-width="73"></div>
+                    <span class="progress-value">73%</span>
+                </div>
+            </div>
+            <div class="progress-item">
+                <span class="progress-label">Win Rate</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" data-width="92"></div>
+                    <span class="progress-value">92%</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Blur to Sharp Image Reveal -->
+    <section class="blur-reveal">
+        <h2>Blur to Sharp Image Reveal</h2>
+        <div class="image-container">
+            <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&h=600&fit=crop" alt="Gaming Setup" class="blur-image">
+        </div>
+    </section>
+
+    <!-- Image Reveal Wipe -->
+    <section class="image-wipe">
+        <h2>Image Reveal Wipe</h2>
+        <div class="wipe-container">
+            <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&h=600&fit=crop" alt="Esports Arena" class="wipe-image">
+            <div class="wipe-overlay"></div>
+        </div>
+    </section>
+
+    <!-- Ripple Effect on Click -->
+    <section class="ripple-effect">
+        <h2>Ripple Effect on Click</h2>
+        <div class="ripple-buttons">
+            <button class="ripple-btn">PLAY NOW</button>
+            <button class="ripple-btn">JOIN TOURNAMENT</button>
+            <button class="ripple-btn">VIEW STATS</button>
+        </div>
+    </section>
+
+    <!-- GSAP Accordion -->
+    <section class="gsap-accordion">
+        <h2>GSAP Accordion</h2>
+        <div class="accordion-container">
+            <div class="accordion-item">
+                <div class="accordion-header">Game Modes</div>
+                <div class="accordion-content">
+                    <p>Battle Royale, Team Deathmatch, Capture the Flag, King of the Hill</p>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <div class="accordion-header">Tournament Rules</div>
+                <div class="accordion-content">
+                    <p>Single elimination, Best of 3 matches, No exploits allowed, Fair play enforced</p>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <div class="accordion-header">Rewards</div>
+                <div class="accordion-content">
+                    <p>Prize pools, Exclusive skins, Championship titles, Ranking points</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Text Scramble Effect -->
+    <section class="text-scramble">
+        <h2>Text Scramble Effect</h2>
+        <div class="scramble-container">
+            <p class="scramble-text" data-text="GAME OVER">GAME OVER</p>
+            <p class="scramble-text" data-text="VICTORY ROYALE">VICTORY ROYALE</p>
+            <p class="scramble-text" data-text="LEGENDARY KILL">LEGENDARY KILL</p>
+        </div>
+    </section>
+
+    <!-- Glitch Text Effect -->
+    <section class="glitch-text">
+        <h2>Glitch Text Effect</h2>
+        <div class="glitch-container">
+            <h1 class="glitch" data-text="CYBER WARFARE">CYBER WARFARE</h1>
+        </div>
+    </section>
+
+    <!-- Counter Animation -->
+    <section class="counter-animation">
+        <h2>Counter Animation</h2>
+        <div class="counter-grid">
+            <div class="counter-item">
+                <span class="counter-number" data-target="1250000">0</span>
+                <span class="counter-label">Players Online</span>
+            </div>
+            <div class="counter-item">
+                <span class="counter-number" data-target="85430">0</span>
+                <span class="counter-label">Matches Played</span>
+            </div>
+            <div class="counter-item">
+                <span class="counter-number" data-target="2847">0</span>
+                <span class="counter-label">Tournaments</span>
+            </div>
+            <div class="counter-item">
+                <span class="counter-number" data-target="156">0</span>
+                <span class="counter-label">Pro Teams</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Colour Shifting Background on Scroll -->
+    <section class="colour-shift">
+        <h2>Colour Shifting Background on Scroll</h2>
+        <div class="scroll-content">
+            <p>Scroll down to see the background colors shift and transform</p>
+            <div class="spacer"></div>
+            <p>The colors react to your scroll position</p>
+            <div class="spacer"></div>
+            <p>Creating an immersive gaming atmosphere</p>
+        </div>
+    </section>
+
+    <!-- Spotlight Follow Mouse Effect -->
+    <section class="spotlight-effect">
+        <h2>Spotlight Follow Mouse Effect</h2>
+        <div class="spotlight-container">
+            <p>Move your mouse around to reveal hidden content</p>
+            <div class="hidden-content">
+                <h3>SECRET ACHIEVEMENT UNLOCKED</h3>
+                <p>You discovered the hidden treasure!</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3D Card Tilt on Hover -->
+    <section class="card-tilt">
+        <h2>3D Card Tilt on Hover</h2>
+        <div class="card-grid">
+            <div class="tilt-card">
+                <img src="https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=300&h=200&fit=crop" alt="Game 1">
+                <h3>Cyber Strike</h3>
+                <p>Tactical FPS</p>
+            </div>
+            <div class="tilt-card">
+                <img src="https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=300&h=200&fit=crop" alt="Game 2">
+                <h3>Neon Racing</h3>
+                <p>High-speed action</p>
+            </div>
+            <div class="tilt-card">
+                <img src="https://images.unsplash.com/photo-1566577739112-5180d4bf9390?w=300&h=200&fit=crop" alt="Game 3">
+                <h3>Space Conquest</h3>
+                <p>Strategy RPG</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Typewriter Text -->
+    <section class="typewriter">
+        <h2>Typewriter Text</h2>
+        <div class="typewriter-container">
+            <p class="typewriter-text">Loading game assets...</p>
+            <p class="typewriter-text">Connecting to servers...</p>
+            <p class="typewriter-text">Welcome to the arena, champion!</p>
+        </div>
+    </section>
+
+    <!-- Parallax Background -->
+    <section class="parallax-background">
+        <div class="parallax-layer layer-1"></div>
+        <div class="parallax-layer layer-2"></div>
+        <div class="parallax-layer layer-3"></div>
+        <div class="parallax-content">
+            <h2>Parallax Background</h2>
+            <p>Experience depth and immersion with parallax scrolling</p>
+        </div>
+    </section>
+
+    <!-- Diagonal Wipe Transitions -->
+    <section class="diagonal-wipe">
+        <h2>Diagonal Wipe Transitions</h2>
+        <div class="wipe-gallery">
+            <div class="wipe-item active">
+                <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?w=600&h=400&fit=crop" alt="Arena 1">
+                <div class="wipe-overlay"></div>
+            </div>
+            <div class="wipe-item">
+                <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600&h=400&fit=crop" alt="Arena 2">
+                <div class="wipe-overlay"></div>
+            </div>
+        </div>
+        <div class="wipe-controls">
+            <button class="wipe-btn" data-index="0">Arena 1</button>
+            <button class="wipe-btn" data-index="1">Arena 2</button>
+        </div>
+    </section>
+
+    <!-- Split Text Animation -->
+    <section class="split-text">
+        <h2>Split Text Animation</h2>
+        <div class="split-container">
+            <h1 class="split-text-element">ESPORTS</h1>
+            <h1 class="split-text-element">LEGENDS</h1>
+            <h1 class="split-text-element">CHAMPIONS</h1>
+        </div>
+    </section>
+
+    <!-- Horizontal Scroll Section -->
+    <section class="horizontal-scroll">
+        <h2>Horizontal Scroll Section</h2>
+        <div class="horizontal-container">
+            <div class="horizontal-item">
+                <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&h=600&fit=crop" alt="Setup 1">
+                <h3>Pro Setup Alpha</h3>
+            </div>
+            <div class="horizontal-item">
+                <img src="https://images.unsplash.com/photo-1560253023-3ec5d502959f?w=400&h=600&fit=crop" alt="Setup 2">
+                <h3>Elite Rig Beta</h3>
+            </div>
+            <div class="horizontal-item">
+                <img src="https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=600&fit=crop" alt="Setup 3">
+                <h3>Master Build Gamma</h3>
+            </div>
+            <div class="horizontal-item">
+                <img src="https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=400&h=600&fit=crop" alt="Setup 4">
+                <h3>Ultimate Config Delta</h3>
+            </div>
+        </div>
+    </section>
+
+    <!-- Floating Elements -->
+    <section class="floating-elements">
+        <h2>Floating Elements</h2>
+        <div class="floating-container">
+            <div class="floating-item coin">🪙</div>
+            <div class="floating-item gem">💎</div>
+            <div class="floating-item star">⭐</div>
+            <div class="floating-item trophy">🏆</div>
+            <div class="floating-item lightning">⚡</div>
+            <p>Watch the gaming elements float around you</p>
+        </div>
+    </section>
+
+    <!-- Animated Statistics with Circular Rings -->
+    <section class="circular-stats">
+        <h2>Animated Statistics with Circular Rings</h2>
+        <div class="stats-grid">
+            <div class="stat-ring">
+                <svg class="progress-ring" width="120" height="120">
+                    <circle class="progress-ring-bg" cx="60" cy="60" r="50"></circle>
+                    <circle class="progress-ring-fill" cx="60" cy="60" r="50" data-percentage="85"></circle>
+                </svg>
+                <div class="stat-content">
+                    <span class="stat-number">85%</span>
+                    <span class="stat-label">Win Rate</span>
+                </div>
+            </div>
+            <div class="stat-ring">
+                <svg class="progress-ring" width="120" height="120">
+                    <circle class="progress-ring-bg" cx="60" cy="60" r="50"></circle>
+                    <circle class="progress-ring-fill" cx="60" cy="60" r="50" data-percentage="92"></circle>
+                </svg>
+                <div class="stat-content">
+                    <span class="stat-number">92%</span>
+                    <span class="stat-label">Accuracy</span>
+                </div>
+            </div>
+            <div class="stat-ring">
+                <svg class="progress-ring" width="120" height="120">
+                    <circle class="progress-ring-bg" cx="60" cy="60" r="50"></circle>
+                    <circle class="progress-ring-fill" cx="60" cy="60" r="50" data-percentage="78"></circle>
+                </svg>
+                <div class="stat-content">
+                    <span class="stat-number">78%</span>
+                    <span class="stat-label">K/D Ratio</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Breathing Scale Pulse on Hero Elements -->
+    <section class="pulse-hero">
+        <h2>Breathing Scale Pulse on Hero Elements</h2>
+        <div class="pulse-container">
+            <div class="pulse-element">
+                <h3>LIVE</h3>
+                <p>Tournament Active</p>
+            </div>
+            <div class="pulse-element">
+                <h3>NEW</h3>
+                <p>Update Available</p>
+            </div>
+            <div class="pulse-element">
+                <h3>HOT</h3>
+                <p>Trending Game</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Magnetic Button Effect -->
+    <section class="magnetic-buttons">
+        <h2>Magnetic Button Effect</h2>
+        <div class="magnetic-container">
+            <button class="magnetic-btn">JOIN BATTLE</button>
+            <button class="magnetic-btn">START MISSION</button>
+            <button class="magnetic-btn">ENTER ARENA</button>
+        </div>
+    </section>
+
+    <!-- Liquid Blob Morphing Background -->
+    <section class="liquid-blob">
+        <h2>Liquid Blob Morphing Background</h2>
+        <div class="blob-container">
+            <svg class="blob-svg" viewBox="0 0 200 200">
+                <path class="blob-path" d="M40,-50C50,-35,55,-20,60,-5C65,10,70,25,65,40C60,55,45,70,25,75C5,80,-20,75,-35,65C-50,55,-55,40,-60,25C-65,10,-70,-5,-65,-20C-60,-35,-45,-50,-25,-55C-5,-60,20,-65,40,-50Z"></path>
+            </svg>
+            <div class="blob-content">
+                <p>Dynamic liquid shapes that morph and flow</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Elastic Bounce Reveals -->
+    <section class="elastic-bounce">
+        <h2>Elastic Bounce Reveals</h2>
+        <div class="bounce-grid">
+            <div class="bounce-item">
+                <img src="https://images.unsplash.com/photo-1556438064-2d7646166914?w=200&h=200&fit=crop" alt="Weapon 1">
+                <h4>Plasma Rifle</h4>
+            </div>
+            <div class="bounce-item">
+                <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=200&h=200&fit=crop" alt="Weapon 2">
+                <h4>Energy Sword</h4>
+            </div>
+            <div class="bounce-item">
+                <img src="https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=200&h=200&fit=crop" alt="Weapon 3">
+                <h4>Quantum Blaster</h4>
+            </div>
+            <div class="bounce-item">
+                <img src="https://images.unsplash.com/photo-1566577739112-5180d4bf9390?w=200&h=200&fit=crop" alt="Weapon 4">
+                <h4>Nano Cannon</h4>
+            </div>
+        </div>
+    </section>
+
+    <!-- Morphing Gradient Background -->
+    <section class="morphing-gradient">
+        <h2>Morphing Gradient Background</h2>
+        <div class="gradient-container">
+            <p>Watch the background gradient shift and morph continuously</p>
+            <div class="gradient-content">
+                <h3>Immersive Gaming Experience</h3>
+                <p>Colors that adapt and flow with your journey</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Staggered Card Reveals -->
+    <section class="staggered-cards">
+        <h2>Staggered Card Reveals</h2>
+        <div class="staggered-grid">
+            <div class="stagger-card">
+                <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300&h=200&fit=crop" alt="Tournament 1">
+                <div class="card-content">
+                    <h4>Spring Championship</h4>
+                    <p>Prize Pool: $50,000</p>
+                </div>
+            </div>
+            <div class="stagger-card">
+                <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?w=300&h=200&fit=crop" alt="Tournament 2">
+                <div class="card-content">
+                    <h4>Summer League</h4>
+                    <p>Prize Pool: $75,000</p>
+                </div>
+            </div>
+            <div class="stagger-card">
+                <img src="https://images.unsplash.com/photo-1560253023-3ec5d502959f?w=300&h=200&fit=crop" alt="Tournament 3">
+                <div class="card-content">
+                    <h4>World Finals</h4>
+                    <p>Prize Pool: $100,000</p>
+                </div>
+            </div>
+            <div class="stagger-card">
+                <img src="https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=300&h=200&fit=crop" alt="Tournament 4">
+                <div class="card-content">
+                    <h4>Pro Circuit</h4>
+                    <p>Prize Pool: $25,000</p>
+                </div>
+            </div>
+            <div class="stagger-card">
+                <img src="https://images.unsplash.com/photo-1566577739112-5180d4bf9390?w=300&h=200&fit=crop" alt="Tournament 5">
+                <div class="card-content">
+                    <h4>Elite Series</h4>
+                    <p>Prize Pool: $150,000</p>
+                </div>
+            </div>
+            <div class="stagger-card">
+                <img src="https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=300&h=200&fit=crop" alt="Tournament 6">
+                <div class="card-content">
+                    <h4>Master Cup</h4>
+                    <p>Prize Pool: $200,000</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="script.js"></script>
+</body>
+</html>

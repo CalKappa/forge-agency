@@ -1,0 +1,8 @@
+In its own CMD run
+cd %USERPROFILE%\forge-agency
+npm run dev
+
+
+In a new cmd run this for claude
+cd %USERPROFILE%\forge-agency
+claude
