@@ -30,10 +30,11 @@ if (!ACCESS_TOKEN || ACCESS_TOKEN === 'your-personal-access-token') {
 
 const SQL = `
 ALTER TABLE agent_outputs
-  ADD COLUMN IF NOT EXISTS token_usage     jsonb,
-  ADD COLUMN IF NOT EXISTS output_css      text,
-  ADD COLUMN IF NOT EXISTS output_html     text,
-  ADD COLUMN IF NOT EXISTS output_wireframe text;
+  ADD COLUMN IF NOT EXISTS token_usage      jsonb,
+  ADD COLUMN IF NOT EXISTS output_css       text,
+  ADD COLUMN IF NOT EXISTS output_html      text,
+  ADD COLUMN IF NOT EXISTS output_wireframe text,
+  ADD COLUMN IF NOT EXISTS output_moodboard text;
 `
 
 async function run() {
@@ -59,6 +60,7 @@ async function run() {
   console.log('  ✓ agent_outputs.output_css        (text)   — raw CSS output')
   console.log('  ✓ agent_outputs.output_html       (text)   — raw HTML output')
   console.log('  ✓ agent_outputs.output_wireframe  (text)   — SVG wireframe')
+  console.log('  ✓ agent_outputs.output_moodboard  (text)   — moodboard JSON (Designer)')
 }
 
 run()

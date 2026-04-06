@@ -218,19 +218,23 @@ const PIPELINE_AGENTS = ['Researcher', 'Designer', 'Developer', 'Reviewer']
 
 function parseResponse(text) {
   if (!text) return null
-  const re = /(?:^|\n)\s*(?:#{1,3}\s*)?(?:\*{1,2})?(\d+\)?\s*(?:Researcher|Designer|Developer|Reviewer))(?:\*{1,2})?[:\s]*/gi
+  // Handles all heading variants the Orchestrator may produce:
+  //   ## Researcher         ## 1. Researcher      ## 1) Researcher
+  //   **Researcher**        1) Researcher:        Researcher:
+  //   ## **Researcher**     ### Developer Tasks
+  const re = /(?:^|\n)\s*(?:#{1,3}\s*)?\**(?:\d+[\.\)]\s*)?\**(Researcher|Designer|Developer|Reviewer)\**(?:\s+(?:Tasks?|Section|Agent))?[:\s]*/gi
   const parts = []
   let lastIndex = 0
   let match
   while ((match = re.exec(text)) !== null) {
     if (parts.length > 0) parts[parts.length - 1].content = text.slice(lastIndex, match.index).trim()
-    const label = match[1].replace(/^\d+\)\s*/, '').trim()
-    parts.push({ label, content: '' })
+    parts.push({ label: match[1].trim(), content: '' })
     lastIndex = match.index + match[0].length
   }
+  if (parts.length === 0) return null
   if (parts.length > 0) parts[parts.length - 1].content = text.slice(lastIndex).trim()
   return PIPELINE_AGENTS.map(name => {
-    const found = parts.find(p => p.label.toLowerCase().includes(name.toLowerCase()))
+    const found = parts.find(p => p.label.toLowerCase() === name.toLowerCase())
     return { name, content: found?.content ?? '' }
   })
 }
@@ -766,6 +770,135 @@ function downloadPdf({ agentName, projectName, clientName, date, bodyText, note,
   doc.save(filename)
 }
 
+// ── Moodboard PDF export ──────────────────────────────────────────────────────
+
+function downloadMoodboardPdf({ projectName, clientName, date, moodboard, filename }) {
+  const doc    = new jsPDF({ unit: 'mm', format: 'a4' })
+  const margin = 20
+  const pageW  = doc.internal.pageSize.getWidth()
+  const pageH  = doc.internal.pageSize.getHeight()
+  const usable = pageW - margin * 2
+  let y = margin
+
+  function checkPage(needed = 8) {
+    if (y + needed > pageH - margin - 10) { doc.addPage(); y = margin }
+  }
+  function drawText(text, opts = {}) {
+    const { size = 10, bold = false, color = [60, 60, 60], indent = 0 } = opts
+    doc.setFontSize(size); doc.setFont('helvetica', bold ? 'bold' : 'normal'); doc.setTextColor(...color)
+    const lines = doc.splitTextToSize(String(text), usable - indent)
+    for (const ln of lines) { checkPage(); doc.text(ln, margin + indent, y); y += size * 0.44 }
+  }
+  function sectionHeading(label) {
+    y += 5; checkPage(10)
+    doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(80, 80, 80)
+    doc.text(label.toUpperCase(), margin, y); y += 2
+    doc.setDrawColor(200, 200, 200); doc.line(margin, y, pageW - margin, y); y += 5
+  }
+
+  // ── Header ────────────────────────────────────────────────────────────────
+  doc.setFillColor(139, 92, 246)
+  doc.rect(0, 0, pageW, 2, 'F')
+  doc.setFontSize(22); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 30, 30)
+  doc.text('Forge Agency', margin, y + 4); y += 10
+  doc.setFontSize(11); doc.setFont('helvetica', 'normal'); doc.setTextColor(130, 130, 130)
+  doc.text('Design Moodboard', margin, y); y += 7
+  doc.setDrawColor(220, 220, 220); doc.line(margin, y, pageW - margin, y); y += 6
+  drawText(`Project: ${projectName}`, { size: 12, bold: true, color: [30, 30, 30] }); y += 1
+  drawText(`Client: ${clientName}`,   { size: 10, color: [80, 80, 80] }); y += 1
+  drawText(`Date: ${date}`,           { size: 10, color: [130, 130, 130] }); y += 5
+
+  // ── Colour Palette ────────────────────────────────────────────────────────
+  sectionHeading('Colour Palette')
+  const palette = moodboard.palette ?? []
+  const swatchW = usable / Math.max(palette.length, 1)
+  for (let i = 0; i < palette.length; i++) {
+    const { hex = '#cccccc', label = '' } = palette[i]
+    const xPos = margin + i * swatchW
+    const r = parseInt(hex.slice(1, 3), 16) || 200
+    const g = parseInt(hex.slice(3, 5), 16) || 200
+    const b = parseInt(hex.slice(5, 7), 16) || 200
+    doc.setFillColor(r, g, b)
+    doc.rect(xPos, y, swatchW - 2, 18, 'F')
+    doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80)
+    const hexLines = doc.splitTextToSize(hex, swatchW - 4)
+    doc.text(hexLines[0], xPos + 1, y + 21)
+    const labelLines = doc.splitTextToSize(label, swatchW - 4)
+    doc.text(labelLines[0], xPos + 1, y + 25)
+  }
+  y += 30
+
+  // ── Typography ────────────────────────────────────────────────────────────
+  sectionHeading('Typography')
+  const { heading: hFont, body: bFont } = moodboard.typography ?? {}
+  const colW = (usable - 5) / 2
+  // Heading box
+  doc.setDrawColor(220, 220, 220); doc.rect(margin, y, colW, 28, 'S')
+  doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(100, 100, 100)
+  doc.text('HEADING FONT', margin + 3, y + 5)
+  doc.setFontSize(13); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 30, 30)
+  const hName = hFont?.font ?? 'System Font'
+  doc.text(hName, margin + 3, y + 12)
+  doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80)
+  const hSample = doc.splitTextToSize(hFont?.sample ?? '', colW - 6)
+  doc.text(hSample.slice(0, 2), margin + 3, y + 18)
+  // Body box
+  const bx = margin + colW + 5
+  doc.setDrawColor(220, 220, 220); doc.rect(bx, y, colW, 28, 'S')
+  doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(100, 100, 100)
+  doc.text('BODY FONT', bx + 3, y + 5)
+  doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 30, 30)
+  const bName = bFont?.font ?? 'System Font'
+  doc.text(bName, bx + 3, y + 12)
+  doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80)
+  const bSample = doc.splitTextToSize(bFont?.sample ?? '', colW - 6)
+  doc.text(bSample.slice(0, 2), bx + 3, y + 18)
+  y += 34
+
+  // ── Mood Words ────────────────────────────────────────────────────────────
+  sectionHeading('Mood Words')
+  const words = moodboard.mood_words ?? []
+  let wx = margin
+  const pillH = 8; const pillPad = 4
+  for (const word of words) {
+    const ww = doc.getStringUnitWidth(word) * 10 * 0.352 + pillPad * 2
+    if (wx + ww > pageW - margin) { wx = margin; y += pillH + 3 }
+    checkPage(pillH + 4)
+    doc.setFillColor(139, 92, 246, 0.15); doc.setDrawColor(139, 92, 246)
+    doc.setFillColor(230, 220, 255)
+    doc.roundedRect(wx, y - pillH + 2, ww, pillH, 2, 2, 'FD')
+    doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 50, 180)
+    doc.text(word, wx + pillPad, y)
+    wx += ww + 3
+  }
+  y += pillH + 5
+
+  // ── Textures ──────────────────────────────────────────────────────────────
+  sectionHeading('Textures & Surfaces')
+  for (const tex of (moodboard.textures ?? [])) {
+    checkPage(10)
+    doc.setFillColor(139, 92, 246); doc.rect(margin, y - 3.5, 2, 5.5, 'F')
+    drawText(tex, { size: 10, color: [60, 60, 60], indent: 5 }); y += 2
+  }
+
+  // ── Imagery Direction ─────────────────────────────────────────────────────
+  sectionHeading('Imagery Direction')
+  drawText(moodboard.imagery_direction ?? '', { size: 10, color: [60, 60, 60] }); y += 3
+
+  // ── UI Style ──────────────────────────────────────────────────────────────
+  sectionHeading('UI Component Style')
+  doc.setFontSize(10); doc.setFont('helvetica', 'bolditalic'); doc.setTextColor(80, 80, 80)
+  const uiLines = doc.splitTextToSize(`"${moodboard.ui_style ?? ''}"`, usable - 6)
+  for (const ln of uiLines) { checkPage(); doc.text(ln, margin + 3, y); y += 5 }
+
+  // ── Footer ────────────────────────────────────────────────────────────────
+  y += 8; checkPage(8)
+  doc.setDrawColor(220, 220, 220); doc.line(margin, y, pageW - margin, y); y += 5
+  doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(150, 150, 150)
+  doc.text(`Generated by Forge Agency AI Pipeline · ${date}`, margin, y)
+  doc.save(filename)
+}
+
 // ── Developer combined PDF export ────────────────────────────────────────────
 
 function downloadDeveloperPdf({ projectName, clientName, date, stackText, htmlText, cssText, jsText, filename }) {
@@ -861,7 +994,7 @@ function downloadDeveloperPdf({ projectName, clientName, date, stackText, htmlTe
 
 // ── Developer sub-section component ──────────────────────────────────────────
 
-function DevSubSection({ label, record, project, renderContent, extraButton, copyText, fileDownload, defaultOpen = false, onFix, onFresh, storageKey }) {
+function DevSubSection({ label, record, project, renderContent, extraButton, copyText, fileDownload, defaultOpen = false, onFix, onFresh, storageKey, onApprove, approved }) {
   const [open,          setOpen]          = useState(defaultOpen)
   const [copied,        setCopied]        = useState(false)
   const [subMode,       setSubMode]       = useState(null) // null | 'chooser' | 'fix' | 'fresh'
@@ -1025,6 +1158,36 @@ function DevSubSection({ label, record, project, renderContent, extraButton, cop
             <button onClick={() => setSubMode('chooser')} className="text-xs text-zinc-600 hover:text-zinc-400 transition-colors">Back</button>
           </div>
         </div>
+      )}
+
+      {/* ── Per-page approval bar ── */}
+      {onApprove && !subRunning && subMode === null && (
+        approved ? (
+          <div className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500/8 border-t border-emerald-500/20">
+            <CheckIcon className="w-3 h-3 text-emerald-400" />
+            <span className="text-xs font-medium text-emerald-400">Page approved</span>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between px-5 py-3 bg-zinc-950/60 border-t border-zinc-800">
+            <span className="text-xs font-medium text-zinc-500">Review &amp; Approve Page</span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={onApprove}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-500 transition-colors"
+              >
+                <CheckIcon className="w-3 h-3" />
+                Approve Page
+              </button>
+              <button
+                onClick={() => setSubMode('chooser')}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white transition-colors"
+              >
+                <RefreshIcon className="w-3 h-3" />
+                Request Changes
+              </button>
+            </div>
+          </div>
+        )
       )}
     </div>
   )
@@ -1249,6 +1412,10 @@ export default function ProjectDetail() {
   const [devMode,              setDevMode]              = useState(null) // null | 'chooser' | 'fix' | 'fresh'
   const [devFeedbackText,      setDevFeedbackText]      = useState('')
   const [pageStatuses,         setPageStatuses]         = useState({}) // { [filename]: 'pending'|'generating'|'complete'|'failed' }
+  const [approvedPages,        setApprovedPages]        = useState(new Set()) // filenames approved via per-page review
+  const [pageSelectModal,      setPageSelectModal]      = useState(null)  // null | { approvedFilename, remainingPages }
+  const [pageSelectChoice,     setPageSelectChoice]     = useState('')    // filename of selected radio option
+  const [skipToReview,         setSkipToReview]         = useState(false) // user chose to skip remaining pages
   const [approvingDev,         setApprovingDev]         = useState(false)
   const [submittingDev,        setSubmittingDev]        = useState(false)
   const [goingBackToDev,       setGoingBackToDev]       = useState(false)
@@ -1268,7 +1435,9 @@ export default function ProjectDetail() {
   const [briefOpen,        setBriefOpen]        = useState(false)
   const [orchestratorOpen, setOrchestratorOpen] = useState(true)
   const [researchOpen,     setResearchOpen]     = useState(false)
-  const [designOpen,     setDesignOpen]     = useState(false)
+  const [designOpen,           setDesignOpen]           = useState(false)
+  const [moodboardOpen,        setMoodboardOpen]        = useState(false)
+  const [isRegeneratingMoodboard, setIsRegeneratingMoodboard] = useState(false)
   const [devOpen,        setDevOpen]        = useState(false)
   const [reviewOpen,     setReviewOpen]     = useState(false)
 
@@ -1313,6 +1482,39 @@ export default function ProjectDetail() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Inject Google Fonts for moodboard typography preview
+  useEffect(() => {
+    const designRec = agentOutputs.find(o => o.agent_name === 'designer') ?? null
+    if (!designRec?.output_moodboard) return
+    try {
+      const mb = JSON.parse(designRec.output_moodboard)
+      const fonts = [mb.typography?.heading?.font, mb.typography?.body?.font].filter(Boolean)
+      if (fonts.length === 0) return
+      const id = 'forge-moodboard-fonts'
+      if (document.getElementById(id)) document.getElementById(id).remove()
+      const link = document.createElement('link')
+      link.id   = id
+      link.rel  = 'stylesheet'
+      link.href = `https://fonts.googleapis.com/css2?${fonts.map(f => `family=${encodeURIComponent(f)}:wght@400;700`).join('&')}&display=swap`
+      document.head.appendChild(link)
+    } catch { /* invalid JSON — ignore */ }
+  }, [agentOutputs])
+
+  // Retry loading agent_outputs up to 5 times if Orchestrator record is missing
+  // (structured brief submissions may have a slight delay before the record appears)
+  const orchRetryRef = useRef(0)
+  useEffect(() => {
+    if (loading) return
+    const hasOrchestrator = agentOutputs.some(o => o.agent_name === 'Orchestrator')
+    const hasBrief = briefs.length > 0 && !briefs[0].orchestrator_response
+    if (hasOrchestrator || !hasBrief || orchRetryRef.current >= 5) return
+
+    orchRetryRef.current += 1
+    console.log(`[orchRetry] attempt ${orchRetryRef.current} — Orchestrator record not yet found`)
+    const t = setTimeout(() => load(), 3000)
+    return () => clearTimeout(t)
+  }, [loading, agentOutputs, briefs])
+
   async function load() {
     // Claim a generation slot. If a newer load() starts before this one
     // finishes fetching, the newer one will have a higher gen and this
@@ -1337,19 +1539,26 @@ export default function ProjectDetail() {
     setBriefs(briefsRes.data       ?? [])
     setInvoices(invoicesRes.data   ?? [])
     const outputs = outputsRes.data ?? []
+    const orchRecord    = outputs.find(o => o.agent_name === 'Orchestrator') ?? null
+    const designRecord  = outputs.find(o => o.agent_name === 'designer')     ?? null
+    console.log('[load] agent_outputs raw result:', outputsRes.data, '| Orchestrator record:', orchRecord ?? 'not found')
+    console.log('[load] Orchestrator output_text (first 500 chars):', orchRecord?.output_text?.slice(0, 500) ?? '(none)')
+    console.log('[load] Designer record — output_wireframe length:', designRecord?.output_wireframe?.length ?? 0, '| output_moodboard length:', designRecord?.output_moodboard?.length ?? 0)
     setAgentOutputs(outputs)
     setLoading(false)
 
-    // Auto-open only the most recent section
+    // Auto-open the most recent section when it first appears.
+    // Use functional updates so a section that is already open is never forced closed
+    // (e.g. the Design section must stay open after the Developer stage starts).
     const hasDev      = outputs.some(o => ['Developer-Stack','Developer-CSS','Developer-JS','Developer-Pages'].includes(o.agent_name) || o.agent_name === 'Developer-HTML' || o.agent_name.startsWith('Developer-HTML-'))
     const hasDesign   = outputs.some(o => o.agent_name === 'designer')
     const hasResearch = outputs.some(o => o.agent_name === 'researcher')
     const hasReview   = outputs.some(o => o.agent_name === 'reviewer')
     setBriefOpen(!hasResearch)
-    setResearchOpen(hasResearch && !hasDesign)
-    setDesignOpen(hasDesign && !hasDev)
-    setDevOpen(hasDev && !hasReview)
-    setReviewOpen(hasReview)
+    setResearchOpen(prev => prev || (hasResearch && !hasDesign))
+    setDesignOpen(prev => prev || (hasDesign && !hasDev))
+    setDevOpen(prev => prev || (hasDev && !hasReview))
+    setReviewOpen(prev => prev || hasReview)
   }
 
   // ── Revision helper ───────────────────────────────────────────────────────
@@ -1853,8 +2062,49 @@ export default function ProjectDetail() {
       const { error: designSaveErr } = await safeUpdate('agent_outputs', record.id, { output_text: designBriefText, token_usage: designTokenUsage }, { output_text: designBriefText })
       if (designSaveErr) throw new Error(`Designer save failed: ${designSaveErr.message}`)
 
-      // ── Step 3: wireframes for selected pages ──────────────────────────────
-      const wireframePages = effectivePages.filter(p => selectedWireframePages.includes(p.filename))
+      // ── Step 3: Moodboard JSON ─────────────────────────────────────────────
+      setDesignStreamDisplay(designBriefText + '\n\n--- Generating moodboard…')
+      let moodboardJson = null
+      const { text: moodboardRaw, inputTokens: mbIn, outputTokens: mbOut } = await streamAnthropicCall({
+        messages:     [{ role: 'user', content: designBriefText }],
+        systemPrompt: 'You are a UI/UX designer creating a moodboard brief for a web design project. Based on the design brief provided output ONLY a valid JSON object with no explanation and no markdown code blocks. The JSON must have these keys: palette which is an array of 6 colour objects each with a hex string and a label string describing the colour role for example Primary Background or Accent CTA, typography which is an object with two keys heading containing font name and sample text and body containing font name and sample text, textures which is an array of 3 strings describing visual texture or pattern directions for example Subtle grain overlay on hero or Clean flat surfaces with sharp edges, mood_words which is an array of 8 single words capturing the visual mood for example Sophisticated, Minimal, Bold, imagery_direction which is a string of 2 to 3 sentences describing the photography and imagery style, ui_style which is a string describing the overall UI component style for example Rounded cards with soft shadows and generous whitespace.',
+        model:        'claude-sonnet-4-20250514',
+        maxTokens:    8000,
+      })
+      designTokenCalls.push({ label: 'Moodboard', input_tokens: mbIn, output_tokens: mbOut })
+      const mbStripped = moodboardRaw.trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim()
+      try {
+        JSON.parse(mbStripped) // validate — throws if malformed
+        moodboardJson = mbStripped
+      } catch (mbParseErr) {
+        console.warn('[Designer] moodboard JSON parse failed — raw response:', moodboardRaw.slice(0, 300), 'error:', mbParseErr.message)
+      }
+      if (moodboardJson) {
+        const mbTotalIn  = designTokenCalls.reduce((s, c) => s + c.input_tokens,  0)
+        const mbTotalOut = designTokenCalls.reduce((s, c) => s + c.output_tokens, 0)
+        const updatedTokenUsage = { ...designTokenUsage, calls: designTokenCalls, input_tokens: mbTotalIn, output_tokens: mbTotalOut, total_tokens: mbTotalIn + mbTotalOut }
+        await safeUpdate('agent_outputs', record.id, { output_moodboard: moodboardJson, token_usage: updatedTokenUsage })
+        console.log('[Designer] Moodboard generation complete — saved to Supabase, length:', moodboardJson.length)
+      } else {
+        console.warn('[Designer] Moodboard generation complete — JSON invalid, not saved')
+      }
+
+      // ── Step 4: wireframes ────────────────────────────────────────────────
+      // In auto-approval mode guarantee the homepage/first page is always generated.
+      // Compute the pages to wireframe: honour selectedWireframePages when possible,
+      // but fall back to effectivePages[0] so a filename mismatch never silently
+      // skips the wireframe step and lets auto-approval fire with no wireframe saved.
+      let wireframePages = effectivePages.filter(p => selectedWireframePages.includes(p.filename))
+      const isAutoMode = autoRunSettingsRef.current.autoDesigner && !autoRunAbortedRef.current
+      if (wireframePages.length === 0) {
+        if (isAutoMode) {
+          // Fallback: always generate at least the first page in auto mode
+          wireframePages = [effectivePages[0]]
+          console.log('[Designer] selectedWireframePages did not match any effectivePages — falling back to first page:', effectivePages[0]?.filename)
+        } else {
+          console.log('[Designer] No wireframe pages selected — skipping wireframe generation')
+        }
+      }
       if (wireframePages.length > 0) {
         for (let i = 0; i < wireframePages.length; i++) {
           const page = wireframePages[i]
@@ -1873,7 +2123,6 @@ export default function ProjectDetail() {
             .maybeSingle()
           if (existingWf) {
             await safeUpdate('agent_outputs', existingWf.id, { output_wireframe: svg, status: 'pending' })
-            console.log(`[Designer] wireframe updated for ${page.filename}`)
           } else {
             await supabase.from('agent_outputs').insert({
               project_id:       projectId,
@@ -1881,18 +2130,23 @@ export default function ProjectDetail() {
               output_wireframe: svg,
               status:           'pending',
             })
-            console.log(`[Designer] wireframe inserted for ${page.filename}`)
           }
+          console.log(`[Designer] Wireframe generation complete — saved for ${page.filename}`)
         }
         setWireframeProgress(null)
-      } else {
-        console.log('[Designer] No wireframe pages selected — skipping wireframe generation')
       }
 
       pipeline.complete()
+      // Clear isDesigning NOW so the wireframe and moodboard sections become
+      // visible immediately. Without this, isDesigning stays true through the
+      // entire runDeveloper call (finally only runs after the awaited chain),
+      // which keeps designIsStreaming = true and hides both sections.
+      setIsDesigning(false)
       await load()
 
-      // Auto-approve designer if enabled — inline to avoid stale designOutput closure
+      // Auto-approve designer if enabled — inline to avoid stale designOutput closure.
+      // Both moodboard and wireframe saves are awaited above before this check runs.
+      console.log('[Designer] Proceeding to auto-approval check — moodboard saved:', !!moodboardJson, '| wireframes generated:', wireframePages.length)
       if (autoRunSettingsRef.current.autoDesigner && !autoRunAbortedRef.current) {
         completeAutoRunStage('designer', 'developer')
         setApprovingDesign(true)
@@ -1985,6 +2239,28 @@ export default function ProjectDetail() {
     setSubmittingDesign(false)
   }
 
+  async function regenerateMoodboard() {
+    if (!designOutput) return
+    setIsRegeneratingMoodboard(true)
+    try {
+      const { text: moodboardRaw } = await streamAnthropicCall({
+        messages:     [{ role: 'user', content: designOutput.output_text }],
+        systemPrompt: 'You are a UI/UX designer creating a moodboard brief for a web design project. Based on the design brief provided output ONLY a valid JSON object with no explanation and no markdown code blocks. The JSON must have these keys: palette which is an array of 6 colour objects each with a hex string and a label string describing the colour role for example Primary Background or Accent CTA, typography which is an object with two keys heading containing font name and sample text and body containing font name and sample text, textures which is an array of 3 strings describing visual texture or pattern directions for example Subtle grain overlay on hero or Clean flat surfaces with sharp edges, mood_words which is an array of 8 single words capturing the visual mood for example Sophisticated, Minimal, Bold, imagery_direction which is a string of 2 to 3 sentences describing the photography and imagery style, ui_style which is a string describing the overall UI component style for example Rounded cards with soft shadows and generous whitespace.',
+        model:        'claude-sonnet-4-20250514',
+        maxTokens:    8000,
+      })
+      const stripped = moodboardRaw.trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim()
+      JSON.parse(stripped) // validate
+      await safeUpdate('agent_outputs', designOutput.id, { output_moodboard: stripped })
+      await load()
+      console.log('[Designer] moodboard regenerated — length:', stripped.length)
+    } catch (err) {
+      console.error('[Designer] moodboard regeneration failed:', err.message)
+    } finally {
+      setIsRegeneratingMoodboard(false)
+    }
+  }
+
   async function goBackToResearch() {
     if (!await confirm({ title: 'Go Back to Research', message: 'Going back to Research will delete the Designer, Developer and Reviewer outputs for this project. This cannot be undone.', confirmLabel: 'Delete and Go Back', variant: 'danger' })) return
     setGoingBack(true)
@@ -2009,6 +2285,10 @@ export default function ProjectDetail() {
     setIsDeveloping(true)
     setDevMode(null)
     setDevFeedbackText('')
+    setApprovedPages(new Set())
+    setPageSelectModal(null)
+    setPageSelectChoice('')
+    setSkipToReview(false)
 
     const { isReplication: devRepl, replicationUrl: devReplUrl } = await fetchReplicationConfig()
     const devReplSnippet = devRepl ? replicationAddition('developer', devReplUrl) : ''
@@ -2082,48 +2362,35 @@ export default function ProjectDetail() {
       const jsCtx  = `${summaryContext}\n\n---\n\nCSS stylesheet (styles.css) already written:\n\n${cssText}`
       const jsText = await runDevStep(`Step 3 of ${totalSteps}: JavaScript`, DEVELOPER_JS_SYSTEM + devReplSnippet, jsCtx, 'Developer-JS', { transform: stripCodeFences })
 
-      // Steps 4+: one HTML file per page
-      console.log(`[Developer] HTML generation — ${effectivePages.length} page(s) to generate:`, effectivePages.map(p => p.filename).join(', '))
-      const pagesFailed = []
-      for (let i = 0; i < effectivePages.length; i++) {
-        const page = effectivePages[i]
-        const stepNum = 4 + i
-        const htmlAgentName = `Developer-HTML-${page.filename}`
-        console.log(`[Developer] Generating HTML for page ${i + 1} of ${effectivePages.length}: ${page.filename} (${page.name})`)
-        setPageStatuses(prev => ({ ...prev, [page.filename]: 'generating' }))
-        pipeline.setStep(htmlAgentName, `Step ${stepNum} of ${totalSteps}: HTML – ${page.name}`, Math.round((3 + i) / totalSteps * 100))
-        // Fetch wireframe for this specific page
-        const { data: wireRec } = await supabase
-          .from('agent_outputs')
-          .select('output_wireframe')
-          .eq('project_id', projectId)
-          .eq('agent_name', `Designer-Wireframe-${page.filename}`)
-          .maybeSingle()
-        const wireCtx = wireRec?.output_wireframe
-          ? `\n\n---\n\nWireframe context: A wireframe SVG exists for the ${page.name} page (${page.filename}). Follow its layout structure.`
-          : ''
-        console.log(`[Developer] Wireframe for ${page.filename}: ${wireRec?.output_wireframe ? 'found' : 'not found'}`)
-        const htmlCtx = `${summaryContext}\n\n---\n\nCSS stylesheet (styles.css) already written:\n\n${cssText}\n\n---\n\nJavaScript (script.js) already written:\n\n${jsText}${wireCtx}`
-        try {
-          await runDevStep(
-            `Step ${stepNum} of ${totalSteps}: HTML for ${page.name} (${page.filename})`,
-            devHtmlPageSystem(page.name) + devReplSnippet,
-            htmlCtx,
-            htmlAgentName,
-            { transform: stripCodeFences }
-          )
-          console.log(`[Developer] ✓ Saved Developer-HTML-${page.filename} successfully (page ${i + 1} of ${effectivePages.length})`)
-          setPageStatuses(prev => ({ ...prev, [page.filename]: 'complete' }))
-        } catch (pageErr) {
-          console.error(`[Developer] ✗ HTML generation FAILED for ${page.filename} (page ${i + 1} of ${effectivePages.length}):`, pageErr.message)
-          pagesFailed.push(page.filename)
-          setPageStatuses(prev => ({ ...prev, [page.filename]: 'failed' }))
-        }
-      }
-      if (pagesFailed.length) {
-        console.warn(`[Developer] HTML generation complete with ${pagesFailed.length} failure(s):`, pagesFailed.join(', '))
-      } else {
-        console.log('[Developer] All HTML pages generated successfully')
+      // Step 4: Generate index.html only — remaining pages generated after per-page approval
+      const indexPage = effectivePages.find(p => p.filename === 'index.html') ?? effectivePages[0]
+      console.log(`[Developer] HTML generation — starting with: ${indexPage.filename} (${indexPage.name}). ${effectivePages.length > 1 ? `${effectivePages.length - 1} further page(s) pending per-page approval.` : 'Single-page project.'}`)
+      setPageStatuses(prev => ({ ...prev, [indexPage.filename]: 'generating' }))
+      pipeline.setStep(`Developer-HTML-${indexPage.filename}`, `Step 4 of ${totalSteps}: HTML – ${indexPage.name}`, Math.round(3 / totalSteps * 100))
+      const { data: indexWireRec } = await supabase
+        .from('agent_outputs')
+        .select('output_wireframe')
+        .eq('project_id', projectId)
+        .eq('agent_name', `Designer-Wireframe-${indexPage.filename}`)
+        .maybeSingle()
+      const indexWireCtx = indexWireRec?.output_wireframe
+        ? `\n\n---\n\nWireframe context: A wireframe SVG exists for the ${indexPage.name} page (${indexPage.filename}). Follow its layout structure.`
+        : ''
+      console.log(`[Developer] Wireframe for ${indexPage.filename}: ${indexWireRec?.output_wireframe ? 'found' : 'not found'}`)
+      const indexHtmlCtx = `${summaryContext}\n\n---\n\nCSS stylesheet (styles.css) already written:\n\n${cssText}\n\n---\n\nJavaScript (script.js) already written:\n\n${jsText}${indexWireCtx}`
+      try {
+        await runDevStep(
+          `Step 4 of ${totalSteps}: HTML for ${indexPage.name} (${indexPage.filename})`,
+          devHtmlPageSystem(indexPage.name) + devReplSnippet,
+          indexHtmlCtx,
+          `Developer-HTML-${indexPage.filename}`,
+          { transform: stripCodeFences }
+        )
+        console.log(`[Developer] ✓ Saved Developer-HTML-${indexPage.filename} successfully`)
+        setPageStatuses(prev => ({ ...prev, [indexPage.filename]: 'complete' }))
+      } catch (pageErr) {
+        console.error(`[Developer] ✗ HTML generation FAILED for ${indexPage.filename}:`, pageErr.message)
+        setPageStatuses(prev => ({ ...prev, [indexPage.filename]: 'failed' }))
       }
 
       await checkDevIntegrity(cssText, jsText)
@@ -2198,6 +2465,90 @@ export default function ProjectDetail() {
     } finally {
       setIsDeveloping(false)
     }
+  }
+
+  // Generate a single HTML page — called after per-page approval to build the next page
+  async function runSingleHtmlPage(page) {
+    setIsDeveloping(true)
+    setPageStatuses(prev => ({ ...prev, [page.filename]: 'generating' }))
+    const { data: freshData } = await supabase
+      .from('agent_outputs')
+      .select('agent_name, output_text, developer_summary')
+      .eq('project_id', projectId)
+    const css        = freshData?.find(o => o.agent_name === 'Developer-CSS')?.output_text ?? ''
+    const js         = freshData?.find(o => o.agent_name === 'Developer-JS')?.output_text  ?? ''
+    const allPages   = project?.pages ?? []
+    const allPagesCtx = allPages.length ? `\n\nAll pages in this site: ${allPages.map(p => `${p.name} → ${p.filename}`).join(', ')}.` : ''
+    const devSumRec  = freshData?.find(o => o.agent_name === 'Developer-Summary')
+    const baseCtx    = devSumRec?.developer_summary
+      ? `Developer Summary:\n\n${devSumRec.developer_summary}${allPagesCtx}`
+      : `Pages in this site:${allPagesCtx}`
+    const { data: wireRec } = await supabase
+      .from('agent_outputs').select('output_wireframe')
+      .eq('project_id', projectId).eq('agent_name', `Designer-Wireframe-${page.filename}`).maybeSingle()
+    const wireCtx = wireRec?.output_wireframe
+      ? `\n\n---\n\nWireframe context: A wireframe SVG exists for the ${page.name} page (${page.filename}). Follow its layout structure.`
+      : ''
+    console.log(`[Developer] Wireframe for ${page.filename}: ${wireRec?.output_wireframe ? 'found' : 'not found'}`)
+    const htmlCtx = `${baseCtx}\n\n---\n\nCSS stylesheet (styles.css) already written:\n\n${css}\n\n---\n\nJavaScript (script.js) already written:\n\n${js}${wireCtx}`
+    console.log(`[Developer] Generating HTML for ${page.filename} (${page.name}) via per-page approval flow`)
+    try {
+      await runDevStep(
+        `HTML for ${page.name} (${page.filename})`,
+        devHtmlPageSystem(page.name),
+        htmlCtx,
+        `Developer-HTML-${page.filename}`,
+        { transform: stripCodeFences }
+      )
+      console.log(`[Developer] ✓ Saved Developer-HTML-${page.filename} successfully`)
+      setPageStatuses(prev => ({ ...prev, [page.filename]: 'complete' }))
+    } catch (err) {
+      console.error(`[Developer] ✗ HTML generation FAILED for ${page.filename}:`, err.message)
+      setPageStatuses(prev => ({ ...prev, [page.filename]: 'failed' }))
+    } finally {
+      setIsDeveloping(false)
+    }
+  }
+
+  // Mark a page as approved and show the page-selection modal for the next page (if any)
+  async function handleApprovePageStep(filename) {
+    const newApproved = new Set(approvedPages)
+    newApproved.add(filename)
+    setApprovedPages(newApproved)
+
+    const allPages = project?.pages ?? []
+    if (allPages.length <= 1) return // single-page site — overall Approve button will appear
+
+    // Find remaining unbuilt pages
+    const { data: existingOutputs } = await supabase
+      .from('agent_outputs').select('agent_name').eq('project_id', projectId)
+    const generatedSet = new Set(
+      (existingOutputs ?? [])
+        .filter(o => o.agent_name.startsWith('Developer-HTML-'))
+        .map(o => o.agent_name.replace('Developer-HTML-', ''))
+    )
+    const remainingPages = allPages.filter(p => !generatedSet.has(p.filename))
+    if (remainingPages.length === 0) return // all pages built — overall Approve button becomes visible
+
+    // Pre-select the first remaining page and open the modal
+    setPageSelectChoice(remainingPages[0].filename)
+    setPageSelectModal({ approvedFilename: filename, remainingPages })
+  }
+
+  // Called when user confirms a page selection in the modal
+  async function handleBuildSelectedPage() {
+    const allPages = project?.pages ?? []
+    const page = allPages.find(p => p.filename === pageSelectChoice)
+    setPageSelectModal(null)
+    setPageSelectChoice('')
+    if (page) await runSingleHtmlPage(page)
+  }
+
+  // Called when user clicks "Skip remaining pages and go to Review"
+  function handleSkipToReview() {
+    setSkipToReview(true)
+    setPageSelectModal(null)
+    setPageSelectChoice('')
   }
 
   async function patchMissingCssClasses(missingClasses) {
@@ -2654,8 +3005,11 @@ export default function ProjectDetail() {
     const rec = devHtmlOutputs.find(o => o.agent_name === `Developer-HTML-${filename}`)
     return rec?.output_text?.trim() ? 'complete' : 'pending'
   }
-  const allPagesSettled = projectPages.length > 0 && !isDeveloping &&
+  const allPagesSettled  = projectPages.length > 0 && !isDeveloping &&
     projectPages.every(p => { const s = getPageStatus(p.filename); return s === 'complete' || s === 'failed' })
+  const allPagesApproved = projectPages.length === 0
+    ? true
+    : skipToReview || projectPages.every(p => approvedPages.has(p.filename))
   const failedPagesCount = projectPages.filter(p => getPageStatus(p.filename) === 'failed').length
 
   // Missing classList.add() classes — computed from live CSS + JS outputs
@@ -3131,15 +3485,9 @@ export default function ProjectDetail() {
             </div>
           </div>
           {orchestratorOpen && (
-            <ScrollBox
-              storageKey="orchestrator"
-              isStreaming={orchIsStreaming}
-              contentLength={orchIsStreaming ? orchLiveText.length : (orchestratorOutput?.output_text?.length ?? 0)}
-              maxHeight="500px"
-              className="bg-zinc-950 border border-zinc-800 rounded-b-lg"
-            >
+            <div className="bg-zinc-950 border border-zinc-800 rounded-b-lg">
               {orchIsStreaming ? (
-                <>
+                <ScrollBox storageKey="orchestrator" isStreaming={true} contentLength={orchLiveText.length} maxHeight="500px" className="">
                   <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-zinc-800 bg-violet-500/5">
                     <span className="relative flex h-2 w-2">
                       <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-violet-400 opacity-75" />
@@ -3152,13 +3500,74 @@ export default function ProjectDetail() {
                       {orchLiveText || <span className="text-zinc-600 animate-pulse">Breaking down the brief into agent task lists…</span>}
                     </pre>
                   </div>
-                </>
-              ) : (
-                <div className="p-5">
-                  {renderMarkdown(orchestratorOutput?.output_text)}
-                </div>
-              )}
-            </ScrollBox>
+                </ScrollBox>
+              ) : (() => {
+                const orchText = orchestratorOutput?.output_text ?? ''
+                const sections = parseResponse(orchText)
+                const hasSections = sections?.some(s => s.content.trim().length > 0)
+                console.log('[Orchestrator] parseResponse result:', sections?.map(s => ({ name: s.name, contentLength: s.content.length })) ?? 'null — no headings matched')
+                if (hasSections) {
+                  return (
+                    <div className="p-5 space-y-4">
+                      <p className="text-xs font-medium text-zinc-500 uppercase tracking-wide">Agent task breakdown</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {sections.map(({ name, content }) => {
+                          const agentKey = name.toLowerCase()
+                          const agent    = AGENT_CONFIG[agentKey]
+                          const c        = agent ? COLOR_CLASSES[agent.color] : null
+                          return (
+                            <div key={name} className={`rounded-md bg-zinc-900 border p-4 space-y-3 ${c ? `border-zinc-800` : 'border-zinc-800'}`}>
+                              <div className="flex items-center gap-2">
+                                {c && (
+                                  <div className={`w-5 h-5 rounded flex items-center justify-center border ${c.badge}`}>
+                                    <AgentIcon agentKey={agentKey} className={`w-3 h-3 ${c.icon}`} />
+                                  </div>
+                                )}
+                                <span className={`text-xs font-semibold ${c ? c.heading : 'text-zinc-300'}`}>{name}</span>
+                              </div>
+                              {content ? (
+                                <div className="text-xs text-zinc-400 leading-relaxed space-y-1">
+                                  {content.split('\n').filter(l => l.trim()).map((line, i) => {
+                                    const isBullet = /^[-*•]\s/.test(line.trim())
+                                    const isNum    = /^\d+[\.\)]\s/.test(line.trim())
+                                    const isHeading = /^#{1,3}\s/.test(line.trim())
+                                    const clean    = line.trim()
+                                      .replace(/^[-*•]\s*/, '')
+                                      .replace(/^\d+[\.\)]\s*/, '')
+                                      .replace(/^#{1,3}\s*/, '')
+                                      .replace(/\*\*([^*]+)\*\*/g, '$1')
+                                    if (isHeading) return (
+                                      <p key={i} className="text-xs font-semibold text-zinc-300 pt-1">{clean}</p>
+                                    )
+                                    if (isBullet || isNum) return (
+                                      <div key={i} className="flex items-start gap-1.5">
+                                        <span className={`w-1 h-1 rounded-full mt-1.5 flex-shrink-0 ${c ? c.dot : 'bg-zinc-600'}`} />
+                                        <span>{clean}</span>
+                                      </div>
+                                    )
+                                    return <p key={i} className="text-zinc-500">{clean}</p>
+                                  })}
+                                </div>
+                              ) : (
+                                <p className="text-xs text-zinc-600 italic">No tasks listed</p>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                }
+                // Fallback — formatting didn't match; show full response
+                return (
+                  <ScrollBox storageKey="orchestrator" isStreaming={false} contentLength={orchText.length} maxHeight="500px" className="">
+                    <div className="p-5">
+                      {orchText ? renderMarkdown(orchText) : <p className="text-xs text-zinc-600 italic">No Orchestrator output yet</p>}
+                    </div>
+                  </ScrollBox>
+                )
+              })()}
+            </div>
           )}
         </div>
       )}
@@ -3652,6 +4061,164 @@ export default function ProjectDetail() {
         </div>
       )}
 
+      {/* ── Moodboard ── */}
+      {showDesignSection && designOutput && !designIsStreaming && (() => {
+        let mb = null
+        try { mb = designOutput.output_moodboard ? JSON.parse(designOutput.output_moodboard) : null } catch { mb = null }
+        return (
+          <div className="rounded-lg overflow-hidden">
+            {/* Header */}
+            <div
+              onClick={() => setMoodboardOpen(o => !o)}
+              className={`flex items-center justify-between px-5 py-3 bg-zinc-900 border border-zinc-800 cursor-pointer hover:bg-zinc-800 transition-colors select-none ${moodboardOpen ? 'rounded-t-lg border-b-0' : 'rounded-lg'}`}
+            >
+              <div className="flex items-center gap-2.5">
+                <PaletteIcon className="w-4 h-4 text-violet-400 flex-shrink-0" />
+                <span className="text-sm font-medium text-zinc-300">Moodboard</span>
+                {mb && <span className="text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-full">Ready</span>}
+                {!mb && !isRegeneratingMoodboard && <span className="text-xs text-zinc-600 italic">Not generated yet</span>}
+                {isRegeneratingMoodboard && (
+                  <span className="flex items-center gap-1.5 text-xs text-violet-400">
+                    <SpinnerIcon className="w-3 h-3 animate-spin" />
+                    Regenerating…
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                {mb && (
+                  <button
+                    onClick={() => downloadMoodboardPdf({
+                      projectName: project.name,
+                      clientName:  project.clients?.name ?? '—',
+                      date:        new Date(designOutput.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
+                      moodboard:   mb,
+                      filename:    `Forge-Agency-Moodboard-${project.name.replace(/\s+/g, '-')}.pdf`,
+                    })}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium text-zinc-400 bg-zinc-800 hover:bg-zinc-700 hover:text-white transition-colors"
+                  >
+                    Download PDF
+                  </button>
+                )}
+                <button
+                  onClick={() => regenerateMoodboard()}
+                  disabled={isRegeneratingMoodboard || isAgentRunning}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium text-zinc-400 bg-zinc-800 hover:bg-zinc-700 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <RefreshIcon className="w-3 h-3" />
+                  {isRegeneratingMoodboard ? 'Regenerating…' : 'Regenerate'}
+                </button>
+                <ChevronLeftIcon
+                  className="w-4 h-4 text-zinc-500"
+                  style={{ transform: moodboardOpen ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}
+                />
+              </div>
+            </div>
+
+            {/* Body */}
+            {moodboardOpen && (
+              <div className="bg-zinc-950 border border-zinc-800 rounded-b-lg p-5 space-y-6">
+                {!mb ? (
+                  <div className="flex items-center justify-center py-10">
+                    <p className="text-xs text-zinc-600 italic">No moodboard data — click Regenerate to generate one</p>
+                  </div>
+                ) : (
+                  <>
+                    {/* Colour Palette */}
+                    <div className="space-y-2">
+                      <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Colour Palette</p>
+                      <div className="flex flex-wrap gap-3">
+                        {(mb.palette ?? []).map((swatch, i) => (
+                          <div key={i} className="flex flex-col items-center gap-1">
+                            <div
+                              className="rounded-md border border-white/10 shadow-sm"
+                              style={{ width: 80, height: 80, backgroundColor: swatch.hex }}
+                            />
+                            <span className="text-xs font-mono text-zinc-400">{swatch.hex}</span>
+                            <span className="text-xs text-zinc-500 text-center max-w-[80px] leading-tight">{swatch.label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Typography */}
+                    {mb.typography && (
+                      <div className="space-y-2">
+                        <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Typography</p>
+                        <div className="grid grid-cols-2 gap-3">
+                          {[
+                            { key: 'heading', label: 'Heading Font', sizeStyle: { fontSize: 28, fontWeight: 700 } },
+                            { key: 'body',    label: 'Body Font',    sizeStyle: { fontSize: 14, fontWeight: 400 } },
+                          ].map(({ key, label, sizeStyle }) => {
+                            const entry = mb.typography[key]
+                            if (!entry) return null
+                            return (
+                              <div key={key} className="rounded-lg bg-zinc-900 border border-zinc-800 p-4 space-y-2">
+                                <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">{label}</div>
+                                <div className="text-xs text-violet-400 font-medium">{entry.font}</div>
+                                <div
+                                  style={{ fontFamily: `'${entry.font}', sans-serif`, ...sizeStyle, lineHeight: 1.3, color: '#e4e4e7', wordBreak: 'break-word' }}
+                                >
+                                  {entry.sample}
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Mood Words */}
+                    {mb.mood_words?.length > 0 && (
+                      <div className="space-y-2">
+                        <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Mood Words</p>
+                        <div className="flex flex-wrap gap-2">
+                          {mb.mood_words.map((word, i) => (
+                            <span key={i} className="px-3 py-1 rounded-full text-sm font-medium border border-violet-500/30 bg-violet-500/10 text-violet-300">
+                              {word}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Textures + Imagery */}
+                    <div className="space-y-2">
+                      <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Textures &amp; Surfaces</p>
+                      <div className="space-y-2">
+                        {(mb.textures ?? []).map((tex, i) => (
+                          <div key={i} className="flex items-start gap-3 pl-3 border-l-2 border-violet-500/40">
+                            <span className="text-sm text-zinc-300 leading-relaxed">{tex}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {mb.imagery_direction && (
+                      <div className="space-y-2">
+                        <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Imagery Direction</p>
+                        <div className="pl-3 border-l-2 border-violet-500/40">
+                          <p className="text-sm text-zinc-300 leading-relaxed">{mb.imagery_direction}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* UI Style */}
+                    {mb.ui_style && (
+                      <div className="space-y-2">
+                        <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">UI Component Style</p>
+                        <blockquote className="pl-4 border-l-2 border-violet-500/40">
+                          <p className="text-sm text-zinc-400 italic leading-relaxed">"{mb.ui_style}"</p>
+                        </blockquote>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        )
+      })()}
+
       {/* ── Developer Output ── */}
       {showDevSection && (
         <div className={`space-y-0 rounded-lg transition-shadow duration-300 ${flashedStages.has('developer') ? 'ring-2 ring-emerald-500/60 shadow-[0_0_20px_rgba(16,185,129,0.15)]' : ''} ${failedAutoRunStage === 'developer' ? 'ring-2 ring-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.12)]' : ''}`}>
@@ -3708,6 +4275,67 @@ export default function ProjectDetail() {
                   <span className="font-medium">Auto approved</span>
                   <span className="text-amber-500/70">—</span>
                   <span>review this output at any time and request changes if needed</span>
+                </div>
+              )}
+
+              {/* ── Pages Progress indicator ── */}
+              {projectPages.length > 0 && (devOutput || isDeveloping) && (
+                <div className="px-5 py-4 border-b border-zinc-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wide">Pages Progress</span>
+                    <span className="text-xs text-zinc-500">
+                      {approvedPages.size} of {projectPages.length} approved
+                    </span>
+                  </div>
+                  {/* Progress bar */}
+                  <div className="h-1.5 w-full rounded-full bg-zinc-800 overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-emerald-500 transition-all duration-500"
+                      style={{ width: `${projectPages.length > 0 ? (approvedPages.size / projectPages.length) * 100 : 0}%` }}
+                    />
+                  </div>
+                  {/* Per-page status list */}
+                  <div className="space-y-1.5">
+                    {projectPages.map(pg => {
+                      const pgStatus = getPageStatus(pg.filename)
+                      const isApproved  = approvedPages.has(pg.filename)
+                      const isBuilding  = pgStatus === 'generating' || devLiveStep === `Developer-HTML-${pg.filename}`
+                      const isComplete  = pgStatus === 'complete'
+                      const isFailed    = pgStatus === 'failed'
+
+                      let icon, label, labelCls
+                      if (isApproved) {
+                        icon     = <CheckIcon className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                        label    = 'Approved'
+                        labelCls = 'text-emerald-400'
+                      } else if (isBuilding) {
+                        icon     = <SpinnerIcon className="w-3.5 h-3.5 text-blue-400 animate-spin flex-shrink-0" />
+                        label    = 'Building…'
+                        labelCls = 'text-blue-400'
+                      } else if (isComplete) {
+                        icon     = <span className="w-3.5 h-3.5 rounded-full border-2 border-amber-400 flex-shrink-0 inline-block" />
+                        label    = 'Awaiting approval'
+                        labelCls = 'text-amber-400'
+                      } else if (isFailed) {
+                        icon     = <span className="w-3.5 h-3.5 rounded-full bg-red-500 flex-shrink-0 inline-block" />
+                        label    = 'Failed'
+                        labelCls = 'text-red-400'
+                      } else {
+                        icon     = <span className="w-3.5 h-3.5 rounded-full border border-zinc-600 flex-shrink-0 inline-block" />
+                        label    = 'Not started'
+                        labelCls = 'text-zinc-600'
+                      }
+
+                      return (
+                        <div key={pg.filename} className="flex items-center gap-2.5">
+                          {icon}
+                          <span className="text-xs text-zinc-300 min-w-0 truncate">{pg.name}</span>
+                          <span className="text-xs text-zinc-600 truncate">{pg.filename}</span>
+                          <span className={`text-xs ml-auto flex-shrink-0 ${labelCls}`}>{label}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
               )}
 
@@ -3891,6 +4519,8 @@ export default function ProjectDetail() {
                           renderContent={() => <pre className="whitespace-pre-wrap text-xs text-zinc-300 leading-relaxed font-mono">{htmlRec.output_text}</pre>}
                           copyText={htmlRec.output_text ?? ''}
                           fileDownload={pg.filename}
+                          onApprove={!isAgentRunning ? () => handleApprovePageStep(pg.filename) : undefined}
+                          approved={approvedPages.has(pg.filename)}
                           extraButton={
                             htmlRec.output_text && (
                               <button
@@ -4027,8 +4657,16 @@ export default function ProjectDetail() {
           )}
 
           {/* Action buttons */}
-          {devOutput && devOutput.status !== 'approved' && !devMode && (allPagesSettled || projectPages.length === 0) && !isDeveloping && (
+          {devOutput && devOutput.status !== 'approved' && !devMode && (allPagesSettled || projectPages.length === 0 || skipToReview) && !isDeveloping && allPagesApproved && (
             <div className="flex items-center gap-3 flex-wrap pt-3">
+              {skipToReview && (() => {
+                const unbuiltCount = projectPages.filter(p => getPageStatus(p.filename) === 'pending').length
+                return unbuiltCount > 0 ? (
+                  <p className="w-full text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-md px-3 py-2">
+                    ⚠ {unbuiltCount} page{unbuiltCount !== 1 ? 's were' : ' was'} not built — the Reviewer will note any missing pages.
+                  </p>
+                ) : null
+              })()}
               {failedPagesCount > 0 && (
                 <p className="w-full text-xs text-amber-400">
                   ⚠ {failedPagesCount} page{failedPagesCount !== 1 ? 's' : ''} failed to generate. You can retry failed pages above or proceed to review.
@@ -4355,7 +4993,14 @@ export default function ProjectDetail() {
         ) : (
           <div className="space-y-4">
             {briefs.map((brief, i) => (
-              <BriefCard key={brief.id} brief={brief} index={briefs.length - i} />
+              <BriefCard
+                key={brief.id}
+                brief={brief}
+                index={briefs.length - i}
+                orchestratorOutput={orchestratorOutput}
+                isSendingOrchestrator={isSendingOrchestrator}
+                onSendToOrchestrator={sendToOrchestrator}
+              />
             ))}
             <div className="flex items-center gap-3 pt-1">
               {isNotStarted && (
@@ -4428,6 +5073,72 @@ export default function ProjectDetail() {
       </div>
 
     </div>
+
+    {/* ── Page selection modal ── */}
+    {pageSelectModal && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/60" onClick={() => setPageSelectModal(null)} />
+        <div className="relative z-10 w-full max-w-md rounded-xl bg-zinc-900 border border-zinc-700 shadow-2xl overflow-hidden">
+          <div className="h-1 w-full bg-gradient-to-r from-emerald-500 to-violet-500" />
+          <div className="px-6 py-5 space-y-4">
+            <div className="space-y-1">
+              <h2 className="text-base font-semibold text-white">Build next page</h2>
+              <p className="text-sm text-zinc-400">
+                <span className="text-zinc-200 font-medium">{pageSelectModal.approvedFilename}</span> has been approved. Which page would you like to build next?
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              {pageSelectModal.remainingPages.map(pg => (
+                <label
+                  key={pg.filename}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-colors ${
+                    pageSelectChoice === pg.filename
+                      ? 'border-violet-500/60 bg-violet-500/10'
+                      : 'border-zinc-700 bg-zinc-800/50 hover:border-zinc-600'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="nextPage"
+                    value={pg.filename}
+                    checked={pageSelectChoice === pg.filename}
+                    onChange={() => setPageSelectChoice(pg.filename)}
+                    className="accent-violet-500 flex-shrink-0"
+                  />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-zinc-200">{pg.name}</p>
+                    <p className="text-xs text-zinc-500">{pg.filename}</p>
+                  </div>
+                </label>
+              ))}
+            </div>
+
+            <div className="flex flex-col gap-2 pt-1">
+              <button
+                onClick={handleBuildSelectedPage}
+                disabled={!pageSelectChoice}
+                className="w-full py-2.5 rounded-md bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Build Page
+              </button>
+              <button
+                onClick={handleSkipToReview}
+                className="w-full py-2 rounded-md text-sm text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
+              >
+                Skip remaining pages and go to Review
+              </button>
+              <button
+                onClick={() => setPageSelectModal(null)}
+                className="w-full py-2 rounded-md text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
 
     {/* ── Delivery congratulations modal ── */}
     {deliveryModalOpen && (
@@ -4668,9 +5379,11 @@ export default function ProjectDetail() {
 }
 
 // ── Brief card ────────────────────────────────────────────────────────────────
-function BriefCard({ brief, index }) {
+function BriefCard({ brief, index, orchestratorOutput, isSendingOrchestrator, onSendToOrchestrator }) {
   const [open, setOpen] = useState(true)
-  const sections = parseResponse(brief.orchestrator_response)
+  // Use brief.orchestrator_response (quick panel) OR agent_outputs Orchestrator record (structured brief)
+  const orchText = brief.orchestrator_response || orchestratorOutput?.output_text || null
+  const sections = parseResponse(orchText)
   const submittedAt = new Date(brief.submitted_at).toLocaleDateString('en-GB', {
     day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
   })
@@ -4684,7 +5397,7 @@ function BriefCard({ brief, index }) {
             <span className="text-zinc-700">·</span>
             <time className="text-xs text-zinc-500">{submittedAt}</time>
           </div>
-          {brief.orchestrator_response && (
+          {orchText && (
             <button
               onClick={() => setOpen(o => !o)}
               className="flex items-center gap-1 text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
@@ -4696,7 +5409,7 @@ function BriefCard({ brief, index }) {
         </div>
         <p className="mt-3 text-sm text-zinc-300 leading-relaxed">{brief.brief_text}</p>
       </div>
-      {brief.orchestrator_response && open && (
+      {orchText && open && (
         <div className="p-5 space-y-4">
           <p className="text-xs font-medium text-zinc-500 uppercase tracking-wide">Agent breakdown</p>
           {sections ? (
@@ -4735,18 +5448,35 @@ function BriefCard({ brief, index }) {
               })}
             </div>
           ) : (
-            <p className="text-sm text-zinc-400 leading-relaxed whitespace-pre-wrap">{brief.orchestrator_response}</p>
+            <p className="text-sm text-zinc-400 leading-relaxed whitespace-pre-wrap">{orchText}</p>
           )}
         </div>
       )}
-      {brief.orchestrator_response && !open && (
+      {orchText && !open && (
         <div className="px-5 py-3 border-t border-zinc-800">
           <p className="text-xs text-zinc-600">Orchestrator response hidden — click expand to view</p>
         </div>
       )}
-      {!brief.orchestrator_response && (
-        <div className="px-5 py-3 border-t border-zinc-800">
-          <p className="text-xs text-zinc-600 italic">Orchestrator response not available for this brief</p>
+      {!orchText && (
+        <div className="px-5 py-3 border-t border-zinc-800 flex items-center justify-between gap-3">
+          {isSendingOrchestrator ? (
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
+              <p className="text-xs text-violet-400">Orchestrator is analysing your brief…</p>
+            </div>
+          ) : (
+            <>
+              <p className="text-xs text-zinc-600 italic">No Orchestrator breakdown yet</p>
+              {onSendToOrchestrator && (
+                <button
+                  onClick={onSendToOrchestrator}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-violet-600/20 text-violet-400 border border-violet-600/30 hover:bg-violet-600/30 transition-colors"
+                >
+                  Send to Orchestrator
+                </button>
+              )}
+            </>
+          )}
         </div>
       )}
     </div>
@@ -4862,4 +5592,7 @@ function WireframeIcon({ className }) {
 }
 function ScrollOffIcon({ className }) {
   return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7M5 5l14 14" /></svg>
+}
+function PaletteIcon({ className }) {
+  return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M12 2C6.477 2 2 6.477 2 12c0 5.524 4.477 10 10 10a2 2 0 0 0 2-2v-.5a1.5 1.5 0 0 1 1.5-1.5H17a3 3 0 0 0 3-3c0-4.97-3.582-9-8-9z" /><circle cx="8.5" cy="13.5" r="1.5" fill="currentColor" stroke="none" /><circle cx="7.5" cy="9.5" r="1.5" fill="currentColor" stroke="none" /><circle cx="12" cy="7.5" r="1.5" fill="currentColor" stroke="none" /><circle cx="16.5" cy="9.5" r="1.5" fill="currentColor" stroke="none" /></svg>
 }

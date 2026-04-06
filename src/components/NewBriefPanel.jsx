@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { safeUpdate } from '../lib/supabaseHelpers'
 import { ORCHESTRATOR_SYSTEM } from '../lib/anthropic'
 import { streamAnthropicCall } from '../lib/streamHelper'
+import { useUI } from '../context/UIContext'
 
 const PAGE_EXTRACTOR_SYSTEM = `Output ONLY a valid JSON array of page objects. Every page must have a unique filename. Never include the same page twice. The homepage must appear exactly once with filename index.html. For filenames use only lowercase letters, numbers and hyphens — no special characters, no ampersands, no spaces. For page names use plain readable English with no special characters — replace ampersands with the word and. Each object must have two keys: name which is the page name for example Home, About, Services, Contact, and filename which is the HTML filename for example index.html, about.html, services.html, contact.html. Output only the raw JSON array with no explanation and no markdown code blocks.`
 
@@ -30,6 +31,8 @@ export default function NewBriefPanel({ open, onClose }) {
   const [phase, setPhase]                       = useState('form')
   const [result, setResult]                     = useState('')
   const [error, setError]                       = useState(null)
+  const [fieldErrors, setFieldErrors]           = useState({ client: false, project: false })
+  const { setNewProjectOpen } = useUI()
   const briefRef                                = useRef(null)
   const resultRef                               = useRef(null)
 
@@ -88,11 +91,18 @@ export default function NewBriefPanel({ open, onClose }) {
 
   function set(field, value) {
     setForm(f => ({ ...f, [field]: value }))
+    if (field === 'clientId') setFieldErrors(prev => ({ ...prev, client: false }))
+    if (field === 'projectId') setFieldErrors(prev => ({ ...prev, project: false }))
   }
 
   async function handleSubmit(e) {
     e.preventDefault()
-    if (!form.briefText.trim() || !form.clientId) return
+    const errs = { client: !form.clientId, project: !form.projectId }
+    if (errs.client || errs.project) {
+      setFieldErrors(errs)
+      return
+    }
+    if (!form.briefText.trim()) return
 
     setPhase('submitting')
     setError(null)
@@ -187,13 +197,14 @@ export default function NewBriefPanel({ open, onClose }) {
     setPhase('form')
     setResult('')
     setError(null)
+    setFieldErrors({ client: false, project: false })
   }
 
   const isStreaming  = phase === 'streaming'
   const isSubmitting = phase === 'submitting'
   const isBusy       = isStreaming || isSubmitting
   const showResults  = phase === 'streaming' || phase === 'done' || phase === 'error'
-  const canSubmit    = form.briefText.trim() && form.clientId
+  const canSubmit    = form.briefText.trim()
 
   const selectedClient = clients.find(c => c.id === form.clientId)
 
@@ -234,12 +245,12 @@ export default function NewBriefPanel({ open, onClose }) {
         <div className="flex-1 overflow-y-auto">
           {/* Form */}
           <div className={`px-6 py-6 space-y-5 ${showResults ? 'border-b border-zinc-800' : ''}`}>
-            <Field label="Client" required>
+            <Field label="Client" required error={fieldErrors.client ? 'This field is required' : ''}>
               <select
                 value={form.clientId || ''}
                 onChange={e => set('clientId', e.target.value)}
                 disabled={showResults}
-                className={selectCls(showResults)}
+                className={selectCls(showResults, fieldErrors.client)}
               >
                 <option value="" disabled>Select a client…</option>
                 {clients.map(c => {
@@ -254,21 +265,23 @@ export default function NewBriefPanel({ open, onClose }) {
               </select>
             </Field>
 
-            <Field label="Project">
+            <Field label="Project" required error={fieldErrors.project ? 'This field is required' : ''}>
               <select
                 value={form.projectId || ''}
                 onChange={e => set('projectId', e.target.value)}
                 disabled={!form.clientId || showResults}
-                className={selectCls(!form.clientId || showResults)}
+                className={selectCls(!form.clientId || showResults, fieldErrors.project)}
               >
-                <option value="">No project (brief only)</option>
+                <option value="" disabled>Select a project…</option>
                 {(() => {
                   const clientProjs = allProjectsByClient[form.clientId] ?? []
+                  const noProjects  = form.clientId && clientProjs.length === 0
                   const allBriefed  = form.clientId && clientProjs.length > 0 && projects.length === 0
+                  if (noProjects) return null
                   if (allBriefed) {
                     return (
                       <option value="" disabled>
-                        All projects for this client already have a brief — delete the existing brief to create a new one
+                        All projects for this client already have a brief
                       </option>
                     )
                   }
@@ -277,6 +290,18 @@ export default function NewBriefPanel({ open, onClose }) {
                   ))
                 })()}
               </select>
+              {form.clientId && (allProjectsByClient[form.clientId] ?? []).length === 0 && (
+                <p className="text-xs text-zinc-500 mt-1">
+                  This client has no projects yet —{' '}
+                  <button
+                    type="button"
+                    onClick={() => setNewProjectOpen(true)}
+                    className="text-violet-400 hover:text-violet-300 underline transition-colors"
+                  >
+                    create a project first
+                  </button>
+                </p>
+              )}
             </Field>
 
             <Field label="Brief" required>
@@ -411,13 +436,14 @@ export default function NewBriefPanel({ open, onClose }) {
   )
 }
 
-function Field({ label, required, children }) {
+function Field({ label, required, error, children }) {
   return (
     <div className="space-y-1.5">
-      <label className="block text-xs font-medium text-zinc-400">
-        {label}{required && <span className="text-violet-400 ml-0.5">*</span>}
+      <label className={`block text-xs font-medium ${error ? 'text-red-400' : 'text-zinc-400'}`}>
+        {label}{required && <span className="text-red-400 ml-0.5">*</span>}
       </label>
       {children}
+      {error && <p className="text-xs text-red-400">{error}</p>}
     </div>
   )
 }
@@ -425,8 +451,8 @@ function Field({ label, required, children }) {
 const inputCls =
   'w-full px-3 py-2 rounded-md bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-colors'
 
-function selectCls(disabled) {
-  return `${inputCls} ${disabled ? 'opacity-60 cursor-default' : ''}`
+function selectCls(disabled, error) {
+  return `${inputCls} ${disabled ? 'opacity-60 cursor-default' : ''} ${error ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`
 }
 
 function XIcon({ className }) {

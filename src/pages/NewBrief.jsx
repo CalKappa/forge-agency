@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSearchParams, useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { safeUpdate } from '../lib/supabaseHelpers'
@@ -54,7 +54,8 @@ const ANIMATION_STYLES = [
   'Minimal',
   'Custom',
 ]
-const HERO_ANIMATION_OPTIONS = ['None', 'Fade in', 'Parallax scroll', 'Particle background', 'Typewriter text', 'Video background', 'Gradient animation', 'Custom']
+const HERO_ANIMATION_OPTIONS = ['None', 'Fade in', 'Parallax scroll', 'Particle background', 'Typewriter text', 'Video background', 'Gradient animation', 'Smoke and fluid simulation', 'Mouse interaction particles', 'Constellation network', 'Firework burst on click', 'Flowing ribbons', 'Rainbow particles', 'Branded colour particles', 'Custom']
+const PARTICLE_EFFECT_OPTIONS = ['None', 'Smoke and fluid simulation', 'Mouse interaction particles', 'Constellation network', 'Firework burst on click', 'Flowing ribbons', 'Rainbow particles', 'Branded colour particles', 'Custom particle effect']
 
 const DEFAULT_PAGES_BY_TYPE = {
   'Portfolio':          [{ name: 'Home', filename: 'index.html' }, { name: 'Work', filename: 'work.html' }, { name: 'About', filename: 'about.html' }, { name: 'Contact', filename: 'contact.html' }],
@@ -81,7 +82,7 @@ const EMPTY_FORM = {
   step2: { siteType: [], primaryGoal: '', pages: [], hasExistingSite: false, existingSiteUrl: '', isReplication: false, whatToKeep: [], existingSiteDislikes: '', targetLaunchDate: '', budgetRange: '' },
   step3: { logoUrl: '', logoFileName: '', colourPreferences: '', fontPreferences: '', aesthetic: [], moodDescription: '', brandGuidelines: '' },
   step4: { copyReady: false, copyNotes: '', pagesNeedingCopy: [], imagesAvailable: false, imageUrls: [], imageDirectionNotes: '', contentRequirements: '' },
-  step5: { integrations: [], cmsRequired: false, preferredCms: '', hostingPreference: '', gdprRequired: false, otherTechnical: '', animationStyle: 'Subtle and professional', animationCustom: '', heroAnimation: [] },
+  step5: { integrations: [], cmsRequired: false, preferredCms: '', hostingPreference: '', gdprRequired: false, otherTechnical: '', animationStyle: 'Subtle and professional', animationCustom: '', heroAnimation: [], particleEffects: [], particleColourPreference: '' },
   step6: { competitor1: { url: '', likes: '', dislikes: '' }, competitor2: { url: '', likes: '', dislikes: '' }, competitor3: { url: '', likes: '', dislikes: '' }, generalNotes: '' },
 }
 
@@ -200,6 +201,11 @@ function compileBrief(form, clientName, projectName) {
     lines.push(`**Animation style:** ${animLabel}`)
   }
   if (s5.heroAnimation?.length) lines.push(`**Hero animation:** ${s5.heroAnimation.join(', ')}`)
+  const activeParticles = s5.particleEffects?.filter(p => p !== 'None') ?? []
+  if (activeParticles.length) {
+    const colourNote = s5.particleColourPreference ? ` — colour preference: ${s5.particleColourPreference}` : ''
+    lines.push(`**Particle Effects:** ${activeParticles.join(', ')}${colourNote}`)
+  }
   lines.push('')
 
   lines.push('## 6. Competitor Analysis')
@@ -702,6 +708,26 @@ function Step5({ form, setForm }) {
         <Field label="Hero animation preference" hint="Select all that apply to the main hero section.">
           <MultiToggle options={HERO_ANIMATION_OPTIONS} value={s.heroAnimation} onChange={v => set({ heroAnimation: v })} />
         </Field>
+
+        <Field label="Particle effects" hint="Select all canvas particle effects to include anywhere on the site.">
+          <MultiToggle
+            options={PARTICLE_EFFECT_OPTIONS}
+            value={s.particleEffects}
+            onChange={v => set({ particleEffects: v, ...(!v.some(p => p !== 'None') && { particleColourPreference: '' }) })}
+          />
+        </Field>
+
+        {s.particleEffects?.some(p => p !== 'None') && (
+          <Field label="Particle colour preference">
+            <input
+              type="text"
+              className={inputCls}
+              value={s.particleColourPreference}
+              onChange={e => set({ particleColourPreference: e.target.value })}
+              placeholder="e.g. match brand colours, blue and purple smoke, gold on black…"
+            />
+          </Field>
+        )}
       </div>
     </div>
   )
@@ -813,6 +839,7 @@ function Step7Review({ form, completeness, clients, projects, clientId, projectI
         ['Other notes',   s5.otherTechnical],
         ['Animation style', s5.animationStyle === 'Custom' && s5.animationCustom ? `Custom — ${s5.animationCustom}` : s5.animationStyle],
         ['Hero animation',  s5.heroAnimation?.join(', ')],
+        ['Particle effects', (() => { const a = s5.particleEffects?.filter(p => p !== 'None') ?? []; return a.length ? (s5.particleColourPreference ? `${a.join(', ')} — colour: ${s5.particleColourPreference}` : a.join(', ')) : '' })()],
       ],
     },
     {
@@ -902,7 +929,7 @@ export default function NewBrief() {
   const [searchParams] = useSearchParams()
   const navigate        = useNavigate()
   const showToast       = useToast()
-  const { bumpDashboard } = useUI()
+  const { bumpDashboard, setNewProjectOpen } = useUI()
 
   const [step,         setStep]         = useState(1)
   const [form,         setForm]         = useState(EMPTY_FORM)
@@ -917,6 +944,9 @@ export default function NewBrief() {
   const [clientId,     setClientId]     = useState(searchParams.get('clientId') || '')
   const [projectId,    setProjectId]    = useState(searchParams.get('projectId') || '')
   const [successModal, setSuccessModal] = useState(null) // null | { projectId }
+  const [selectorErrors, setSelectorErrors] = useState({ client: false, project: false })
+  const clientSelectRef  = useRef(null)
+  const projectSelectRef = useRef(null)
 
   const completeness = computeCompleteness(form)
 
@@ -1015,11 +1045,13 @@ export default function NewBrief() {
     const selectedProject = projects.find(p => p.id === projectId)
     const briefText = compileBrief(form, selectedClient?.name, selectedProject?.name)
 
-    const { error: briefError } = await supabase.from('briefs').insert({
+    const briefInsertPayload = {
       client_id:  clientId  || null,
       project_id: projectId || null,
       brief_text: briefText,
-    })
+    }
+    console.log('[briefs insert payload]', briefInsertPayload)
+    const { error: briefError } = await supabase.from('briefs').insert(briefInsertPayload)
 
     if (briefError) {
       showToast('Failed to submit brief', 'error')
@@ -1073,22 +1105,27 @@ export default function NewBrief() {
       }
     }
 
-    // Trigger orchestrator
+    // Trigger orchestrator — same streaming pattern as the quick brief panel
     if (projectId) {
       setSubmitPhase('orchestrating')
+      console.log('[NewBrief] Orchestrator triggered from structured brief submission — project:', projectId, 'client:', clientId)
       try {
-        const { text: orchText } = await streamAnthropicCall({
+        let orchFullResponse = ''
+        await streamAnthropicCall({
           messages:     [{ role: 'user', content: briefText }],
           systemPrompt: ORCHESTRATOR_SYSTEM,
+          model:        'claude-opus-4-20250514',
           maxTokens:    30000,
+          onChunk:      (chunk) => { orchFullResponse += chunk },
         })
 
         await supabase.from('agent_outputs').insert({
-          project_id: projectId,
-          agent_name: 'Orchestrator',
-          output_text: orchText,
+          project_id:  projectId,
+          agent_name:  'Orchestrator',
+          output_text: orchFullResponse,
           status:      'approved',
         })
+        console.log('[NewBrief] Orchestrator response saved to agent_outputs — length:', orchFullResponse.length)
       } catch (err) {
         console.warn('[NewBrief] Orchestrator failed:', err.message)
       }
@@ -1108,6 +1145,15 @@ export default function NewBrief() {
   }
 
   function handleNext() {
+    if (step === 1) {
+      const errs = { client: !clientId, project: !projectId }
+      if (errs.client || errs.project) {
+        setSelectorErrors(errs)
+        if (errs.client) clientSelectRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        else projectSelectRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        return
+      }
+    }
     setStep(s => Math.min(s + 1, 7))
   }
 
@@ -1155,32 +1201,61 @@ export default function NewBrief() {
       {/* Client / project selectors */}
       {showSelectors && (
         <div className="flex gap-4 p-4 rounded-xl bg-zinc-900 border border-zinc-800">
-          <div className="flex-1 space-y-1">
-            <label className="block text-xs font-medium text-zinc-400">Client</label>
+          <div className="flex-1 space-y-1" ref={clientSelectRef}>
+            <label className={`block text-xs font-medium ${selectorErrors.client ? 'text-red-400' : 'text-zinc-400'}`}>
+              Client <span className="text-red-400">*</span>
+            </label>
             <select
-              className={inputCls}
+              className={`${inputCls} ${selectorErrors.client ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
               value={clientId}
-              onChange={e => { setClientId(e.target.value); setProjectId('') }}
+              onChange={e => {
+                setClientId(e.target.value)
+                setProjectId('')
+                setSelectorErrors(prev => ({ ...prev, client: false }))
+              }}
             >
-              <option value="">No client selected</option>
+              <option value="">Select a client…</option>
               {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
+            {selectorErrors.client && (
+              <p className="text-xs text-red-400">This field is required</p>
+            )}
           </div>
-          <div className="flex-1 space-y-1">
-            <label className="block text-xs font-medium text-zinc-400">Project</label>
+          <div className="flex-1 space-y-1" ref={projectSelectRef}>
+            <label className={`block text-xs font-medium ${selectorErrors.project ? 'text-red-400' : 'text-zinc-400'}`}>
+              Project <span className="text-red-400">*</span>
+            </label>
             <select
-              className={inputCls}
+              className={`${inputCls} ${selectorErrors.project ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''} ${!clientId ? 'opacity-60 cursor-default' : ''}`}
               value={projectId}
-              onChange={e => setProjectId(e.target.value)}
+              onChange={e => {
+                setProjectId(e.target.value)
+                setSelectorErrors(prev => ({ ...prev, project: false }))
+              }}
               disabled={!clientId}
             >
-              <option value="">No project selected</option>
+              <option value="">Select a project…</option>
               {clientId && allClientProjects.length > 0 && projects.length === 0 ? (
-                <option value="" disabled>All projects for this client already have a brief — delete the existing brief to create a new one</option>
+                <option value="" disabled>All projects already have a brief</option>
               ) : (
                 projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)
               )}
             </select>
+            {selectorErrors.project && (
+              <p className="text-xs text-red-400">This field is required</p>
+            )}
+            {clientId && allClientProjects.length === 0 && (
+              <p className="text-xs text-zinc-500">
+                This client has no projects yet —{' '}
+                <button
+                  type="button"
+                  onClick={() => setNewProjectOpen(true)}
+                  className="text-violet-400 hover:text-violet-300 underline transition-colors"
+                >
+                  create a project first
+                </button>
+              </p>
+            )}
           </div>
         </div>
       )}
