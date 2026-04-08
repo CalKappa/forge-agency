@@ -187,6 +187,20 @@ When authentication is required include these dedicated pages in the implementat
 SUPABASE STORAGE — ADDITIONAL PAGES WHEN DOWNLOADABLE FILES ARE REQUESTED:
 When downloadable files are requested include a dedicated downloads.html page in the implementation guide with: a full file library layout showing all available files as cards or rows, search functionality using an input that filters the visible file list by filename in real time using JavaScript, filter buttons by file type so users can show only PDFs, only images etc., a file count indicator showing how many files are shown versus total, and implementation notes for: how to create the storage bucket in the Supabase dashboard, how to set bucket permissions to public or private, how to upload files and copy their paths, and how to update the data-bucket and data-file attributes in the HTML to match the uploaded files. If protected downloads are requested add a note that the page should check for a valid session on load and redirect to login.html if none exists.`
 
+const SETUP_GUIDE_SYSTEM = `You are a technical writer creating a simple step-by-step setup guide for a non-technical website owner. Based on the features requested write a clear friendly guide explaining how to set up their Supabase project. Use simple numbered steps with no jargon. Where it helps understanding, describe what the user will see on screen. Cover only the features that were requested. Structure the guide with clear markdown headings. Write in a warm and reassuring tone — the reader is not a developer.
+
+Always include these sections when relevant to the features requested:
+1. How to create a free Supabase account
+2. How to create a new Supabase project
+3. Where to find your project URL and anon key
+4. How to enable the authentication providers selected (email/password, Google login, magic link)
+5. How to create a storage bucket and set its permissions
+6. How to upload files to the storage bucket
+7. How to update the website files with your Supabase credentials
+8. How to test that login and file downloads are working
+
+End the guide with this exact note as a final section: ---\n\n*This guide was prepared by Forge Agency. If you need help with setup, please contact us.*`
+
 const PROJ_ORCHESTRATOR_SYSTEM = `You are the orchestrator for an AI web design agency. You will be given a detailed structured client brief. Break it down into four clearly labelled task lists for: 1) Researcher — what to research about the industry, audience, competitors and SEO. 2) Designer — what design decisions to make, what pages to wireframe, what brand direction to follow. 3) Developer — what pages to build, what technical requirements to implement, what integrations to set up. 4) Reviewer — what specific things to check against the brief during the quality review. Be specific and actionable for each agent. Use markdown formatting with clear headings.`
 
 const _FIX = (role) => `You are an expert ${role} making a targeted fix to your previous output. You will be given the original brief, your previous output and a specific issue to fix. Your job is to fix ONLY what has been described and leave everything else completely identical. Do not rewrite, restructure or improve anything that was not mentioned in the fix request. Output only the complete fixed version with no explanation, no preamble and no commentary.`
@@ -1509,6 +1523,8 @@ export default function ProjectDetail() {
   const [submittingDev,        setSubmittingDev]        = useState(false)
   const [goingBackToDev,       setGoingBackToDev]       = useState(false)
   const [isPatchingCss,        setIsPatchingCss]        = useState(false)
+  const [setupGuideOpen,       setSetupGuideOpen]       = useState(false)
+  const [isGeneratingGuide,    setIsGeneratingGuide]    = useState(false)
 
   // Reviewer state
   const [isReviewing,          setIsReviewing]          = useState(false)
@@ -2531,6 +2547,35 @@ export default function ProjectDetail() {
       await checkDevIntegrity(cssText, jsText)
       pipeline.complete()
 
+      // ── Setup guide: generate when auth or downloads are requested ──
+      const needsSetupGuide = /Authentication:\s*Required|Downloadable files:\s*Required/i.test(briefText)
+      if (needsSetupGuide) {
+        console.log('[Developer] Auth/storage detected in brief — generating Client Setup Guide')
+        setIsGeneratingGuide(true)
+        try {
+          const guideContext = `Project: ${project?.name ?? 'Unnamed'}\nClient: ${project?.clients?.name ?? 'Unknown'}\n\n---\n\nBrief excerpt (technical requirements):\n\n${briefText}`
+          const { text: guideText } = await streamAnthropicCall({
+            messages:     [{ role: 'user', content: guideContext }],
+            systemPrompt: SETUP_GUIDE_SYSTEM,
+            model:        'claude-haiku-4-5-20251001',
+            maxTokens:    4000,
+          })
+          const existing = await supabase.from('agent_outputs').select('id').eq('project_id', projectId).eq('agent_name', 'Developer-SetupGuide').maybeSingle()
+          if (existing.data?.id) {
+            await safeUpdate('agent_outputs', existing.data.id, { output_text: guideText, status: 'pending' })
+          } else {
+            await supabase.from('agent_outputs').insert({ project_id: projectId, agent_name: 'Developer-SetupGuide', output_text: guideText, status: 'pending' })
+          }
+          console.log('[Developer] ✓ Client Setup Guide saved')
+          await load()
+          setSetupGuideOpen(true)
+        } catch (guideErr) {
+          console.warn('[Developer] Setup guide generation failed:', guideErr.message)
+        } finally {
+          setIsGeneratingGuide(false)
+        }
+      }
+
       // Auto-approve developer if enabled — inline to avoid stale agentOutputs closure.
       // agentOutputs state is frozen at the render when runDeveloper was called (before any
       // dev records existed), so we query the DB fresh to find the records to approve.
@@ -3138,8 +3183,9 @@ export default function ProjectDetail() {
   const devStackOutput    = agentOutputs.find(o => o.agent_name === 'Developer-Stack') ?? null
   const devHtmlOutput     = agentOutputs.find(o => o.agent_name === 'Developer-HTML')  ?? null
   const devCssOutput      = agentOutputs.find(o => o.agent_name === 'Developer-CSS')   ?? null
-  const devPagesOutput    = agentOutputs.find(o => o.agent_name === 'Developer-Pages') ?? null
-  const devJsOutput       = agentOutputs.find(o => o.agent_name === 'Developer-JS')    ?? null
+  const devPagesOutput      = agentOutputs.find(o => o.agent_name === 'Developer-Pages')      ?? null
+  const devJsOutput         = agentOutputs.find(o => o.agent_name === 'Developer-JS')          ?? null
+  const devSetupGuideOutput = agentOutputs.find(o => o.agent_name === 'Developer-SetupGuide') ?? null
   // Per-page records (multi-page pipeline)
   const devHtmlOutputs    = agentOutputs.filter(o => o.agent_name.startsWith('Developer-HTML-'))
   // Primary status record — use Stack as representative
@@ -4807,6 +4853,63 @@ export default function ProjectDetail() {
                     catch (err) { console.error('[Pages fresh]', err) } finally { setIsDeveloping(false) }
                   }}
                 />
+              ) : null}
+
+              {/* ── Sub-section: Client Setup Guide ── */}
+              {isGeneratingGuide ? (
+                <div className="border-t border-zinc-800 px-5 py-4 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse flex-shrink-0" />
+                  <span className="text-xs text-zinc-500">Generating Client Setup Guide…</span>
+                </div>
+              ) : devSetupGuideOutput ? (
+                <div className="border-t border-zinc-800">
+                  {/* Collapsible header */}
+                  <button
+                    className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-zinc-800/50 transition-colors"
+                    onClick={() => setSetupGuideOpen(o => !o)}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <svg className="w-4 h-4 text-blue-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                      </svg>
+                      <span className="text-sm font-medium text-zinc-200">Client Setup Guide</span>
+                      <span className="px-2 py-0.5 rounded-full text-xs bg-blue-500/15 text-blue-400 border border-blue-500/25">Supabase</span>
+                    </div>
+                    <svg className={`w-4 h-4 text-zinc-500 transition-transform ${setupGuideOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+                  </button>
+
+                  {setupGuideOpen && (
+                    <div className="px-5 pb-5 space-y-4">
+                      {/* Guide content */}
+                      <div className="rounded-lg bg-zinc-950 border border-zinc-800 p-5">
+                        {renderMarkdown(devSetupGuideOutput.output_text)}
+                      </div>
+
+                      {/* Download PDF button */}
+                      <button
+                        onClick={() => {
+                          const date = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+                          downloadPdf({
+                            agentName:   'Client Setup Guide',
+                            projectName: project?.name ?? 'Project',
+                            clientName:  project?.clients?.name ?? 'Client',
+                            date,
+                            bodyText:    devSetupGuideOutput.output_text,
+                            filename:    `${(project?.name ?? 'project').toLowerCase().replace(/\s+/g, '-')}-setup-guide.pdf`,
+                          })
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white transition-colors"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                        </svg>
+                        Download Setup Guide PDF
+                      </button>
+                    </div>
+                  )}
+                </div>
               ) : null}
 
               {!devIsStreaming && !devOutput && (
