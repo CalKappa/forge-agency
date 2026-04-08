@@ -96,6 +96,8 @@ Quality requirements you must follow without exception: Use a max-width of 1400p
 
 You must always include rules for these three JavaScript-driven state classes: (1) .scrolled — applied to the header when the user scrolls past 80px, style with a solid background colour and box-shadow so the header is readable over page content; (2) .is-open — applied to the mobile menu element when the hamburger is clicked, use display: block and max-height: 100vh so the menu becomes visible; (3) .error — applied to form inputs that fail validation, style with a red border (border-color: #ef4444) and a light red background (background-color: #fef2f2). These classes are always added by script.js so they must always have a matching CSS rule.
 
+You must always define CSS rules for every class that JavaScript commonly toggles. Include these rules in every stylesheet without exception: .expanded — used for accordion and expandable content, set max-height to a large value like 1000px with overflow hidden and transition max-height 0.3s ease. .active — used for active navigation links and active states, set appropriate highlight colour using the primary accent. .is-open — used for open dropdown menus and mobile nav, set display block or max-height to a large value. .is-visible — used for elements revealed on scroll, set opacity 1 and transform none. .scrolled — used for header scroll state, set appropriate background and box shadow. .open — used for open states on toggles, set display block. .hidden — set display none. .visible — set opacity 1 and visibility visible. .collapsed — set max-height 0 and overflow hidden. Never output a CSS file that is missing rules for any of these classes.
+
 You must always define CSS rules for these commonly used JavaScript toggle classes: .active, .is-open, .is-visible, .scrolled, .animated, .in-view. Define each one with sensible default styles that match the design — for example .active on a nav link should apply the primary accent colour and an underline, .active on a menu or dropdown should set display: block or max-height to a large value, .active on a tab panel should set display: block, .active on a hamburger button should transform the three bar spans into an X shape using rotate transforms. Never let the JavaScript use a class that has no corresponding CSS rule.
 
 You must add clear comments throughout the CSS file explaining what each block of styles affects. Use this exact format for major sections:
@@ -2422,10 +2424,14 @@ export default function ProjectDetail() {
         else console.log(`[Dev integrity] ✓ Developer-HTML-${page.filename}: ${rec.output_text.length} chars`)
       }
 
-      // Auto-fix: replace fixed pixel widths (e.g. width: 1200px) with width: 100%; max-width: ...px
+      // Auto-fix: replace fixed pixel widths and append missing .expanded rule
       const cssRec = data.find(r => r.agent_name === 'Developer-CSS')
       if (cssRec?.output_text) {
-        const outsideMedia = stripMediaBlocks(cssRec.output_text)
+        let patched = cssRec.output_text
+        const toasts = []
+
+        // Fix 1: fixed pixel widths outside media queries
+        const outsideMedia = stripMediaBlocks(patched)
         const fixedWidthRe = /\bwidth\s*:\s*(\d+)px/g
         let hasFixedWidth = false
         let m
@@ -2433,14 +2439,25 @@ export default function ProjectDetail() {
           if (parseInt(m[1], 10) > 800) { hasFixedWidth = true; break }
         }
         if (hasFixedWidth) {
-          const fixed = cssRec.output_text.replace(/\bwidth\s*:\s*(\d{3,4})px/g, (match, px) => {
+          patched = patched.replace(/\bwidth\s*:\s*(\d{3,4})px/g, (match, px) => {
             if (parseInt(px, 10) > 800) return `width: 100%; max-width: ${px}px`
             return match
           })
-          await safeUpdate('agent_outputs', cssRec.id, { output_text: fixed })
           console.log('[Dev integrity] ✓ Auto-fixed: replaced fixed pixel width(s) with max-width pattern in Developer-CSS')
-          showToast('Auto-fixed: replaced fixed width 1200px with max-width pattern', 'success')
-          validateCrossFileClasses(fixed, jsText)
+          toasts.push('Auto-fixed: replaced fixed width 1200px with max-width pattern')
+        }
+
+        // Fix 2: missing .expanded rule
+        if (!/\.expanded\s*\{/.test(patched)) {
+          patched += '\n\n.expanded { max-height: 1000px; overflow: hidden; transition: max-height 0.4s ease; }'
+          console.log('[Dev integrity] ✓ Auto-fixed: appended missing .expanded rule to Developer-CSS')
+          toasts.push('Auto-fixed: added missing .expanded CSS rule')
+        }
+
+        if (toasts.length > 0) {
+          await safeUpdate('agent_outputs', cssRec.id, { output_text: patched })
+          for (const msg of toasts) showToast(msg, 'success')
+          validateCrossFileClasses(patched, jsText)
           return
         }
       }
