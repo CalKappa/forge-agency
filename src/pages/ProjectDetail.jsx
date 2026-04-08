@@ -67,15 +67,30 @@ const DEV_SUMMARY_SYSTEM = `You are a technical summariser. Take the following d
 
 const SVG_JSON_RULE = `Output ONLY a valid JSON array with no explanation and no markdown code blocks. Each item in the array represents a shape and must have these fields: type (either rect or text), x (number), y (number), width (number, required for rect), height (number, required for rect), label (string, plain ASCII text only, required for text elements), fontSize (number, for text only, default 14). No other fields. No special characters in any string values.`
 
-const SVG_NAV_SYSTEM     = SVG_JSON_RULE + ` You are generating wireframe elements for a navigation bar. Width 1200px, y starts at 0, nav bar height 60px. Include a logo box on the left and nav link placeholder boxes on the right.`
-const SVG_HERO_SYSTEM    = SVG_JSON_RULE + ` You are generating wireframe elements for a hero section. Width 1200px, start at y=80, height 400px. Include a large headline placeholder box, a subheading placeholder, two button boxes side by side and an image placeholder box on the right.`
-const SVG_CONTENT_A_SYSTEM = SVG_JSON_RULE + ` Output a JSON array for the About section only. The About section starts at y=500 and is 300px tall. Width 1200px. It must have a background rect spanning the full width, a heading text element, and at least 3 content boxes showing layout structure. All elements must have y values between 500 and 800.`
-const SVG_CONTENT_B_SYSTEM = SVG_JSON_RULE + ` Output a JSON array for two sections: Experience and Skills. Experience starts at y=820 and is 300px tall. Skills starts at y=1140 and is 240px tall. Width 1200px. Each section must have a background rect spanning the full width, a heading text element, and at least 3 content boxes. All elements must have y values between 820 and 1380.`
-const SVG_FOOTER_SYSTEM  = SVG_JSON_RULE + ` You are generating wireframe elements for a footer. Width 1200px, start at y=1400, height 120px. Include a background rect, a logo text label, some footer link placeholder boxes and a copyright text.`
+const SVG_SPACING_RULES = ` STRICT SPACING RULES: Never place a text element within 20px of another element. Every rect must have at least 10px padding from its container rect — inner rects must start at least 10px inside the outer rect on all sides. Text elements inside a rect must have their y position set to the rect y plus at least 25px so text never sits on the edge of a box. Never overlap two rect elements unless one is intentionally a container for the other. Section label text (short uppercase words like HERO or ABOUT) must be placed at least 30px above the first content element in that section.`
+
+const SVG_NAV_SYSTEM     = SVG_JSON_RULE + SVG_SPACING_RULES + ` You are generating the navigation bar wireframe. Work within the vertical band y=0 to y=80. The minimum height for this section is 80px. Width is 1200px. Design a navigation layout appropriate for this site type and brand aesthetic — the arrangement of the logo, links and any utility elements should reflect the brand personality described in the brief. A playful or creative brand might use an unconventional layout; a corporate or professional brand might use a clean structured grid.`
+const SVG_HERO_SYSTEM    = SVG_JSON_RULE + SVG_SPACING_RULES + ` You are generating the hero section wireframe. Work within the vertical band y=100 to y=600. The minimum height for this section is 500px. Width is 1200px. Create a hero section appropriate for this type of site and brand — do not default to a standard split layout. A bold brand may use a full-bleed tall hero with a single dominant element; a minimal brand may use compact typographic content; a portfolio site may lead with a large image placeholder; a service business may use overlapping content zones. Decide the hero height and internal arrangement based on the brief, mood and site type. Include only the content elements appropriate for this particular brand.`
+const SVG_CONTENT_A_SYSTEM = SVG_JSON_RULE + SVG_SPACING_RULES + ` You are generating the first content area wireframe. Work within the vertical band y=620 to y=1020. The minimum height for this section is 400px. Width is 1200px. Design this section based on the site type and brand aesthetic — it could be a features grid, services overview, about summary, portfolio highlights or any section appropriate to the brief. The number of columns, proportions and internal arrangement should vary based on the brand personality: asymmetric and varied for playful brands, structured and grid-based for corporate brands.`
+const SVG_CONTENT_B_SYSTEM = SVG_JSON_RULE + SVG_SPACING_RULES + ` You are generating the second content area wireframe covering two distinct sections. Work within the vertical band y=1040 to y=1640. The minimum height for this section is 600px total, at least 400px per sub-section. Width is 1200px. Choose two section types appropriate to this site — for example testimonials and a CTA band, a portfolio grid and a contact teaser, a team section and a stats row, or any combination that fits the brief. Do not use generic placeholder names — infer appropriate section types from the brief. Each section should have a background rect, a heading, and content elements arranged to reflect the brand aesthetic. Vary the proportions and layout between the two sections.`
+const SVG_FOOTER_SYSTEM  = SVG_JSON_RULE + SVG_SPACING_RULES + ` You are generating the footer wireframe. Work within the vertical band y=1660 to y=1810. The minimum height for this section is 150px. Width is 1200px. Design a footer appropriate for this site type and brand — include elements relevant to the site such as logo, navigation links, contact details, social links or newsletter signup, chosen and arranged based on the brief. A minimal brand may use a single-row footer; a content-rich site may use a multi-column layout.`
+
+const LAYOUT_SEEDS = [
+  'Asymmetric split layout with large image left and text right',
+  'Centered editorial layout with full width hero and narrow content column',
+  'Bold typographic layout with oversized text and minimal imagery',
+  'Grid based modular layout with equal columns and structured sections',
+  'Diagonal and angled sections breaking the standard horizontal layout',
+  'Overlapping elements with layered depth and offset cards',
+  'Minimal whitespace heavy layout with sparse content and large negative space',
+  'Dynamic zigzag layout alternating image and text left and right per section',
+]
 
 const DEVELOPER_STACK_SYSTEM = `You are an expert web developer. Based on the client brief, research report and design brief provided, output ONLY two sections: first a Tech Stack section recommending specific technologies with a one sentence reason for each choice, second a File Structure section showing the complete folder and file structure for the project as a simple indented text tree. Be concise and specific. Use markdown formatting.`
 
 const DEVELOPER_CSS_SYSTEM = `You are an expert web developer. Based on the design brief output ONLY a complete external CSS stylesheet. No HTML, no JavaScript, no style tags — just raw CSS rules. Use the exact colours, fonts, spacing and layout from the design brief. Define all colours and fonts as CSS custom properties at the top. Use clear, consistent class names and IDs that will be referenced by the HTML and JavaScript. Output raw CSS only with no explanation and no markdown code blocks.
+
+CRITICAL CSS RULE — Never use width: 1200px or any other fixed pixel width on any container, wrapper, section or div. Always use width: 100% combined with max-width: 1200px and margin: 0 auto for centering. The correct pattern is always: width: 100%; max-width: 1200px; margin: 0 auto; — never just width: 1200px alone. This applies to every container class including .container, .wrapper, .content, .inner, .section-inner and any similar class. A fixed pixel width will break the layout on screens narrower than that width and will fail the quality check.
 
 Quality requirements you must follow without exception: Use a max-width of 1400px or wider for the main container — never restrict content to a narrow column on large screens. Always use width: 100% with a max-width and margin: 0 auto for centering — never use a fixed pixel width that would look narrow on large monitors. All layouts must be fully responsive with proper breakpoints at 1200px, 1024px, 768px and 480px. The mobile navigation hamburger menu must be fully implemented in CSS with a visible hamburger icon at 768px and below — use a checkbox hack or CSS classes toggled by JavaScript. Typography must scale fluidly — use clamp() for font sizes where appropriate. Never use fixed heights on sections — use min-height with padding instead. Images must use max-width: 100% and height: auto. Flexbox and Grid layouts must have proper fallbacks and wrapping. Test every layout mentally at 320px, 768px, 1280px and 2560px widths before outputting.
 
@@ -87,7 +102,9 @@ You must add clear comments throughout the CSS file explaining what each block o
 /* ============================================
    SECTION NAME - affects [html element/class description]
    ============================================ */
-before every group of related styles. For individual properties or small groups add inline comments like this: /* affects the hero headline font size on desktop */ or /* controls mobile menu slide-in animation */. Every CSS rule that targets a specific component must have a comment above it explaining which part of the HTML it styles. Group all related styles together under their section comment — for example all navigation styles under a NAVIGATION comment, all hero styles under a HERO comment, all card styles under a CARDS comment and so on. Never output CSS without comments. This is mandatory for maintainability.`
+before every group of related styles. For individual properties or small groups add inline comments like this: /* affects the hero headline font size on desktop */ or /* controls mobile menu slide-in animation */. Every CSS rule that targets a specific component must have a comment above it explaining which part of the HTML it styles. Group all related styles together under their section comment — for example all navigation styles under a NAVIGATION comment, all hero styles under a HERO comment, all card styles under a CARDS comment and so on. Never output CSS without comments. This is mandatory for maintainability.
+
+MANDATORY RESPONSIVE DESIGN REQUIREMENTS — these are non-negotiable and must be implemented on every single project without exception: 1) Always include a viewport meta tag in the HTML head: meta name=viewport content=width=device-width initial-scale=1.0. 2) Never use fixed pixel widths on layout containers — always use width 100% with a max-width for desktop. 3) All grid layouts must use CSS Grid with repeat(auto-fit, minmax(280px, 1fr)) or Flexbox with flex-wrap wrap so columns automatically stack on small screens. 4) Include these three breakpoints as a minimum in every stylesheet: max-width 1024px for tablet, max-width 768px for mobile landscape, max-width 480px for mobile portrait. 5) At 768px and below: the navigation must collapse to a hamburger menu, all multi-column layouts must become single column, font sizes must reduce by 20 to 30 percent, padding and margins must reduce, any fixed heights must be removed or changed to min-height auto. 6) At 480px and below: body font size minimum 16px for readability, buttons must be minimum 44px tall for touch targets, images must be width 100%, no horizontal scrolling under any circumstances — test by mentally tracing every element at 320px width. 7) Use clamp() for fluid typography on headings: clamp(1.5rem, 4vw, 3rem) so text scales smoothly between mobile and desktop. 8) Never use position absolute on elements inside sections without checking they do not break layout on mobile.`
 
 const DEVELOPER_JS_SYSTEM = `You are an expert web developer. You are given the CSS stylesheet already written. Use the exact same class names and IDs from that CSS. Write all interactions, animations, navigation behaviour, form handling and any other dynamic functionality. IntersectionObserver callbacks must add the exact same class names that the CSS uses to reveal elements — never use animate-in if the CSS expects visible, or any other mismatch. Output raw JavaScript only with no HTML, no CSS, no script tags, no explanation and no markdown code blocks.
 
@@ -144,7 +161,9 @@ You must add a clear HTML comment before every section and major component marki
 <!-- ============================================
      SECTION NAME - brief description
      ============================================ -->
-before every section element, header, footer, navigation, hero, and any other major component. Never output HTML without section comments. This is mandatory for code readability and maintainability.`
+before every section element, header, footer, navigation, hero, and any other major component. Never output HTML without section comments. This is mandatory for code readability and maintainability.
+
+The head section of every HTML file must always include this exact meta tag as the second line after the charset meta tag: meta name=viewport content=width=device-width initial-scale=1.0 — never omit this tag under any circumstances as without it the site will not be responsive on mobile devices.`
 
 const DEVELOPER_PAGES_SYSTEM = `You are an expert web developer. Based on the client brief and design brief output ONLY a detailed implementation guide for all remaining pages and components that need to be built after the homepage. For each page or component include: the filename, the key HTML structure needed, any specific CSS notes, and any JavaScript interactions required. Use markdown formatting.`
 
@@ -200,17 +219,38 @@ async function callJsonSection(system, userContent, label, tokenCallsList) {
   return shapes
 }
 
-async function generatePageWireframe(briefSummary, page, tokenCallsList) {
-  const pageNote = ` This wireframe is for the ${page.name} page (filename: ${page.filename}). Generate layout structure appropriate for this specific page.`
-  const ctx = `Design Brief:\n\n${briefSummary}\n\nThis wireframe is for the ${page.name} page (filename: ${page.filename}).`
+async function generatePageWireframe(briefSummary, page, tokenCallsList, moodboardJson, excludeSeed) {
+  // Pick a random layout seed, excluding the current one if requested
+  const availableSeeds = excludeSeed
+    ? LAYOUT_SEEDS.filter(s => s !== excludeSeed)
+    : LAYOUT_SEEDS
+  const layoutSeed = availableSeeds[Math.floor(Math.random() * availableSeeds.length)]
+
+  // Build brand context from moodboard if available
+  let brandCtx = ''
+  if (moodboardJson) {
+    try {
+      const mb = typeof moodboardJson === 'string' ? JSON.parse(moodboardJson) : moodboardJson
+      const moodWords = (mb.mood_words ?? []).join(', ')
+      const uiStyle   = mb.ui_style ?? ''
+      const imagery   = mb.imagery_direction ?? ''
+      brandCtx = `\n\nBrand Context:\n- Mood: ${moodWords}\n- UI Component Style: ${uiStyle}\n- Imagery Direction: ${imagery}`
+    } catch { /* moodboard parse failed — proceed without it */ }
+  }
+
+  const RAND = `You must produce a unique layout — vary the arrangement, proportions and composition from standard templates. Do not use the same layout twice. Consider the site type, brand aesthetic and content requirements when deciding on layout. For example a portfolio site hero should look different from a corporate site hero. The overall layout style for this wireframe must follow this approach: ${layoutSeed}. All sections must feel consistent with this layout direction. `
+
+  const ctx = `Design Brief Summary:\n\n${briefSummary}${brandCtx}\n\nLayout Style: ${layoutSeed}\n\nThis wireframe is for the ${page.name} page (filename: ${page.filename}).`
+  const pageNote = ` This wireframe is for the ${page.name} page (${page.filename}). Generate layout structure appropriate for this specific page type.`
+
   const [nav, hero, contentA, contentB, footer] = await Promise.all([
-    callJsonSection(SVG_NAV_SYSTEM + pageNote,       ctx, `${page.filename}-Nav`,      tokenCallsList),
-    callJsonSection(SVG_HERO_SYSTEM + pageNote,      ctx, `${page.filename}-Hero`,     tokenCallsList),
-    callJsonSection(SVG_CONTENT_A_SYSTEM + pageNote, ctx, `${page.filename}-ContentA`, tokenCallsList),
-    callJsonSection(SVG_CONTENT_B_SYSTEM + pageNote, ctx, `${page.filename}-ContentB`, tokenCallsList),
-    callJsonSection(SVG_FOOTER_SYSTEM + pageNote,    ctx, `${page.filename}-Footer`,   tokenCallsList),
+    callJsonSection(RAND + SVG_NAV_SYSTEM      + pageNote, ctx, `${page.filename}-Nav`,      tokenCallsList),
+    callJsonSection(RAND + SVG_HERO_SYSTEM     + pageNote, ctx, `${page.filename}-Hero`,     tokenCallsList),
+    callJsonSection(RAND + SVG_CONTENT_A_SYSTEM + pageNote, ctx, `${page.filename}-ContentA`, tokenCallsList),
+    callJsonSection(RAND + SVG_CONTENT_B_SYSTEM + pageNote, ctx, `${page.filename}-ContentB`, tokenCallsList),
+    callJsonSection(RAND + SVG_FOOTER_SYSTEM   + pageNote, ctx, `${page.filename}-Footer`,   tokenCallsList),
   ])
-  return buildSvgFromShapes([nav, hero, contentA, contentB, footer])
+  return { svg: buildSvgFromShapes([nav, hero, contentA, contentB, footer]), layoutSeed }
 }
 
 // ── Orchestrator response parser ──────────────────────────────────────────────
@@ -456,11 +496,11 @@ function parseJsonSection(raw, label) {
 }
 
 const SECTION_META = [
-  { name: 'NAV',       dividerY: 60   },
-  { name: 'HERO',      dividerY: 480  },
-  { name: 'ABOUT',     dividerY: 800  },
-  { name: 'EXP+SKILLS',dividerY: 1380 },
-  { name: 'FOOTER',    dividerY: 1520 },
+  { name: 'NAV',       dividerY: 80   },
+  { name: 'HERO',      dividerY: 600  },
+  { name: 'ABOUT',     dividerY: 1020 },
+  { name: 'EXP+SKILLS',dividerY: 1640 },
+  { name: 'FOOTER',    dividerY: 1810 },
 ]
 
 function buildSvgFromShapes(sections) {
@@ -468,26 +508,36 @@ function buildSvgFromShapes(sections) {
   const svg = document.createElementNS(ns, 'svg')
   svg.setAttribute('xmlns', ns)
   svg.setAttribute('width', '1200')
-  svg.setAttribute('height', '2000')
+  svg.setAttribute('height', '1900')
 
   // White background
   const bg = document.createElementNS(ns, 'rect')
   bg.setAttribute('width', '1200')
-  bg.setAttribute('height', '2000')
+  bg.setAttribute('height', '1900')
   bg.setAttribute('fill', 'white')
   svg.appendChild(bg)
+
+  // Collect text elements for collision detection before appending
+  const pendingTexts = [] // { el, yVal }
 
   // Draw each section's shapes
   sections.forEach((shapes, sectionIdx) => {
     const meta = SECTION_META[sectionIdx]
 
-    // Section label (top-left, faint)
+    // Section label: positioned 15px above the first rect in this section
+    // font-size 10, color #999999 so it never collides with content
     if (meta) {
+      const firstRect = shapes.find(s => s.type === 'rect')
+      const sectionStartY = sectionIdx === 0 ? 0 : (SECTION_META[sectionIdx - 1]?.dividerY ?? 0)
+      const labelY = firstRect
+        ? Math.max(Number(firstRect.y) - 15, sectionStartY + 10)
+        : sectionStartY + 10
+
       const lbl = document.createElementNS(ns, 'text')
       lbl.setAttribute('x', '8')
-      lbl.setAttribute('y', String((sectionIdx === 0 ? 0 : SECTION_META[sectionIdx - 1]?.dividerY ?? 0) + 14))
+      lbl.setAttribute('y', String(labelY))
       lbl.setAttribute('font-family', 'Arial')
-      lbl.setAttribute('font-size', '11')
+      lbl.setAttribute('font-size', '10')
       lbl.setAttribute('fill', '#999999')
       lbl.textContent = meta.name
       svg.appendChild(lbl)
@@ -511,26 +561,27 @@ function buildSvgFromShapes(sections) {
         svg.appendChild(el)
 
         // If the rect has a label, centre it inside the box
+        // Enforce y >= rect.y + 25 so text never sits on the box edge
         if (shape.label) {
           const tx = document.createElementNS(ns, 'text')
           tx.setAttribute('x',           String(x + w / 2))
-          tx.setAttribute('y',           String(y + h / 2 + 5))
+          const textY = Math.max(y + 25, y + h / 2 + 5)
           tx.setAttribute('font-family', 'Arial')
           tx.setAttribute('font-size',   String(Number(shape.fontSize) || 14))
           tx.setAttribute('fill',        '#333333')
           tx.setAttribute('text-anchor', 'middle')
           tx.textContent = String(shape.label)
-          svg.appendChild(tx)
+          pendingTexts.push({ el: tx, yVal: textY })
         }
       } else if (shape.type === 'text') {
         const el = document.createElementNS(ns, 'text')
-        el.setAttribute('x',           String(Number(shape.x)        || 0))
-        el.setAttribute('y',           String(Number(shape.y)        || 0))
+        const yVal = Number(shape.y) || 0
+        el.setAttribute('x',           String(Number(shape.x) || 0))
         el.setAttribute('font-family', 'Arial')
         el.setAttribute('font-size',   String(Number(shape.fontSize) || 14))
         el.setAttribute('fill',        '#333333')
         el.textContent = String(shape.label ?? '')
-        svg.appendChild(el)
+        pendingTexts.push({ el, yVal })
       }
     }
 
@@ -545,6 +596,21 @@ function buildSvgFromShapes(sections) {
       svg.appendChild(div)
     }
   })
+
+  // Collision detection: sort all text elements by y, then push any element
+  // that is within 16px of the previous one down by 20px
+  pendingTexts.sort((a, b) => a.yVal - b.yVal)
+  for (let i = 1; i < pendingTexts.length; i++) {
+    if (pendingTexts[i].yVal - pendingTexts[i - 1].yVal < 16) {
+      pendingTexts[i].yVal = pendingTexts[i - 1].yVal + 20
+    }
+  }
+
+  // Append all text elements with final y values
+  for (const { el, yVal } of pendingTexts) {
+    el.setAttribute('y', String(yVal))
+    svg.appendChild(el)
+  }
 
   return new XMLSerializer().serializeToString(svg)
 }
@@ -1052,6 +1118,9 @@ function DevSubSection({ label, record, project, renderContent, extraButton, cop
           )}
           <span className={`text-xs font-medium uppercase tracking-wide ${subRunning ? 'text-emerald-400' : 'text-emerald-400'}`}>{label}</span>
           {subRunning && <span className="text-xs text-zinc-500">Applying fix…</span>}
+          {approved && !subRunning && (
+            <span className="flex-shrink-0 text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-full border border-emerald-400/20">Approved</span>
+          )}
         </div>
         <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
           {extraButton}
@@ -1161,7 +1230,7 @@ function DevSubSection({ label, record, project, renderContent, extraButton, cop
       )}
 
       {/* ── Per-page approval bar ── */}
-      {onApprove && !subRunning && subMode === null && (
+      {(onApprove || approved) && !subRunning && subMode === null && (
         approved ? (
           <div className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500/8 border-t border-emerald-500/20">
             <CheckIcon className="w-3 h-3 text-emerald-400" />
@@ -1545,6 +1614,12 @@ export default function ProjectDetail() {
     console.log('[load] Orchestrator output_text (first 500 chars):', orchRecord?.output_text?.slice(0, 500) ?? '(none)')
     console.log('[load] Designer record — output_wireframe length:', designRecord?.output_wireframe?.length ?? 0, '| output_moodboard length:', designRecord?.output_moodboard?.length ?? 0)
     setAgentOutputs(outputs)
+    // Sync per-page approvals from DB — any Developer-HTML-* record with status 'approved'
+    setApprovedPages(new Set(
+      outputs
+        .filter(o => o.agent_name.startsWith('Developer-HTML-') && o.status === 'approved')
+        .map(o => o.agent_name.replace('Developer-HTML-', ''))
+    ))
     setLoading(false)
 
     // Auto-open the most recent section when it first appears.
@@ -2111,7 +2186,7 @@ export default function ProjectDetail() {
           setWireframeProgress({ current: i + 1, total: wireframePages.length, pageName: page.name })
           setDesignStreamDisplay(designBriefText + `\n\n--- Generating wireframe for ${page.name} (${page.filename})…`)
           pipeline.start({ projectId, projectName: project?.name, clientName: project?.clients?.name, agentName: 'designer', stepLabel: `Wireframe — ${page.name}` })
-          const svg = await generatePageWireframe(briefSummary, page, designTokenCalls)
+          const { svg, layoutSeed } = await generatePageWireframe(briefSummary, page, designTokenCalls, moodboardJson)
           const wfAgentName = `Designer-Wireframe-${page.filename}`
           const { data: existingWf } = await supabase
             .from('agent_outputs')
@@ -2122,12 +2197,13 @@ export default function ProjectDetail() {
             .limit(1)
             .maybeSingle()
           if (existingWf) {
-            await safeUpdate('agent_outputs', existingWf.id, { output_wireframe: svg, status: 'pending' })
+            await safeUpdate('agent_outputs', existingWf.id, { output_wireframe: svg, output_text: layoutSeed, status: 'pending' })
           } else {
             await supabase.from('agent_outputs').insert({
               project_id:       projectId,
               agent_name:       wfAgentName,
               output_wireframe: svg,
+              output_text:      layoutSeed,
               status:           'pending',
             })
           }
@@ -2338,13 +2414,37 @@ export default function ProjectDetail() {
 
     async function checkDevIntegrity(cssText, jsText) {
       console.log('[Dev integrity] ── final pipeline integrity check ──')
-      const { data } = await supabase.from('agent_outputs').select('agent_name, output_text').eq('project_id', projectId)
+      const { data } = await supabase.from('agent_outputs').select('id, agent_name, output_text').eq('project_id', projectId)
       if (!data) return
       for (const page of effectivePages) {
         const rec = data.find(r => r.agent_name === `Developer-HTML-${page.filename}`)
         if (!rec || !rec.output_text?.trim()) console.warn(`[Dev integrity] WARNING: Developer-HTML-${page.filename} MISSING or empty`)
         else console.log(`[Dev integrity] ✓ Developer-HTML-${page.filename}: ${rec.output_text.length} chars`)
       }
+
+      // Auto-fix: replace fixed pixel widths (e.g. width: 1200px) with width: 100%; max-width: ...px
+      const cssRec = data.find(r => r.agent_name === 'Developer-CSS')
+      if (cssRec?.output_text) {
+        const outsideMedia = stripMediaBlocks(cssRec.output_text)
+        const fixedWidthRe = /\bwidth\s*:\s*(\d+)px/g
+        let hasFixedWidth = false
+        let m
+        while ((m = fixedWidthRe.exec(outsideMedia)) !== null) {
+          if (parseInt(m[1], 10) > 800) { hasFixedWidth = true; break }
+        }
+        if (hasFixedWidth) {
+          const fixed = cssRec.output_text.replace(/\bwidth\s*:\s*(\d{3,4})px/g, (match, px) => {
+            if (parseInt(px, 10) > 800) return `width: 100%; max-width: ${px}px`
+            return match
+          })
+          await safeUpdate('agent_outputs', cssRec.id, { output_text: fixed })
+          console.log('[Dev integrity] ✓ Auto-fixed: replaced fixed pixel width(s) with max-width pattern in Developer-CSS')
+          showToast('Auto-fixed: replaced fixed width 1200px with max-width pattern', 'success')
+          validateCrossFileClasses(fixed, jsText)
+          return
+        }
+      }
+
       validateCrossFileClasses(cssText, jsText)
     }
 
@@ -2512,9 +2612,19 @@ export default function ProjectDetail() {
 
   // Mark a page as approved and show the page-selection modal for the next page (if any)
   async function handleApprovePageStep(filename) {
+    // Persist approval to DB immediately
+    const htmlRec = agentOutputs.find(o => o.agent_name === `Developer-HTML-${filename}`)
+    if (htmlRec) {
+      await safeUpdate('agent_outputs', htmlRec.id, { status: 'approved' })
+    }
+
+    // Optimistic update so the UI responds before load() completes
     const newApproved = new Set(approvedPages)
     newApproved.add(filename)
     setApprovedPages(newApproved)
+
+    // Re-fetch so Pages Progress syncs from DB immediately
+    await load()
 
     const allPages = project?.pages ?? []
     if (allPages.length <= 1) return // single-page site — overall Approve button will appear
@@ -2800,7 +2910,7 @@ export default function ProjectDetail() {
     setGoingBackToDev(false)
   }
 
-  async function regenerateWireframePage(wfRecord) {
+  async function regenerateWireframePage(wfRecord, excludeSeed) {
     const designRec = agentOutputs.find(o => o.agent_name === 'designer')
     if (!designRec?.output_text) return
     setRegenPageFilename(wfRecord.agent_name)
@@ -2819,8 +2929,9 @@ export default function ProjectDetail() {
       })
       regenTokenCalls.push({ label: 'Summary', input_tokens: rSumIn, output_tokens: rSumOut })
 
-      const svg = await generatePageWireframe(briefSummary, page, regenTokenCalls)
-      const { error: regenSaveErr } = await safeUpdate('agent_outputs', wfRecord.id, { output_wireframe: svg })
+      const regenMoodboard = designRec.output_moodboard ?? null
+      const { svg, layoutSeed } = await generatePageWireframe(briefSummary, page, regenTokenCalls, regenMoodboard, excludeSeed)
+      const { error: regenSaveErr } = await safeUpdate('agent_outputs', wfRecord.id, { output_wireframe: svg, output_text: layoutSeed })
       if (regenSaveErr) throw new Error(`Regenerate save failed: ${regenSaveErr.message}`)
 
       await load()
@@ -3003,10 +3114,11 @@ export default function ProjectDetail() {
   function getPageStatus(filename) {
     if (pageStatuses[filename]) return pageStatuses[filename]
     const rec = devHtmlOutputs.find(o => o.agent_name === `Developer-HTML-${filename}`)
+    if (rec?.status === 'approved') return 'approved'
     return rec?.output_text?.trim() ? 'complete' : 'pending'
   }
   const allPagesSettled  = projectPages.length > 0 && !isDeveloping &&
-    projectPages.every(p => { const s = getPageStatus(p.filename); return s === 'complete' || s === 'failed' })
+    projectPages.every(p => { const s = getPageStatus(p.filename); return s === 'complete' || s === 'failed' || s === 'approved' })
   const allPagesApproved = projectPages.length === 0
     ? true
     : skipToReview || projectPages.every(p => approvedPages.has(p.filename))
@@ -3876,7 +3988,7 @@ export default function ProjectDetail() {
                       onClick={() => setWireframeOpen(prev => ({ ...prev, [wf.id]: !isOpen }))}
                       className="w-full flex items-center justify-between px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800/80 transition-colors"
                     >
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
                         <WireframeIcon className="w-3.5 h-3.5 text-violet-400 flex-shrink-0" />
                         <span className="text-xs font-medium text-zinc-300">{displayName}</span>
                         <span className="text-xs text-zinc-600">{filename}</span>
@@ -3886,13 +3998,16 @@ export default function ProjectDetail() {
                             Regenerating…
                           </span>
                         )}
+                        {!isRegenThis && wf.output_text && (
+                          <span className="text-xs text-zinc-600 italic truncate">Layout: {wf.output_text}</span>
+                        )}
                       </div>
                       <ChevronIcon className={`w-3.5 h-3.5 text-zinc-500 flex-shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                     </button>
 
                     {/* Subsection body */}
                     {isOpen && (
-                      <div className="px-4 py-3 border-t border-zinc-800 bg-zinc-950 flex items-center gap-2">
+                      <div className="px-4 py-3 border-t border-zinc-800 bg-zinc-950 flex items-center gap-2 flex-wrap">
                         <button
                           onClick={async () => {
                             const { data } = await supabase.from('agent_outputs').select('output_wireframe').eq('id', wf.id).single()
@@ -3905,14 +4020,24 @@ export default function ProjectDetail() {
                           View Wireframe
                         </button>
                         {!wf._legacy && (
-                          <button
-                            onClick={() => regenerateWireframePage(wf)}
-                            disabled={isAgentRunning}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            <RefreshIcon className="w-3 h-3" />
-                            {isRegenThis ? 'Regenerating…' : 'Regenerate Wireframe'}
-                          </button>
+                          <>
+                            <button
+                              onClick={() => regenerateWireframePage(wf)}
+                              disabled={isAgentRunning}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <RefreshIcon className="w-3 h-3" />
+                              {isRegenThis ? 'Regenerating…' : 'Regenerate Wireframe'}
+                            </button>
+                            <button
+                              onClick={() => regenerateWireframePage(wf, wf.output_text ?? undefined)}
+                              disabled={isAgentRunning}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <RefreshIcon className="w-3 h-3" />
+                              Regenerate with different layout
+                            </button>
+                          </>
                         )}
                       </div>
                     )}
@@ -4507,7 +4632,8 @@ export default function ProjectDetail() {
                       return <StreamingSubSection key={pg.filename} label={`${pg.name} — ${pg.filename}`} stepLabel={devLiveStepLabel} text={devLiveText} storageKey={`developer-html-${pg.filename}`} />
                     }
 
-                    if (pgStatus === 'complete' && htmlRec) {
+                    if ((pgStatus === 'complete' || pgStatus === 'approved') && htmlRec) {
+                      const isPageApproved = htmlRec.status === 'approved'
                       return (
                         <DevSubSection
                           key={htmlRec.id}
@@ -4519,8 +4645,8 @@ export default function ProjectDetail() {
                           renderContent={() => <pre className="whitespace-pre-wrap text-xs text-zinc-300 leading-relaxed font-mono">{htmlRec.output_text}</pre>}
                           copyText={htmlRec.output_text ?? ''}
                           fileDownload={pg.filename}
-                          onApprove={!isAgentRunning ? () => handleApprovePageStep(pg.filename) : undefined}
-                          approved={approvedPages.has(pg.filename)}
+                          onApprove={!isAgentRunning && !isPageApproved ? () => handleApprovePageStep(pg.filename) : undefined}
+                          approved={isPageApproved}
                           extraButton={
                             htmlRec.output_text && (
                               <button

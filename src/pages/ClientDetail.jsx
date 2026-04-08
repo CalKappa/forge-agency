@@ -258,13 +258,14 @@ export default function ClientDetail() {
 
     // Load most recent SEO audit (table may not exist yet — ignore errors)
     try {
+      console.log('[seo_audits] ClientDetail list query — select: "id, client_id, website_url, score, created_at", filter: client_id =', clientId, ', order: created_at desc, limit: 1')
       const { data: auditData } = await supabase
         .from('seo_audits')
-        .select('id, created_at, score')
+        .select('id, client_id, website_url, score, created_at')
         .eq('client_id', clientId)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single()
+        .maybeSingle()
       setLastAudit(auditData ?? null)
     } catch {
       setLastAudit(null)

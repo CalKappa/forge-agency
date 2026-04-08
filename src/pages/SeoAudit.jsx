@@ -306,8 +306,9 @@ export default function SeoAudit() {
       setClient(clientData)
 
       if (auditId) {
+        console.log('[seo_audits] SeoAudit single fetch — select: "id, client_id, website_url, report_content, score, created_at", filter: id =', auditId)
         const { data: auditData } = await supabase
-          .from('seo_audits').select('*').eq('id', auditId).single()
+          .from('seo_audits').select('id, client_id, website_url, report_content, score, created_at').eq('id', auditId).single()
         if (auditData) {
           setReport(auditData.report_content ?? '')
           setScore(auditData.score ?? null)
@@ -396,6 +397,7 @@ export default function SeoAudit() {
       return m ? parseInt(m[1]) : null
     })()
 
+    console.log('[seo_audits] SeoAudit insert — columns: client_id, website_url, report_content, score — values:', { client_id: clientId, website_url: client.website, score: extractedScore })
     const { error: insertError } = await supabase.from('seo_audits').insert({
       client_id:      clientId,
       website_url:    client.website,
