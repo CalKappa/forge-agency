@@ -1586,6 +1586,9 @@ export default function ProjectDetail() {
   const orchestratorStreamRef = useRef('')
   // Monotonically-increasing generation counter — only the latest load() wins
   const loadGenRef      = useRef(0)
+  // Track previous orchestrator text to detect completion for browser notification
+  const orchPrevTextRef = useRef(null)
+  const orchMountedRef  = useRef(false)
 
   useEffect(() => {
     load()
@@ -1651,6 +1654,26 @@ export default function ProjectDetail() {
     const t = setTimeout(() => load(), 3000)
     return () => clearTimeout(t)
   }, [loading, agentOutputs, briefs])
+
+  // Fire a browser notification when the Orchestrator finishes for this project
+  useEffect(() => {
+    const newText = orchestratorOutput?.output_text ?? null
+    if (!orchMountedRef.current) {
+      // First render — record baseline without notifying
+      orchMountedRef.current = true
+      orchPrevTextRef.current = newText
+      return
+    }
+    if (!orchPrevTextRef.current && newText && project?.name) {
+      if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+        new Notification(`Client brief processed for ${project.name}`, {
+          body: 'Pipeline ready to start.',
+        })
+      }
+    }
+    orchPrevTextRef.current = newText
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orchestratorOutput?.output_text])
 
   async function loadBriefToken() {
     const { data } = await supabase
@@ -3687,7 +3710,14 @@ The Forge Agency Team`
       )}
 
       {/* ── Orchestrator breakdown ── */}
-      {(orchestratorOutput || isSendingOrchestrator) && (
+      {(orchestratorOutput || orchIsStreaming || hasBrief) && (() => {
+        // Three states for the status indicator
+        const orchStatus = orchIsStreaming
+          ? { dot: 'bg-blue-400 animate-pulse', label: 'Generating breakdown…', color: 'text-blue-400' }
+          : orchestratorOutput?.output_text
+          ? { dot: 'bg-emerald-400', label: 'Orchestrator complete', color: 'text-emerald-400' }
+          : { dot: 'bg-amber-400 animate-pulse', label: 'Orchestrator is analysing the brief…', color: 'text-amber-400' }
+        return (
         <div className="space-y-0">
           <div
             onClick={() => setOrchestratorOpen(o => !o)}
@@ -3696,6 +3726,11 @@ The Forge Agency Team`
             <div className="flex items-center gap-3">
               <span className="text-sm font-medium text-zinc-300">Orchestrator — Project breakdown</span>
               <span className="text-xs font-medium text-violet-400 bg-violet-400/10 px-2 py-0.5 rounded-full border border-violet-400/20">Orchestrator</span>
+              {/* Live status indicator */}
+              <span className="flex items-center gap-1.5">
+                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${orchStatus.dot}`} />
+                <span className={`text-xs ${orchStatus.color}`}>{orchStatus.label}</span>
+              </span>
             </div>
             <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
               {orchIsStreaming && orchLiveText && (
@@ -3734,7 +3769,16 @@ The Forge Agency Team`
           </div>
           {orchestratorOpen && (
             <div className="bg-zinc-950 border border-zinc-800 rounded-b-lg">
-              {orchIsStreaming ? (
+              {!orchIsStreaming && !orchestratorOutput ? (
+                /* Waiting state — brief exists but orchestrator hasn't run yet */
+                <div className="flex items-center gap-3 px-5 py-8 justify-center">
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500" />
+                  </span>
+                  <p className="text-sm text-zinc-500">Waiting for Orchestrator to analyse the brief…</p>
+                </div>
+              ) : orchIsStreaming ? (
                 <ScrollBox storageKey="orchestrator" isStreaming={true} contentLength={orchLiveText.length} maxHeight="500px" className="">
                   <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-zinc-800 bg-violet-500/5">
                     <span className="relative flex h-2 w-2">
@@ -3823,7 +3867,8 @@ The Forge Agency Team`
             </div>
           )}
         </div>
-      )}
+        )
+      })()}
 
       {/* ── Pages detected — only shown once Orchestrator has completed ── */}
       {orchestratorOutput && (

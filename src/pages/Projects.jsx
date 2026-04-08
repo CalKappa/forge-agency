@@ -18,10 +18,11 @@ const STAGE_CONFIG = {
 }
 
 export default function Projects() {
-  const [projects, setProjects] = useState([])
-  const [loading, setLoading]   = useState(true)
-  const [error, setError]       = useState(null)
-  const [stage, setStage]       = useState('All')
+  const [projects,          setProjects]          = useState([])
+  const [loading,           setLoading]           = useState(true)
+  const [error,             setError]             = useState(null)
+  const [stage,             setStage]             = useState('All')
+  const [submittedTokenIds, setSubmittedTokenIds] = useState(new Set())
   const { lastCreatedProject }  = useUI()
   const processedProjectRef     = useRef(null)
 
@@ -45,13 +46,14 @@ export default function Projects() {
   }, [lastCreatedProject])
 
   async function fetchProjects() {
-    const { data, error } = await supabase
-      .from('projects')
-      .select('*, clients(name)')
-      .order('created_at', { ascending: false })
+    const [{ data, error }, { data: tokenData }] = await Promise.all([
+      supabase.from('projects').select('*, clients(name)').order('created_at', { ascending: false }),
+      supabase.from('client_brief_tokens').select('project_id').eq('status', 'submitted'),
+    ])
 
     if (error) setError(error.message)
     else setProjects(data)
+    setSubmittedTokenIds(new Set((tokenData ?? []).map(r => r.project_id)))
     setLoading(false)
   }
 
@@ -122,6 +124,7 @@ export default function Projects() {
             <ProjectCard
               key={project.id}
               project={project}
+              hasBriefAlert={submittedTokenIds.has(project.id) && project.current_stage === 'Not Started'}
               onAdvanced={updated =>
                 setProjects(prev => prev.map(p => p.id === updated.id ? { ...p, current_stage: updated.current_stage } : p))
               }
@@ -136,7 +139,7 @@ export default function Projects() {
   )
 }
 
-function ProjectCard({ project, onAdvanced, onDeleted }) {
+function ProjectCard({ project, hasBriefAlert, onAdvanced, onDeleted }) {
   const [advancing,  setAdvancing]  = useState(false)
   const [menuOpen,   setMenuOpen]   = useState(false)
   const menuRef   = useRef(null)
@@ -193,9 +196,17 @@ function ProjectCard({ project, onAdvanced, onDeleted }) {
       <Link to={`/projects/${project.id}`} className="p-5 flex flex-col gap-4 flex-1">
         {/* Name + client */}
         <div className="space-y-1 min-w-0">
-          <h3 className="text-sm font-semibold text-white truncate group-hover:text-violet-300 transition-colors">
-            {project.name}
-          </h3>
+          <div className="flex items-center gap-2">
+            {hasBriefAlert && (
+              <span className="relative flex h-2 w-2 flex-shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
+              </span>
+            )}
+            <h3 className="text-sm font-semibold text-white truncate group-hover:text-violet-300 transition-colors">
+              {project.name}
+            </h3>
+          </div>
           <div className="flex items-center gap-1.5 text-xs text-zinc-500 min-w-0">
             <LinkIcon className="w-3 h-3 flex-shrink-0" />
             <span className="truncate">{clientName}</span>

@@ -38,6 +38,11 @@ export default function App() {
       setSession(session)
     })
 
+    // Request browser notification permission so we can alert on Orchestrator completion
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      Notification.requestPermission()
+    }
+
     return () => subscription.unsubscribe()
   }, [])
 

@@ -64,6 +64,7 @@ async function fetchDashboardData() {
     revenueRes,
     recentProjectsRes,
     latestBriefRes,
+    submittedTokensRes,
   ] = await Promise.all([
     supabase
       .from('projects')
@@ -102,6 +103,12 @@ async function fetchDashboardData() {
       .order('submitted_at', { ascending: false })
       .limit(1)
       .single(),
+
+    // Which projects have a submitted brief token (for the alert badge)
+    supabase
+      .from('client_brief_tokens')
+      .select('project_id')
+      .eq('status', 'submitted'),
   ])
 
   const revenueThisMonth = (revenueRes.data ?? []).reduce((sum, inv) => sum + Number(inv.amount), 0)
@@ -135,6 +142,7 @@ async function fetchDashboardData() {
     },
     recentProjects: recentProjectsRes.data ?? [],
     latestBrief,
+    submittedTokenIds: new Set((submittedTokensRes.data ?? []).map(r => r.project_id)),
   }
 }
 
@@ -176,7 +184,7 @@ export default function Dashboard() {
 
   if (loading) return <DashboardSkeleton />
 
-  const { stats, recentProjects, latestBrief } = data
+  const { stats, recentProjects, latestBrief, submittedTokenIds } = data
   const pipelineSections = parseResponse(latestBrief?.orchestrator_response)
 
   return (
@@ -244,15 +252,24 @@ export default function Dashboard() {
             <ul className="divide-y divide-zinc-800">
               {recentProjects.map(project => {
                 const sc = STAGE_CONFIG[project.current_stage] ?? STAGE_CONFIG.Research
+                const hasBriefAlert = submittedTokenIds.has(project.id) && project.current_stage === 'Not Started'
                 return (
                   <li key={project.id}>
                     <Link
                       to={`/projects/${project.id}`}
                       className="flex items-center justify-between gap-3 px-5 py-3.5 hover:bg-zinc-800/50 transition-colors"
                     >
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-zinc-200 truncate">{project.name}</p>
-                        <p className="text-xs text-zinc-500 mt-0.5">{project.clients?.name ?? '—'}</p>
+                      <div className="min-w-0 flex items-center gap-2">
+                        {hasBriefAlert && (
+                          <span className="relative flex h-2 w-2 flex-shrink-0">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
+                          </span>
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-zinc-200 truncate">{project.name}</p>
+                          <p className="text-xs text-zinc-500 mt-0.5">{project.clients?.name ?? '—'}</p>
+                        </div>
                       </div>
                       <span className={`flex-shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${sc.bg} ${sc.text} ${sc.border}`}>
                         {project.current_stage}
