@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get-SystemInfo Script - PowerShell Scripts Hub</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- ============================================
+         HEADER - main site navigation
+         ============================================ -->
+    <header class="header">
+        <div class="header-inner">
+            <div class="logo">
+                <span>PowerShell Scripts Hub</span>
+            </div>
+            <nav class="nav">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="scripts.html" class="nav-link">Scripts</a>
+                <a href="example-script.html" class="nav-link active">Example Script</a>
+                <a href="contact.html" class="nav-link">Contact</a>
+            </nav>
+            <button class="mobile-menu-toggle" aria-label="Toggle menu">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+        </div>
+        <div class="mobile-menu">
+            <nav class="mobile-nav">
+                <a href="index.html" class="mobile-nav-link">Home</a>
+                <a href="scripts.html" class="mobile-nav-link">Scripts</a>
+                <a href="example-script.html" class="mobile-nav-link active">Example Script</a>
+                <a href="contact.html" class="mobile-nav-link">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- ============================================
+             BREADCRUMB NAVIGATION - page location
+             ============================================ -->
+        <section class="section" style="padding: calc(var(--header-height) + 2rem) 0 2rem;">
+            <div class="container">
+                <div class="content-wrapper">
+                    <div class="breadcrumb">
+                        <a href="index.html">Home</a>
+                        <span class="breadcrumb-separator">/</span>
+                        <a href="scripts.html">Scripts</a>
+                        <span class="breadcrumb-separator">/</span>
+                        <span>Get-SystemInfo</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================
+             SCRIPT HEADER - title and meta information
+             ============================================ -->
+        <section class="section" style="padding: 2rem 0;">
+            <div class="container">
+                <div class="content-wrapper">
+                    <div class="script-header">
+                        <h1 class="heading-animate">Get-SystemInfo.ps1</h1>
+                        <p class="script-description">A comprehensive PowerShell script to gather detailed system information including hardware specs, installed software, network configuration, and performance metrics. Perfect for system administrators who need quick system diagnostics.</p>
+                        
+                        <div class="script-meta-header">
+                            <div class="meta-badges">
+                                <span class="script-tag difficulty-easy">Easy</span>
+                                <span class="script-tag">System Administration</span>
+                                <span class="script-tag">Diagnostics</span>
+                                <span class="script-tag">Hardware</span>
+                            </div>
+                            <div class="script-stats">
+                                <span class="stat-item">
+                                    <strong>Downloads:</strong> 2,847
+                                </span>
+                                <span class="stat-item">
+                                    <strong>Last Updated:</strong> March 15, 2024
+                                </span>
+                                <span class="stat-item">
+                                    <strong>Author:</strong> Admin Team
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================
+             MAIN CONTENT - two-column layout with info and code
+             ============================================ -->
+        <section class="section card-animate">
+            <div class="container">
+                <div class="content-wrapper">
+                    <div class="script-detail-layout">
+                        <!-- Left Column - Script Information -->
+                        <div class="script-info-panel">
+                            <div class="info-section">
+                                <h2>What This Script Does</h2>
+                                <p>The Get-SystemInfo script provides a comprehensive overview of your Windows system by collecting and displaying crucial information about:</p>
+                                <ul class="feature-list">
+                                    <li><strong>System Hardware:</strong> CPU, RAM, disk space, and motherboard details</li>
+                                    <li><strong>Operating System:</strong> Version, build number, installation date, and uptime</li>
+                                    <li><strong>Network Configuration:</strong> IP addresses, network adapters, and connectivity status</li>
+                                    <li><strong>Installed Software:</strong> List of installed programs and Windows features</li>
+                                    <li><strong>System Performance:</strong> Current resource usage and performance counters</li>
+                                </ul>
+                            </div>
+
+                            <div class="info-section">
+                                <h3>Requirements</h3>
+                                <ul class="requirements-list">
+                                    <li>Windows PowerShell 5.1 or PowerShell 7+</li>
+                                    <li>Administrator privileges (recommended for full system access)</li>
+                                    <li>Execution policy set to allow script execution</li>
+                                    <li>WMI/CIM cmdlets available (default in Windows)</li>
+                                </ul>
+                            </div>
+
+                            <div class="info-section">
+                                <h3>Usage Instructions</h3>
+                                <ol class="usage-steps">
+                                    <li>Open PowerShell as Administrator</li>
+                                    <li>Navigate to the script location or run directly</li>
+                                    <li>Execute: <code class="inline-code">.\Get-SystemInfo.ps1</code></li>
+                                    <li>Review the generated system report</li>
+                                    <li>Optional: Export results to file with <code class="inline-code">-ExportPath</code> parameter</li>
+                                </ol>
+                            </div>
+
+                            <div class="info-section">
+                                <h3>Parameters</h3>
+                                <div class="parameters-list">
+                                    <div class="parameter-item">
+                                        <code class="parameter-name">-ExportPath</code>
+                                        <span class="parameter-type">[string]</span>
+                                        <p class="parameter-description">Optional. Specify a file path to export the system information to a text file.</p>
+                                    </div>
+                                    <div class="parameter-item">
+                                        <code class="parameter-name">-IncludeSoftware</code>
+                                        <span class="parameter-type">[switch]</span>
+                                        <p class="parameter-description">Include detailed installed software information (may take longer to execute).</p>
+                                    </div>
+                                    <div class="parameter-item">
+                                        <code class="parameter-name">-Detailed</code>
+                                        <span class="parameter-type">[switch]</span>
+                                        <p class="parameter-description">Show additional detailed information including drivers and services.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column - Code Block -->
+                        <div class="script-code-panel">
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <div class="code-title">Get-SystemInfo.ps1</div>
+                                    <button class="copy-btn" title="Copy to clipboard">Copy Script</button>
+                                </div>
+                                <div class="code-content">
+                                    <code class="powershell"><span class="token comment"># Get-SystemInfo.ps1</span>
+<span class="token comment"># Comprehensive system information gathering script</span>
+<span class="token comment"># Author: PowerShell Scripts Hub</span>
+<span class="token comment"># Version: 2.1</span>
+<span class="token comment"># Last Updated: March 15, 2024</span>
+
+<span class="token keyword">param</span>(
+    [<span class="token keyword">string</span>]<span class="token variable">$ExportPath</span>,
+    [<span class="token keyword">switch</span>]<span class="token variable">$IncludeSoftware</span>,
+    [<span class="token keyword">switch</span>]<span class="token variable">$Detailed</span>
+)
+
+<span class="token keyword">function</span> <span class="token function">Get-SystemInfo</span> {
+    <span class="token keyword">param</span>(
+        [<span class="token keyword">string</span>]<span class="token variable">$ExportPath</span>,
+        [<span class="token keyword">switch</span>]<span class="token variable">$IncludeSoftware</span>,
+        [<span class="token keyword">switch</span>]<span class="token variable">$Detailed</span>
+    )
+
+    <span class="token comment"># Initialize output array</span>
+    <span class="token variable">$Output</span> = @()
+
+    <span class="token comment"># System Information Header</span>
+    <span class="token variable">$Output</span> += <span class="token string">"=== SYSTEM INFORMATION REPORT ==="</span>
+    <span class="token variable">$Output</span> += <span class="token string">"Generated: $((Get-Date).ToString('yyyy-MM-dd HH:mm:ss'))"</span>
+    <span class="token variable">$Output</span> += <span class="token string">""</span>
+
+    <span class="token comment"># Computer System Information</span>
+    <span class="token variable">$ComputerSystem</span> = <span class="token function">Get-CimInstance</span> -ClassName Win32_ComputerSystem
+    <span class="token variable">$Output</span> += <span class="token string">"--- COMPUTER SYSTEM ---"</span>
+    <span class="token variable">$Output</span> += <span class="token string">"Computer Name: $($ComputerSystem.Name)"</span>
+    <span class="token variable">$Output</span> += <span class="token string">"Domain: $($ComputerSystem.Domain)"</span>
+    <span class="token variable">$Output</span> += <span class="token string">"Manufacturer: $($ComputerSystem.Manufacturer)"</span>
+    <span class="token variable">$Output</span> += <span class="token string">"Model: $($ComputerSystem.Model)"</span>
+    <span class="token variable">$Output</span> += <span class="token string">"Total Physical Memory: $([math]::Round($ComputerSystem.TotalPhysicalMemory / 1GB, 2)) GB"</span>
+    <span class="token variable">$Output</span> += <span class="token string">""</span>
+
+    <span class="token comment"># Operating System Information</span>
+    <span class="token variable">$OS</span> = <span class="token function">Get-CimInstance</span> -ClassName Win32_OperatingSystem
+    <span class="token variable">$Output</span> += <span class="token string">"--- OPERATING SYSTEM ---"</span>
+    <span class="token variable">$Output</span> += <span class="token string">"OS Name: $($OS.Caption)"</span>
+    <span class="token variable">$Output</span> += <span class="token string">"Version: $($OS.Version)"</span>
+    <span class="token variable">$Output</span> += <span class="token string">"Build Number: $($OS.BuildNumber)"</span>
+    <span class="token variable">$Output</span> += <span class="token string">"Architecture: $($OS.OSArchitecture)"</span>
+    <span class="token variable">$Output</span> += <span class="token string">"Install Date: $($OS.InstallDate)"</span>
+    <span class="token variable">$Output</span> += <span class="token string">"Last Boot: $($OS.LastBootUpTime)"</span>
+    <span class="token variable">$Uptime</span> = (Get-Date) - <span class="token variable">$OS</span>.LastBootUpTime
+    <span class="token variable">$Output</span> += <span class="token string">"Uptime: $($Uptime.Days) days, $($Uptime.Hours) hours, $($Uptime.Minutes) minutes"</span>
+    <span class="token variable">$Output</span> += <span class="token string">""</span>
+
+    <span class="token comment"># Processor Information</span>
+    <span class="token variable">$Processor</span> = <span class="token function">Get-CimInstance</span> -ClassName Win32_Processor
+    <span class="token variable">$Output</span> += <span class="token string">"--- PROCESSOR ---"</span>
+    <span class="token variable">$Output</span> += <span class="token string">"Name: $($Processor.Name)"</span>
+    <span class="token variable">$Output</span> += <span class="token string">"Manufacturer: $($Processor.Manufacturer)"</span>
+    <span class="token variable">$Output</span> += <span class="token string">"Cores: $($Processor.NumberOfCores)"</span>
+    <span class="token variable">$Output</span> += <span class="token string">"Logical Processors: $($Processor.NumberOfLogicalProcessors)"</span>
+    <span class="token variable">$Output</span> += <span class="token string">"Max Clock Speed: $($Processor.MaxClockSpeed) MHz"</span>
+    <span class="token variable">$Output</span> += <span class="token string">""</span>
+
+    <span class="token comment"># Memory Information</span>
+    <span class="token variable">$Memory</span> = <span class="token function">Get-CimInstance</span> -ClassName Win32_PhysicalMemory
+    <span class="token variable">$Output</span> += <span class="token string">"--- MEMORY ---"</span>
+    <span class="token keyword">foreach</span> (<span class="token variable">$Stick</span> <span class="token keyword">in</span> <span class="token variable">$Memory</span>) {
+        <span class="token variable">$Output</span> += <span class="token string">"Memory Stick: $([math]::Round($Stick.Capacity / 1GB, 2)) GB - $($Stick.Speed) MHz - $($Stick.Manufacturer)"</span>
+    }
+    <span class="token variable">$Output</span> += <span class="token string">""</span>
+
+    <span class="token comment"># Disk Information</span>
+    <span class="token variable">$Disks</span> = <span class="token function">Get-CimInstance</span> -ClassName Win32_LogicalDisk -Filter <span class="token string">"DriveType = 3"</span>
+    <span class="token variable">$Output</span> += <span class="token string">"--- DISK DRIVES ---"</span>
+    <span class="token keyword">foreach</span> (<span class="token variable">$Disk</span> <span class="token keyword">in</span> <span class="token variable">$Disks</span>) {
+        <span class="token variable">$FreeSpace</span> = [<span class="token keyword">math</span>]::Round(<span class="token variable">$Disk</span>.FreeSpace / 1GB, 2)
+        <span class="token variable">$TotalSize</span> = [<span class="token keyword">math</span>]::Round(<span class="token variable">$Disk</span>.Size / 1GB, 2)
+        <span class="token variable">$PercentFree</span> = [<span class="token keyword">math</span>]::Round((<span class="token variable">$FreeSpace</span> / <span class="token variable">$TotalSize</span>) * 100, 1)
+        <span class="token variable">$Output</span> += <span class="token string">"Drive $($Disk.DeviceID) - Total: $TotalSize GB, Free: $FreeSpace GB ($PercentFree% free)"</span>
+    }
+    <span class="token variable">$Output</span> += <span class="token string">""</span>
+
+    <span class="token comment"># Network Adapter Information</span>
+    <span class="token variable">$NetworkAdapters</span> = <span class="token function">Get-NetAdapter</span> | <span class="token function">Where-Object</span> { <span class="token variable">$_</span>.Status -eq <span class="token string">"Up"</span> }
+    <span class="token variable">$Output</span> += <span class="token string">"--- NETWORK ADAPTERS ---"</span>
+    <span class="token keyword">foreach</span> (<span class="token variable">$Adapter</span> <span class="token keyword">in</span> <span class="token variable">$NetworkAdapters</span>) {
+        <span class="token variable">$IPConfig</span> = <span class="token function">Get-NetIPAddress</span> -InterfaceIndex <span class="token variable">$Adapter</span>.InterfaceIndex -AddressFamily IPv4 -ErrorAction SilentlyContinue
+        <span class="token variable">$Output</span> += <span class="token string">"Adapter: $($Adapter.Name)"</span>
+        <span class="token variable">$Output</span> += <span class="token string">"  Description: $($Adapter.InterfaceDescription)"</span>
+        <span class="token variable">$Output</span> += <span class="token string">"  Link Speed: $($Adapter.LinkSpeed)"</span>
+        <span class="token keyword">if</span> (<span class="token variable">$IPConfig</span>) {
+            <span class="token variable">$Output</span> += <span class="token string">"  IP Address: $($IPConfig.IPAddress)"</span>
+        }
+    }
+    <span class="token variable">$Output</span> += <span class="token string">""</span>
+
+    <span class="token comment"># Include software information if requested</span>
+    <span class="token keyword">if</span> (<span class="token variable">$IncludeSoftware</span>) {
+        <span class="token variable">$Output</span> += <span class="token string">"--- INSTALLED SOFTWARE ---"</span>
+        <span class="token variable">$Software</span> = <span class="token function">Get-CimInstance</span> -ClassName Win32_Product | <span class="token function">Sort-Object</span> Name
+        <span class="token keyword">foreach</span> (<span class="token variable">$Program</span> <span class="token keyword">in</span> <span class="token variable">$Software</span>) {
+            <span class="token variable">$Output</span> += <span class="token string">"$($Program.Name) - Version: $($Program.Version)"</span>
+        }
+        <span class="token variable">$Output</span> += <span class="token string">""</span>
+    }
+
+    <span class="token comment"># Include detailed information if requested</span>
+    <span class="token keyword">if</span> (<span class="token variable">$Detailed</span>) {
+        <span class="token comment"># Services</span>
+        <span class="token variable">$RunningServices</span> = <span class="token function">Get-Service</span> | <span class="token function">Where-Object</span> { <span class="token variable">$_</span>.Status -eq <span class="token string">"Running"</span> }
+        <span class="token variable">$Output</span> += <span class="token string">"--- RUNNING SERVICES ($($RunningServices.Count) total) ---"</span>
+        <span class="token keyword">foreach</span> (<span class="token variable">$Service</span> <span class="token keyword">in</span> <span class="token variable">$RunningServices</span> | <span class="token function">Select-Object</span> -First 10) {
+            <span class="token variable">$Output</span> += <span class="token string">"$($Service.Name) - $($Service.DisplayName)"</span>
+        }
+        <span class="token variable">$Output</span> += <span class="token string">"... and $($RunningServices.Count - 10) more services"</span>
+        <span class="token variable">$Output</span> += <span class="token string">""</span>
+
+        <span class="token comment"># System Performance</span>
+        <span class="token variable">$CPU</span> = <span class="token function">Get-Counter</span> <span class="token string">"\Processor(_Total)\% Processor Time"</span> -SampleInterval 1 -MaxSamples 3
+        <span class="token variable">$AvgCPU</span> = [<span class="token keyword">math</span>]::Round((<span class="token variable">$CPU</span>.CounterSamples | <span class="token function">Measure-Object</span> -Property CookedValue -Average).Average, 2)
+        <span class="token variable">$Output</span> += <span class="token string">"--- PERFORMANCE ---"</span>
+        <span class="token variable">$Output</span> += <span class="token string">"Average CPU Usage: $AvgCPU%"</span>
+        <span class="token variable">$MemoryUsage</span> = [<span class="token keyword">math</span>]::Round(((<span class="token variable">$OS</span>.TotalVisibleMemorySize - <span class="token variable">$OS</span>.FreePhysicalMemory) / <span class="token variable">$OS</span>.TotalVisibleMemorySize) * 100, 2)
+        <span class="token variable">$Output</span> += <span class="token string">"Memory Usage: $MemoryUsage%"</span>
+    }
+
+    <span class="token comment"># Output results</span>
+    <span class="token keyword">if</span> (<span class="token variable">$ExportPath</span>) {
+        <span class="token variable">$Output</span> | <span class="token function">Out-File</span> -FilePath <span class="token variable">$ExportPath</span> -Encoding UTF8
+        <span class="token function">Write-Host</span> <span class="token string">"System information exported to: $ExportPath"</span> -ForegroundColor Green
+    } <span class="token keyword">else</span> {
+        <span class="token variable">$Output</span>
+    }
+}
+
+<span class="token comment"># Execute the function with provided parameters</span>
+<span class="token function">Get-SystemInfo</span> -ExportPath <span class="token variable">$ExportPath</span> -IncludeSoftware:<span class="token variable">$IncludeSoftware</span> -Detailed:<span class="token variable">$Detailed</span></code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================
+             EXAMPLE OUTPUT - show what the script produces
+             ============================================ -->
+        <section class="section section-light">
+            <div class="container">
+                <div class="content-wrapper">
+                    <h2 class="heading-animate text-center">Example Output</h2>
+                    <p class="text-center" style="margin-bottom: 3rem;">Here's what the script output looks like when executed:</p>
+                    
+                    <div class="code-block">
+                        <div class="code-header">
+                            <div class="code-title">Sample Output</div>
+                            <button class="copy-btn" title="Copy to clipboard">Copy</button>
+                        </div>
+                        <div class="code-content">
+                            <code>=== SYSTEM INFORMATION REPORT ===
+Generated: 2024-03-15 14:30:22
+
+--- COMPUTER SYSTEM ---
+Computer Name: WIN-DESKTOP-01
+Domain: WORKGROUP
+Manufacturer: Dell Inc.
+Model: OptiPlex 7090
+Total Physical Memory: 16.00 GB
+
+--- OPERATING SYSTEM ---
+OS Name: Microsoft Windows 11 Pro
+Version: 10.0.22631
+Build Number: 22631
+Architecture: 64-bit
+Install Date: 1/15/2024 9:45:32 AM
+Last Boot: 3/15/2024 8:15:20 AM
+Uptime: 0 days, 6 hours, 15 minutes
+
+--- PROCESSOR ---
+Name: Intel(R) Core(TM) i7-11700 CPU @ 2.50GHz
+Manufacturer: GenuineIntel
+Cores: 8
+Logical Processors: 16
+Max Clock Speed: 2500 MHz
+
+--- MEMORY ---
+Memory Stick: 8.00 GB - 3200 MHz - Samsung
+Memory Stick: 8.00 GB - 3200 MHz - Samsung
+
+--- DISK DRIVES ---
+Drive C: - Total: 476.93 GB, Free: 245.67 GB (51.5% free)
+Drive D: - Total: 931.51 GB, Free: 654.32 GB (70.2% free)
+
+--- NETWORK ADAPTERS ---
+Adapter: Ethernet
+  Description: Intel(R) Ethernet Connection (11) I219-LM
+  Link Speed: 1 Gbps
+  IP Address: 192.168.1.150</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================
+             RELATED SCRIPTS - suggested similar scripts
+             ============================================ -->
+        <section class="section">
+            <div class="container">
+                <div class="content-wrapper">
+                    <h2 class="heading-animate text-center">Related Scripts</h2>
+                    <p class="text-center" style="margin-bottom: 3rem;">You might also find these scripts useful:</p>
+                    
+                    <div class="carousel-container">
+                        <div class="carousel">
+                            <div class="carousel-card card-animate">
+                                <h3>Get-NetworkInfo</h3>
+                                <p>Detailed network configuration and connectivity testing script for troubleshooting network issues.</p>
+                                <div class="script-meta">
+                                    <span class="script-tag difficulty-easy">Easy</span>
+                                    <span class="script-tag">Networking</span>
+                                </div>
+                                <a href="#" class="btn btn-secondary btn-small">View Script</a>
+                            </div>
+                            
+                            <div class="carousel-card card-animate">
+                                <h3>Test-SystemHealth</h3>
+                                <p>Comprehensive system health check including disk space, services, and performance monitoring.</p>
+                                <div class="script-meta">
+                                    <span class="script-tag difficulty-medium">Medium</span>
+                                    <span class="script-tag">Monitoring</span>
+                                </div>
+                                <a href="#" class="btn btn-secondary btn-small">View Script</a>
+                            </div>
+                            
+                            <div class="carousel-card card-animate">
+                                <h3>Export-SystemReport</h3>
+                                <p>Generate detailed HTML reports with system information, perfect for documentation and auditing.</p>
+                                <div class="script-meta">
+                                    <span class="script-tag difficulty-medium">Medium</span>
+                                    <span class="script-tag">Reporting</span>
+                                </div>
+                                <a href="#" class="btn btn-secondary btn-small">View Script</a>
+                            </div>
+                            
+                            <div class="carousel-card card-animate">
+                                <h3>Get-HardwareInventory</h3>
+                                <p>Detailed hardware inventory script for asset management and system documentation purposes.</p>
+                                <div class="script-meta">
+                                    <span class="script-tag difficulty-easy">Easy</span>
+                                    <span class="script-tag">Inventory</span>
+                                </div>
+                                <a href="#" class="btn btn-secondary btn-small">View Script</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ============================================
+         FOOTER - site footer information
+         ============================================ -->
+    <footer class="section section-light" style="padding: 2rem 0;">
+        <div class="container">
+            <div class="content-wrapper">
+                <div class="text-center">
+                    <p>&copy; 2024 PowerShell Scripts Hub. All rights reserved.</p>
+                    <p class="text-small">Empowering system administrators with reliable PowerShell solutions.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="script.js"></script>
+
+    <style>
+    .script-header {
+        margin-bottom: 2rem;
+    }
+
+    .script-description {
+        font-size: 1.125rem;
+        color: var(--medium-gray);
+        margin: 1.5rem 0 2rem;
+        line-height: 1.7;
+    }
+
+    .script-meta-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+
+    .meta-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .script-stats {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: right;
+    }
+
+    .stat-item {
+        font-size: var(--small-size);
+        color: var(--medium-gray);
+    }
+
+    .script-detail-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3rem;
+        align-items: start;
+    }
+
+    .script-info-panel {
+        background-color: var(--light-gray);
+        padding: 2rem;
+        border-radius: var(--border-radius-lg);
+        border: 1px solid var(--border-gray);
+    }
+
+    .script-code-panel {
+        position: sticky;
+        top: calc(var(--header-height) + 2rem);
+    }
+
+    .info-section {
+        margin-bottom: 2rem;
+    }
+
+    .info-section:last-child {
+        margin-bottom: 0;
+    }
+
+    .info-section h2 {
+        color: var(--deep-blue);
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        border-bottom: 2px solid var(--powershell-blue);
+        padding-bottom: 0.5rem;
+    }
+
+    .info-section h3 {
+        color: var(--deep-blue);
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+    }
+
+    .feature-list, .requirements-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .feature-list li, .requirements-list li {
+        position: relative;
+        padding: 0.5rem 0 0.5rem 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .feature-list li::before, .requirements-list li::before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        color: var(--success-green);
+        font-weight: bold;
+    }
+
+    .usage-steps {
+        counter-reset: step-counter;
+        list-style: none;
+        padding: 0;
+    }
+
+    .usage-steps li {
+        counter-increment: step-counter;
+        position: relative;
+        padding: 0.75rem 0 0.75rem 2.5rem;
+        margin-bottom: 0.5rem;
+        background-color: var(--white);
+        border-radius: var(--border-radius);
+        border: 1px solid var(--border-gray);
+    }
+
+    .usage-steps li::before {
+        content: counter(step-counter);
+        position: absolute;
+        left: 0.75rem;
+        top: 0.75rem;
+        width: 1.5rem;
+        height: 1.5rem;
+        background-color: var(--powershell-blue);
+        color: var(--white);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: var(--small-size);
+        font-weight: 600;
+    }
+
+    .inline-code {
+        background-color: var(--dark-gray);
+        color: var(--white);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: var(--font-mono);
+        font-size: 0.85em;
+    }
+
+    .parameters-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .parameter-item {
+        background-color: var(--white);
+        padding: 1rem;
+        border-radius: var(--border-radius);
+        border: 1px solid var(--border-gray);
+    }
+
+    .parameter-name {
+        font-family: var(--font-mono);
+        font-size: 1rem;
+        color: var(--powershell-blue);
+        font-weight: 600;
+    }
+
+    .parameter-type {
+        font-family: var(--font-mono);
+        font-size: var(--small-size);
+        color: var(--warning-amber);
+        margin-left: 0.5rem;
+    }
+
+    .parameter-description {
+        margin-top: 0.5rem;
+        margin-bottom: 0;
+        color: var(--charcoal);
+    }
+
+    @media (max-width: 1024px) {
+        .script-meta-header {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .script-stats {
+            text-align: left;
+        }
+
+        .script-detail-layout {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        .script-code-panel {
+            position: static;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .script-info-panel {
+            padding: 1.5rem;
+        }
+
+        .feature-list li, .requirements-list li {
+            padding-left: 1.25rem;
+        }
+
+        .usage-steps li {
+            padding-left: 2rem;
+        }
+
+        .usage-steps li::before {
+            left: 0.5rem;
+            width: 1.25rem;
+            height: 1.25rem;
+            font-size: 0.75rem;
+        }
+    }
+    </style>
+</body>
+</html>

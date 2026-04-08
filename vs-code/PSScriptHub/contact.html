@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact - PowerShell Scripts Hub</title>
+    <meta name="description" content="Get in touch with PowerShell Scripts Hub. Contact us for support, script requests, or collaboration opportunities.">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- ============================================
+         HEADER - navigation and branding
+         ============================================ -->
+    <header class="header">
+        <div class="container">
+            <div class="header-inner">
+                <a href="index.html" class="logo">
+                    PowerShell Scripts Hub
+                </a>
+                
+                <nav class="nav">
+                    <a href="index.html" class="nav-link">Home</a>
+                    <a href="scripts.html" class="nav-link">Scripts</a>
+                    <a href="example-script.html" class="nav-link">Example Script</a>
+                    <a href="contact.html" class="nav-link active">Contact</a>
+                </nav>
+
+                <button class="mobile-menu-toggle" aria-label="Toggle mobile menu">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
+            </div>
+        </div>
+
+        <div class="mobile-menu">
+            <nav class="mobile-nav">
+                <a href="index.html" class="mobile-nav-link">Home</a>
+                <a href="scripts.html" class="mobile-nav-link">Scripts</a>
+                <a href="example-script.html" class="mobile-nav-link">Example Script</a>
+                <a href="contact.html" class="mobile-nav-link active">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ============================================
+         MAIN CONTENT - page content wrapper
+         ============================================ -->
+    <main>
+        <!-- ============================================
+             HERO SECTION - page title and description
+             ============================================ -->
+        <section class="hero hero-animate">
+            <div class="container">
+                <div class="hero-content">
+                    <h1 class="hero-headline">Get in Touch</h1>
+                    <p>Have questions about PowerShell scripting? Need help with a specific automation task? We're here to help you streamline your workflows and boost productivity.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================
+             CONTACT SECTION - form and contact information
+             ============================================ -->
+        <section class="section">
+            <div class="container">
+                <div class="content-wrapper">
+                    <div class="contact-layout">
+                        <!-- Contact Form -->
+                        <div class="contact-form-wrapper">
+                            <h2 class="heading-animate">Send us a Message</h2>
+                            <p>Fill out the form below and we'll get back to you as soon as possible. Whether you need script assistance, have feature requests, or want to contribute to our library.</p>
+                            
+                            <form class="contact-form" action="#" method="POST">
+                                <div class="form-group">
+                                    <label for="name" class="form-label">Full Name *</label>
+                                    <input type="text" id="name" name="name" class="form-input" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="email" class="form-label">Email Address *</label>
+                                    <input type="email" id="email" name="email" class="form-input" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="subject" class="form-label">Subject *</label>
+                                    <input type="text" id="subject" name="subject" class="form-input" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="category" class="form-label">Category</label>
+                                    <select id="category" name="category" class="form-input">
+                                        <option value="">Select a category</option>
+                                        <option value="script-help">Script Help</option>
+                                        <option value="feature-request">Feature Request</option>
+                                        <option value="bug-report">Bug Report</option>
+                                        <option value="contribution">Script Contribution</option>
+                                        <option value="collaboration">Collaboration</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="message" class="form-label">Message *</label>
+                                    <textarea id="message" name="message" class="form-textarea" rows="6" placeholder="Tell us about your PowerShell needs, challenges, or ideas..." required></textarea>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary">Send Message</button>
+                            </form>
+                        </div>
+
+                        <!-- Contact Information -->
+                        <div class="contact-info">
+                            <h2 class="heading-animate">Contact Information</h2>
+                            <p>We're committed to helping the PowerShell community automate and optimize their workflows. Connect with us through any of the channels below.</p>
+
+                            <div class="contact-item">
+                                <div class="contact-icon">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3>Email Support</h3>
+                                    <p>support@powershellscripts.com</p>
+                                    <p class="text-small">Response time: 24-48 hours</p>
+                                </div>
+                            </div>
+
+                            <div class="contact-item">
+                                <div class="contact-icon">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3>Office Location</h3>
+                                    <p>123 Automation Street<br>
+                                    Script Valley, SV 12345<br>
+                                    United States</p>
+                                </div>
+                            </div>
+
+                            <div class="contact-item">
+                                <div class="contact-icon">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3>Community</h3>
+                                    <p>Join our growing community of PowerShell enthusiasts on GitHub and Discord.</p>
+                                    <div class="mt-2">
+                                        <a href="#" class="btn btn-secondary btn-small" style="margin-right: 8px;">GitHub</a>
+                                        <a href="#" class="btn btn-secondary btn-small">Discord</a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="contact-item">
+                                <div class="contact-icon">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3>Business Hours</h3>
+                                    <p>Monday - Friday: 9:00 AM - 6:00 PM (EST)<br>
+                                    Saturday: 10:00 AM - 2:00 PM (EST)<br>
+                                    Sunday: Closed</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================
+             FAQ SECTION - frequently asked questions
+             ============================================ -->
+        <section class="section section-light">
+            <div class="container">
+                <div class="content-wrapper">
+                    <div class="text-center">
+                        <h2 class="heading-animate">Frequently Asked Questions</h2>
+                        <p>Quick answers to common questions about our PowerShell scripts and services.</p>
+                    </div>
+
+                    <div class="features-grid" style="margin-top: 3rem;">
+                        <div class="feature-card card-animate">
+                            <h3>How do I request a custom script?</h3>
+                            <p>Simply fill out the contact form above with "Script Help" as the category and describe your automation needs. We'll work with you to create a tailored solution.</p>
+                        </div>
+
+                        <div class="feature-card card-animate">
+                            <h3>Can I contribute my own scripts?</h3>
+                            <p>Absolutely! We welcome community contributions. Select "Script Contribution" in the contact form and include your script details or GitHub repository link.</p>
+                        </div>
+
+                        <div class="feature-card card-animate">
+                            <h3>Do you provide enterprise support?</h3>
+                            <p>Yes, we offer enterprise-level PowerShell automation consulting and custom script development. Contact us to discuss your organization's needs.</p>
+                        </div>
+
+                        <div class="feature-card card-animate">
+                            <h3>How often are scripts updated?</h3>
+                            <p>Our script library is continuously updated with new additions and improvements. Critical updates are released as needed, with regular feature updates monthly.</p>
+                        </div>
+
+                        <div class="feature-card card-animate">
+                            <h3>Is there a cost for using scripts?</h3>
+                            <p>All scripts in our public library are free to use. Premium enterprise features and custom development services are available for a fee.</p>
+                        </div>
+
+                        <div class="feature-card card-animate">
+                            <h3>What PowerShell versions are supported?</h3>
+                            <p>Our scripts support PowerShell 5.1 and PowerShell 7+ (Core). Compatibility information is clearly marked on each script page.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ============================================
+         FOOTER - site footer with links and info
+         ============================================ -->
+    <footer class="section" style="background-color: var(--dark-gray); color: var(--white); padding: 3rem 0;">
+        <div class="container">
+            <div class="content-wrapper">
+                <div class="text-center">
+                    <h3 style="color: var(--white); margin-bottom: 1rem;">PowerShell Scripts Hub</h3>
+                    <p style="color: var(--medium-gray); margin-bottom: 2rem;">Empowering IT professionals with powerful automation scripts and tools.</p>
+                    
+                    <div style="display: flex; justify-content: center; gap: 2rem; margin-bottom: 2rem; flex-wrap: wrap;">
+                        <a href="index.html" style="color: var(--medium-gray);">Home</a>
+                        <a href="scripts.html" style="color: var(--medium-gray);">Scripts</a>
+                        <a href="example-script.html" style="color: var(--medium-gray);">Example Script</a>
+                        <a href="contact.html" style="color: var(--powershell-blue);">Contact</a>
+                    </div>
+                    
+                    <p style="color: var(--medium-gray); font-size: var(--small-size);">
+                        © 2024 PowerShell Scripts Hub. All rights reserved.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

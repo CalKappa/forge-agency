@@ -19,7 +19,7 @@ function sanitiseExtractedPages(pages) {
 // Per-project extraction guard: projectId → true when in flight
 const pageExtractionInFlight = {}
 
-const EMPTY = { clientId: '', projectId: '', briefText: '', isReplication: false, replicationUrl: '' }
+const EMPTY = { clientId: '', projectId: '', briefText: '', isReplication: false, replicationUrl: '', authRequired: false, authProvider: '', authProtectedContent: '' }
 
 // Phases: form → submitting → streaming → done | error
 export default function NewBriefPanel({ open, onClose }) {
@@ -107,13 +107,22 @@ export default function NewBriefPanel({ open, onClose }) {
     setPhase('submitting')
     setError(null)
 
+    // Compose auth context into brief text
+    const authSuffix = (() => {
+      if (!form.authRequired) return ''
+      const parts = ['Required', form.authProvider].filter(Boolean)
+      const protectedNote = form.authProtectedContent?.trim() ? ` — Protected content: ${form.authProtectedContent.trim()}` : ''
+      return `\n\nAuthentication: ${parts.join(' — ')}${protectedNote}`
+    })()
+    const fullBriefText = form.briefText.trim() + authSuffix
+
     // 1. Save to Supabase
     const { data: inserted, error: dbError } = await supabase
       .from('briefs')
       .insert({
         client_id:  form.clientId,
         project_id: form.projectId || null,
-        brief_text: form.briefText.trim(),
+        brief_text: fullBriefText,
       })
       .select('id')
       .single()
@@ -134,7 +143,7 @@ export default function NewBriefPanel({ open, onClose }) {
         try {
           console.log('[PageExtractor] Running on brief text (quick panel), project:', form.projectId)
           const { text: raw } = await streamAnthropicCall({
-            messages:     [{ role: 'user', content: form.briefText.trim() }],
+            messages:     [{ role: 'user', content: fullBriefText }],
             systemPrompt: PAGE_EXTRACTOR_SYSTEM,
             model:        'claude-haiku-4-5-20251001',
             maxTokens:    8000,
@@ -171,7 +180,7 @@ export default function NewBriefPanel({ open, onClose }) {
     try {
       let fullResponse = ''
       await streamAnthropicCall({
-        messages:     [{ role: 'user', content: form.briefText.trim() + pagesContext + replicationContext }],
+        messages:     [{ role: 'user', content: fullBriefText + pagesContext + replicationContext }],
         systemPrompt: ORCHESTRATOR_SYSTEM,
         model:        'claude-opus-4-20250514',
         maxTokens:    2048,
@@ -318,6 +327,52 @@ export default function NewBriefPanel({ open, onClose }) {
 
             {!showResults && (
               <div className="space-y-2.5">
+                {/* Authentication required */}
+                <label className="flex items-center gap-2.5 cursor-pointer group">
+                  <div className="relative flex-shrink-0">
+                    <input
+                      type="checkbox"
+                      checked={form.authRequired ?? false}
+                      onChange={e => set('authRequired', e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-4 h-4 rounded border border-zinc-600 bg-zinc-800 peer-checked:bg-violet-600 peer-checked:border-violet-600 transition-colors flex items-center justify-center">
+                      {form.authRequired && (
+                        <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </div>
+                  </div>
+                  <span className="text-sm text-zinc-400 group-hover:text-zinc-300 transition-colors">Authentication required</span>
+                </label>
+
+                {form.authRequired && (
+                  <div className="space-y-2 pl-6">
+                    <select
+                      value={form.authProvider || ''}
+                      onChange={e => set('authProvider', e.target.value)}
+                      className={inputCls}
+                    >
+                      <option value="">Auth provider…</option>
+                      <option value="Supabase Auth">Supabase Auth</option>
+                      <option value="Firebase Auth">Firebase Auth</option>
+                    </select>
+                    <textarea
+                      value={form.authProtectedContent || ''}
+                      onChange={e => set('authProtectedContent', e.target.value)}
+                      placeholder="What needs to be behind a login? e.g. Members area, downloads, account dashboard…"
+                      rows={2}
+                      className={`${inputCls} resize-none`}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {!showResults && (
+              <div className="space-y-2.5">
+                {/* Replicate existing site */}
                 <label className="flex items-center gap-2.5 cursor-pointer group">
                   <div className="relative flex-shrink-0">
                     <input

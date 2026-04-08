@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PowerShell Scripts - PowerShell Scripts Hub</title>
+    <meta name="description" content="Browse our comprehensive collection of PowerShell scripts organized by category and difficulty level. Find automation solutions for system administration, Active Directory, and more.">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- ============================================
+         HEADER - main site navigation
+         ============================================ -->
+    <header class="header">
+        <div class="header-inner">
+            <div class="logo">
+                <span>PowerShell Hub</span>
+            </div>
+            <nav class="nav">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="scripts.html" class="nav-link active">Scripts</a>
+                <a href="example-script.html" class="nav-link">Example Script</a>
+                <a href="contact.html" class="nav-link">Contact</a>
+            </nav>
+            <button class="mobile-menu-toggle">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- ============================================
+         MOBILE NAVIGATION - hamburger menu
+         ============================================ -->
+    <div class="mobile-menu">
+        <nav class="mobile-nav">
+            <a href="index.html" class="mobile-nav-link">Home</a>
+            <a href="scripts.html" class="mobile-nav-link active">Scripts</a>
+            <a href="example-script.html" class="mobile-nav-link">Example Script</a>
+            <a href="contact.html" class="mobile-nav-link">Contact</a>
+        </nav>
+    </div>
+
+    <!-- ============================================
+         MAIN CONTENT - scripts page layout
+         ============================================ -->
+    <main style="padding-top: 64px;">
+        <!-- ============================================
+             PAGE HEADER - scripts page title section
+             ============================================ -->
+        <section class="section">
+            <div class="container">
+                <div class="content-wrapper">
+                    <div class="text-center">
+                        <h1 class="heading-animate">PowerShell Scripts Collection</h1>
+                        <p>Discover, learn, and implement PowerShell automation solutions for your infrastructure needs.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================
+             SCRIPTS LAYOUT - sidebar and main content
+             ============================================ -->
+        <section class="section" style="padding-top: 0;">
+            <div class="container">
+                <div class="scripts-layout">
+                    <!-- ============================================
+                         SIDEBAR - filters and search
+                         ============================================ -->
+                    <aside class="sidebar">
+                        <div class="search-box">
+                            <input type="text" class="search-input" placeholder="Search scripts...">
+                            <span class="search-icon">🔍</span>
+                        </div>
+
+                        <div class="filter-group">
+                            <h3>Categories</h3>
+                            <div class="filter-options">
+                                <label class="filter-option">
+                                    <input type="checkbox" value="system administration">
+                                    <span>System Administration</span>
+                                </label>
+                                <label class="filter-option">
+                                    <input type="checkbox" value="active directory">
+                                    <span>Active Directory</span>
+                                </label>
+                                <label class="filter-option">
+                                    <input type="checkbox" value="file management">
+                                    <span>File Management</span>
+                                </label>
+                                <label class="filter-option">
+                                    <input type="checkbox" value="network">
+                                    <span>Network</span>
+                                </label>
+                                <label class="filter-option">
+                                    <input type="checkbox" value="security">
+                                    <span>Security</span>
+                                </label>
+                                <label class="filter-option">
+                                    <input type="checkbox" value="automation">
+                                    <span>Automation</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="filter-group">
+                            <h3>Difficulty Level</h3>
+                            <div class="filter-options">
+                                <label class="filter-option">
+                                    <input type="checkbox" value="beginner">
+                                    <span>Beginner</span>
+                                </label>
+                                <label class="filter-option">
+                                    <input type="checkbox" value="intermediate">
+                                    <span>Intermediate</span>
+                                </label>
+                                <label class="filter-option">
+                                    <input type="checkbox" value="advanced">
+                                    <span>Advanced</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="filter-group">
+                            <h3>Script Type</h3>
+                            <div class="filter-options">
+                                <label class="filter-option">
+                                    <input type="checkbox" value="function">
+                                    <span>Function</span>
+                                </label>
+                                <label class="filter-option">
+                                    <input type="checkbox" value="module">
+                                    <span>Module</span>
+                                </label>
+                                <label class="filter-option">
+                                    <input type="checkbox" value="one-liner">
+                                    <span>One-liner</span>
+                                </label>
+                                <label class="filter-option">
+                                    <input type="checkbox" value="workflow">
+                                    <span>Workflow</span>
+                                </label>
+                            </div>
+                        </div>
+                    </aside>
+
+                    <!-- ============================================
+                         MAIN CONTENT - script cards grid
+                         ============================================ -->
+                    <div class="main-content">
+                        <div class="scripts-grid">
+                            <article class="script-card card-animate">
+                                <h3>Active Directory User Management</h3>
+                                <p>Comprehensive script for creating, modifying, and managing Active Directory user accounts with bulk operations support.</p>
+                                <div class="script-meta">
+                                    <span class="script-tag">active directory</span>
+                                    <span class="script-tag difficulty-medium">intermediate</span>
+                                    <span class="script-tag">function</span>
+                                </div>
+                                <a href="example-script.html" class="btn btn-secondary btn-small">View Script</a>
+                            </article>
+
+                            <article class="script-card card-animate">
+                                <h3>System Health Monitor</h3>
+                                <p>Monitor system performance, disk usage, and service status across multiple servers with automated reporting.</p>
+                                <div class="script-meta">
+                                    <span class="script-tag">system administration</span>
+                                    <span class="script-tag difficulty-easy">beginner</span>
+                                    <span class="script-tag">module</span>
+                                </div>
+                                <a href="example-script.html" class="btn btn-secondary btn-small">View Script</a>
+                            </article>
+
+                            <article class="script-card card-animate">
+                                <h3>File Cleanup Automation</h3>
+                                <p>Automated file cleanup script with configurable rules for removing old files and managing disk space.</p>
+                                <div class="script-meta">
+                                    <span class="script-tag">file management</span>
+                                    <span class="script-tag difficulty-easy">beginner</span>
+                                    <span class="script-tag">automation</span>
+                                </div>
+                                <a href="example-script.html" class="btn btn-secondary btn-small">View Script</a>
+                            </article>
+
+                            <article class="script-card card-animate">
+                                <h3>Network Port Scanner</h3>
+                                <p>Fast and efficient network port scanner with customizable port ranges and output formatting options.</p>
+                                <div class="script-meta">
+                                    <span class="script-tag">network</span>
+                                    <span class="script-tag difficulty-medium">intermediate</span>
+                                    <span class="script-tag">function</span>
+                                </div>
+                                <a href="example-script.html" class="btn btn-secondary btn-small">View Script</a>
+                            </article>
+
+                            <article class="script-card card-animate">
+                                <h3>Security Audit Tool</h3>
+                                <p>Comprehensive security audit script that checks system configurations, user permissions, and security policies.</p>
+                                <div class="script-meta">
+                                    <span class="script-tag">security</span>
+                                    <span class="script-tag difficulty-hard">advanced</span>
+                                    <span class="script-tag">workflow</span>
+                                </div>
+                                <a href="example-script.html" class="btn btn-secondary btn-small">View Script</a>
+                            </article>
+
+                            <article class="script-card card-animate">
+                                <h3>Exchange Mailbox Report</h3>
+                                <p>Generate detailed reports on Exchange mailbox usage, permissions, and storage statistics.</p>
+                                <div class="script-meta">
+                                    <span class="script-tag">system administration</span>
+                                    <span class="script-tag difficulty-medium">intermediate</span>
+                                    <span class="script-tag">function</span>
+                                </div>
+                                <a href="example-script.html" class="btn btn-secondary btn-small">View Script</a>
+                            </article>
+
+                            <article class="script-card card-animate">
+                                <h3>Quick Server Info</h3>
+                                <p>One-liner command to quickly gather essential server information including OS, hardware, and network details.</p>
+                                <div class="script-meta">
+                                    <span class="script-tag">system administration</span>
+                                    <span class="script-tag difficulty-easy">beginner</span>
+                                    <span class="script-tag">one-liner</span>
+                                </div>
+                                <a href="example-script.html" class="btn btn-secondary btn-small">View Script</a>
+                            </article>
+
+                            <article class="script-card card-animate">
+                                <h3>Backup Validation Script</h3>
+                                <p>Automated backup validation and verification tool with email notifications and detailed logging.</p>
+                                <div class="script-meta">
+                                    <span class="script-tag">automation</span>
+                                    <span class="script-tag difficulty-medium">intermediate</span>
+                                    <span class="script-tag">workflow</span>
+                                </div>
+                                <a href="example-script.html" class="btn btn-secondary btn-small">View Script</a>
+                            </article>
+
+                            <article class="script-card card-animate">
+                                <h3>Group Policy Reporter</h3>
+                                <p>Advanced script for analyzing and reporting on Group Policy settings across your domain infrastructure.</p>
+                                <div class="script-meta">
+                                    <span class="script-tag">active directory</span>
+                                    <span class="script-tag difficulty-hard">advanced</span>
+                                    <span class="script-tag">module</span>
+                                </div>
+                                <a href="example-script.html" class="btn btn-secondary btn-small">View Script</a>
+                            </article>
+
+                            <article class="script-card card-animate">
+                                <h3>Log File Analyzer</h3>
+                                <p>Parse and analyze Windows event logs with filtering, pattern matching, and export capabilities.</p>
+                                <div class="script-meta">
+                                    <span class="script-tag">file management</span>
+                                    <span class="script-tag difficulty-medium">intermediate</span>
+                                    <span class="script-tag">function</span>
+                                </div>
+                                <a href="example-script.html" class="btn btn-secondary btn-small">View Script</a>
+                            </article>
+
+                            <article class="script-card card-animate">
+                                <h3>Certificate Management</h3>
+                                <p>Complete certificate lifecycle management including creation, renewal, and expiration monitoring.</p>
+                                <div class="script-meta">
+                                    <span class="script-tag">security</span>
+                                    <span class="script-tag difficulty-hard">advanced</span>
+                                    <span class="script-tag">module</span>
+                                </div>
+                                <a href="example-script.html" class="btn btn-secondary btn-small">View Script</a>
+                            </article>
+
+                            <article class="script-card card-animate">
+                                <h3>Service Dependency Mapper</h3>
+                                <p>Map and visualize Windows service dependencies across multiple servers for troubleshooting.</p>
+                                <div class="script-meta">
+                                    <span class="script-tag">system administration</span>
+                                    <span class="script-tag difficulty-medium">intermediate</span>
+                                    <span class="script-tag">function</span>
+                                </div>
+                                <a href="example-script.html" class="btn btn-secondary btn-small">View Script</a>
+                            </article>
+                        </div>
+
+                        <!-- ============================================
+                             PAGINATION - page navigation controls
+                             ============================================ -->
+                        <div class="pagination">
+                            <button class="pagination-btn">‹</button>
+                            <button class="pagination-btn active">1</button>
+                            <button class="pagination-btn">2</button>
+                            <button class="pagination-btn">3</button>
+                            <button class="pagination-btn">4</button>
+                            <button class="pagination-btn">5</button>
+                            <button class="pagination-btn">›</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ============================================
+         FOOTER - site information and links
+         ============================================ -->
+    <footer class="section section-light" style="padding: 40px 0;">
+        <div class="container">
+            <div class="content-wrapper text-center">
+                <p class="text-small">&copy; 2024 PowerShell Scripts Hub. All rights reserved. | Built for system administrators and PowerShell enthusiasts.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

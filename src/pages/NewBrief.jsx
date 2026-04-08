@@ -47,6 +47,11 @@ const AESTHETICS    = ['Minimal', 'Bold', 'Playful', 'Elegant', 'Corporate', 'Mo
 const INTEGRATIONS  = ['Booking system', 'E-commerce/shop', 'Contact form', 'Newsletter signup', 'Live chat', 'Analytics', 'CMS', 'Social media feeds', 'Payment processing', 'Other']
 const CMS_OPTIONS   = ['WordPress', 'Webflow', 'Custom', 'No preference']
 const HOSTING_OPTIONS = ['Client handles own hosting', 'We recommend hosting', 'No preference']
+const AUTH_PROVIDERS   = ['Supabase Auth (recommended)', 'Firebase Auth', 'Custom solution']
+const LOGIN_TYPES      = ['Email and password', 'Magic link (passwordless)', 'Google login', 'GitHub login', 'Facebook login']
+const USER_ROLES_OPTIONS    = ['No — just one user type', 'Yes — admin and standard users', 'Yes — multiple custom roles']
+const FILE_ACCESS_OPTIONS   = ['Public downloads (anyone can download)', 'Protected downloads (login required)']
+const FILE_TYPE_OPTIONS     = ['PDF documents', 'Images', 'Videos', 'Audio files', 'ZIP archives', 'Other']
 const ANIMATION_STYLES = [
   'Subtle and professional',
   'Modern and dynamic',
@@ -82,7 +87,7 @@ const EMPTY_FORM = {
   step2: { siteType: [], primaryGoal: '', pages: [], hasExistingSite: false, existingSiteUrl: '', isReplication: false, whatToKeep: [], existingSiteDislikes: '', targetLaunchDate: '', budgetRange: '' },
   step3: { logoUrl: '', logoFileName: '', colourPreferences: '', fontPreferences: '', aesthetic: [], moodDescription: '', brandGuidelines: '' },
   step4: { copyReady: false, copyNotes: '', pagesNeedingCopy: [], imagesAvailable: false, imageUrls: [], imageDirectionNotes: '', contentRequirements: '' },
-  step5: { integrations: [], cmsRequired: false, preferredCms: '', hostingPreference: '', gdprRequired: false, otherTechnical: '', animationStyle: 'Subtle and professional', animationCustom: '', heroAnimation: [], particleEffects: [], particleColourPreference: '' },
+  step5: { integrations: [], cmsRequired: false, preferredCms: '', hostingPreference: '', gdprRequired: false, authRequired: false, authProvider: '', loginTypes: [], protectedContent: '', userRoles: '', downloadsRequired: false, fileAccessType: '', fileTypes: [], fileDescription: '', otherTechnical: '', animationStyle: 'Subtle and professional', animationCustom: '', heroAnimation: [], particleEffects: [], particleColourPreference: '' },
   step6: { competitor1: { url: '', likes: '', dislikes: '' }, competitor2: { url: '', likes: '', dislikes: '' }, competitor3: { url: '', likes: '', dislikes: '' }, generalNotes: '' },
 }
 
@@ -193,6 +198,21 @@ function compileBrief(form, clientName, projectName) {
   if (s5.cmsRequired && s5.preferredCms) lines.push(`**Preferred CMS:** ${s5.preferredCms}`)
   if (s5.hostingPreference)  lines.push(`**Hosting:** ${s5.hostingPreference}`)
   lines.push(`**GDPR compliance required:** ${s5.gdprRequired ? 'Yes' : 'No'}`)
+  if (s5.authRequired) {
+    const authParts = ['Required', s5.authProvider, s5.loginTypes?.length ? s5.loginTypes.join(' plus ') : ''].filter(Boolean)
+    lines.push(`**Authentication:** ${authParts.join(' — ')}`)
+    if (s5.protectedContent) lines.push(`**Protected content:** ${s5.protectedContent}`)
+    if (s5.userRoles)        lines.push(`**User roles:** ${s5.userRoles}`)
+  } else {
+    lines.push('**Authentication:** Not required')
+  }
+  if (s5.downloadsRequired) {
+    const dlParts = ['Required', s5.fileAccessType, s5.fileTypes?.length ? s5.fileTypes.join(', ') : ''].filter(Boolean)
+    lines.push(`**Downloadable files:** ${dlParts.join(' — ')}`)
+    if (s5.fileDescription) lines.push(`**File description:** ${s5.fileDescription}`)
+  } else {
+    lines.push('**Downloadable files:** Not required')
+  }
   if (s5.otherTechnical)     lines.push(`**Other technical notes:** ${s5.otherTechnical}`)
   if (s5.animationStyle) {
     const animLabel = s5.animationStyle === 'Custom' && s5.animationCustom
@@ -682,6 +702,65 @@ function Step5({ form, setForm }) {
         <YesNo value={s.gdprRequired} onChange={v => set({ gdprRequired: v })} />
       </Field>
 
+      <Field label="User Authentication">
+        <YesNo value={s.authRequired} onChange={v => set({ authRequired: v, ...(!v && { authProvider: '', loginTypes: [], protectedContent: '', userRoles: '' }) })} />
+      </Field>
+
+      {s.authRequired && (
+        <div className="space-y-4 pl-4 border-l-2 border-violet-800">
+          <Field label="Auth provider">
+            <select className={inputCls} value={s.authProvider} onChange={e => set({ authProvider: e.target.value })}>
+              <option value="">Select…</option>
+              {AUTH_PROVIDERS.map(p => <option key={p} value={p}>{p}</option>)}
+            </select>
+          </Field>
+
+          <Field label="Login type" hint="Select all that apply.">
+            <MultiToggle options={LOGIN_TYPES} value={s.loginTypes} onChange={v => set({ loginTypes: v })} />
+          </Field>
+
+          <Field label="What should be protected behind login?">
+            <textarea
+              className={textareaCls}
+              rows={2}
+              value={s.protectedContent}
+              onChange={e => set({ protectedContent: e.target.value })}
+              placeholder="Members area, downloads, account dashboard…"
+            />
+          </Field>
+
+          <Field label="Do you need different user roles?">
+            <RadioGroup options={USER_ROLES_OPTIONS} value={s.userRoles} onChange={v => set({ userRoles: v })} />
+          </Field>
+        </div>
+      )}
+
+      <Field label="Downloadable files">
+        <YesNo value={s.downloadsRequired} onChange={v => set({ downloadsRequired: v, ...(!v && { fileAccessType: '', fileTypes: [], fileDescription: '' }) })} />
+      </Field>
+
+      {s.downloadsRequired && (
+        <div className="space-y-4 pl-4 border-l-2 border-violet-800">
+          <Field label="File access type">
+            <RadioGroup options={FILE_ACCESS_OPTIONS} value={s.fileAccessType} onChange={v => set({ fileAccessType: v })} />
+          </Field>
+
+          <Field label="File types" hint="Select all that apply.">
+            <MultiToggle options={FILE_TYPE_OPTIONS} value={s.fileTypes} onChange={v => set({ fileTypes: v })} />
+          </Field>
+
+          <Field label="Describe the files available">
+            <textarea
+              className={textareaCls}
+              rows={2}
+              value={s.fileDescription}
+              onChange={e => set({ fileDescription: e.target.value })}
+              placeholder="Annual reports, product brochures, training videos, music samples…"
+            />
+          </Field>
+        </div>
+      )}
+
       <Field label="Other technical notes">
         <textarea className={textareaCls} rows={3} value={s.otherTechnical} onChange={e => set({ otherTechnical: e.target.value })} placeholder="Accessibility requirements, performance targets, existing API integrations…" />
       </Field>
@@ -836,6 +915,11 @@ function Step7Review({ form, completeness, clients, projects, clientId, projectI
         ['Preferred CMS', s5.preferredCms],
         ['Hosting',       s5.hostingPreference],
         ['GDPR',          s5.gdprRequired ? 'Yes' : 'No'],
+        ['Authentication', s5.authRequired ? ['Required', s5.authProvider, s5.loginTypes?.join(', ')].filter(Boolean).join(' — ') : 'Not required'],
+        ['Protected content', s5.authRequired ? s5.protectedContent : ''],
+        ['User roles',    s5.authRequired ? s5.userRoles : ''],
+        ['Downloadable files', s5.downloadsRequired ? ['Required', s5.fileAccessType, s5.fileTypes?.join(', ')].filter(Boolean).join(' — ') : 'Not required'],
+        ['File description', s5.downloadsRequired ? s5.fileDescription : ''],
         ['Other notes',   s5.otherTechnical],
         ['Animation style', s5.animationStyle === 'Custom' && s5.animationCustom ? `Custom — ${s5.animationCustom}` : s5.animationStyle],
         ['Hero animation',  s5.heroAnimation?.join(', ')],
