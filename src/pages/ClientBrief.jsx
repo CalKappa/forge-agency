@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { streamAnthropicCall } from '../lib/streamHelper'
+
+// Orchestrator system prompt — must match PROJ_ORCHESTRATOR_SYSTEM in ProjectDetail.jsx
+const ORCHESTRATOR_SYSTEM = `You are the orchestrator for an AI web design agency. You will be given a detailed structured client brief. Break it down into four clearly labelled task lists for: 1) Researcher — what to research about the industry, audience, competitors and SEO. 2) Designer — what design decisions to make, what pages to wireframe, what brand direction to follow. 3) Developer — what pages to build, what technical requirements to implement, what integrations to set up. 4) Reviewer — what specific things to check against the brief during the quality review. Be specific and actionable for each agent. Use markdown formatting with clear headings.`
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -720,11 +724,13 @@ export default function ClientBrief() {
     setSubmitError(null)
 
     const briefText = compileBrief(f, clientName, projectName)
+    const projectId = tokenRecord.project_id
+    const clientId  = tokenRecord.client_id
 
     // 1. Save to briefs_structured
     const { error: structuredErr } = await supabase.from('briefs_structured').insert({
-      client_id:  tokenRecord.client_id,
-      project_id: tokenRecord.project_id,
+      client_id:  clientId,
+      project_id: projectId,
       status:     'submitted',
       step1: { companyName: f.companyName, industry: f.industry, industryOther: f.industryOther, location: f.location, tagline: f.tagline, whatTheyDo: f.whatTheyDo, customers: f.customers, businessGoals: f.businessGoals },
       step2: { siteType: f.siteType, primaryGoal: f.primaryGoal, hasExistingSite: f.hasExistingSite, existingUrl: f.existingUrl, existingLikes: f.existingLikes, existingDislikes: f.existingDislikes, launchDate: f.launchDate, budget: f.budget },
@@ -733,17 +739,24 @@ export default function ClientBrief() {
     })
 
     if (structuredErr) {
+      console.error('[ClientBrief] briefs_structured insert failed:', structuredErr)
       setSubmitError('Something went wrong saving your brief. Please try again.')
       setSubmitting(false)
       return
     }
 
     // 2. Insert into briefs (populates the activity feed)
-    await supabase.from('briefs').insert({
-      client_id:  tokenRecord.client_id,
-      project_id: tokenRecord.project_id,
+    const { data: briefRecord, error: briefErr } = await supabase.from('briefs').insert({
+      client_id:  clientId,
+      project_id: projectId,
       brief_text: briefText,
-    })
+    }).select('id').single()
+
+    if (briefErr) {
+      console.error('[ClientBrief] briefs insert failed:', briefErr)
+    } else {
+      console.log('[ClientBrief] Client brief saved to briefs table', { project_id: projectId, brief_id: briefRecord?.id })
+    }
 
     // 3. Mark token as submitted
     await supabase
@@ -751,8 +764,46 @@ export default function ClientBrief() {
       .update({ status: 'submitted', submitted_at: new Date().toISOString() })
       .eq('token', token)
 
+    // 4. Trigger Orchestrator — runs asynchronously so the success screen shows immediately.
+    //    Errors are logged but do not block submission since the brief is already saved.
+    triggerOrchestrator(projectId, clientId, briefText)
+
     setTokenState('done')
     setSubmitting(false)
+  }
+
+  async function triggerOrchestrator(projectId, clientId, briefText) {
+    console.log('[ClientBrief] Orchestrator trigger starting')
+    console.log('[ClientBrief] project_id:', projectId, '| client_id:', clientId)
+    if (!projectId) { console.error('[ClientBrief] ABORT: project_id is null — cannot save Orchestrator output'); return }
+    if (!briefText) { console.error('[ClientBrief] ABORT: briefText is empty'); return }
+
+    try {
+      console.log('[ClientBrief] Orchestrator API call started')
+      let orchText = ''
+      await streamAnthropicCall({
+        messages:     [{ role: 'user', content: briefText }],
+        systemPrompt: ORCHESTRATOR_SYSTEM,
+        maxTokens:    30000,
+        onChunk: (chunk) => { orchText += chunk },
+      })
+
+      console.log('[ClientBrief] Orchestrator response received:', orchText.slice(0, 100))
+      console.log('[ClientBrief] project_id before agent_outputs save:', projectId, '| client_id:', clientId)
+
+      // Save to agent_outputs with field name 'output_text' — matches what ProjectDetail queries
+      const { data: orchRecord, error: orchErr } = await supabase.from('agent_outputs').insert({
+        project_id:  projectId,
+        agent_name:  'Orchestrator',
+        output_text: orchText,      // ProjectDetail fetches orchestratorOutput?.output_text
+        status:      'approved',
+      }).select('id').single()
+
+      if (orchErr) throw new Error('agent_outputs insert failed: ' + orchErr.message)
+      console.log('[ClientBrief] Orchestrator saved to agent_outputs with record id:', orchRecord?.id)
+    } catch (err) {
+      console.error('[ClientBrief] Orchestrator trigger failed — full error:', err)
+    }
   }
 
   // ── Gate screens ────────────────────────────────────────────────────────────
