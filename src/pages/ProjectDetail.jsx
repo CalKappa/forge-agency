@@ -1594,9 +1594,11 @@ export default function ProjectDetail() {
   const [orchCompletedIn, setOrchCompletedIn] = useState(null) // seconds — set when Orchestrator completes
   const orchTimerRef      = useRef(null)
 
-  // Derived from agentOutputs state — declared here so useEffect dependency arrays
-  // below can reference it without a temporal dead zone error
+  // Derived state declared early so all useEffect dependency arrays below can reference
+  // them without a temporal dead zone (TDZ) error.
   const orchestratorOutput = agentOutputs.find(o => o.agent_name === 'Orchestrator') ?? null
+  const pipelineRunningEarly = pipeline.isRunningForProject(projectId)
+  const orchIsStreaming     = isSendingOrchestrator || (pipelineRunningEarly && pipeline.pipeline.agentName === 'Orchestrator')
 
   useEffect(() => {
     load()
@@ -3328,12 +3330,15 @@ The Forge Agency Team`
   // ── Pipeline-context derived state ────────────────────────────────────────
   // These stay true even after navigating away and back, because the context
   // persists at root level while the in-flight stream keeps calling pipeline.append().
-  const pipelineRunning    = pipeline.isRunningForProject(projectId)
+  // NOTE: pipelineRunning and orchIsStreaming are also declared early (above the first
+  // useEffect) so they can be used in dependency arrays without a TDZ error. The values
+  // here alias those early declarations so the rest of the render body is unchanged.
+  const pipelineRunning    = pipelineRunningEarly
   const researchIsStreaming = isGenerating  || (pipelineRunning && pipeline.pipeline.agentName === 'researcher')
   const designIsStreaming   = isDesigning   || (pipelineRunning && pipeline.pipeline.agentName === 'designer')
   const devIsStreaming      = isDeveloping  || (pipelineRunning && (pipeline.pipeline.agentName?.startsWith('Developer-') ?? false))
   const reviewIsStreaming   = isReviewing   || (pipelineRunning && pipeline.pipeline.agentName === 'reviewer')
-  const orchIsStreaming     = isSendingOrchestrator || (pipelineRunning && pipeline.pipeline.agentName === 'Orchestrator')
+  // orchIsStreaming already declared early — reuse it here (no re-declaration needed)
   // Display text: local state takes priority (fresh stream); fall back to context (resumed after nav)
   const researchLiveText  = streamingDisplay        || pipeline.liveText(projectId, 'researcher')
   const designLiveText    = designStreamDisplay     || pipeline.liveText(projectId, 'designer')
