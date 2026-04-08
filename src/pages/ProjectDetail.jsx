@@ -1587,8 +1587,12 @@ export default function ProjectDetail() {
   // Monotonically-increasing generation counter — only the latest load() wins
   const loadGenRef      = useRef(0)
   // Track previous orchestrator text to detect completion for browser notification
-  const orchPrevTextRef = useRef(null)
-  const orchMountedRef  = useRef(false)
+  const orchPrevTextRef   = useRef(null)
+  const orchMountedRef    = useRef(false)
+  // Elapsed-time timer for Orchestrator status panel
+  const [orchElapsed,     setOrchElapsed]     = useState(0)   // seconds since brief submitted_at
+  const [orchCompletedIn, setOrchCompletedIn] = useState(null) // seconds — set when Orchestrator completes
+  const orchTimerRef      = useRef(null)
 
   // Derived from agentOutputs state — declared here so useEffect dependency arrays
   // below can reference it without a temporal dead zone error
@@ -1678,6 +1682,44 @@ export default function ProjectDetail() {
     orchPrevTextRef.current = newText
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orchestratorOutput?.output_text])
+
+  // Orchestrator elapsed-time timer — starts from brief submitted_at, stops when complete
+  useEffect(() => {
+    // Clear any existing timer first
+    if (orchTimerRef.current) clearInterval(orchTimerRef.current)
+
+    const briefSubmittedAt = briefs[0]?.submitted_at ?? null
+
+    if (!orchIsStreaming && !orchestratorOutput) {
+      // Waiting state (brief submitted but Orchestrator not started yet) — show elapsed since submission
+      if (briefSubmittedAt) {
+        const tick = () => setOrchElapsed(Math.floor((Date.now() - new Date(briefSubmittedAt).getTime()) / 1000))
+        tick()
+        orchTimerRef.current = setInterval(tick, 1000)
+      }
+      return () => { if (orchTimerRef.current) clearInterval(orchTimerRef.current) }
+    }
+
+    if (orchIsStreaming) {
+      // Running — keep ticking
+      if (briefSubmittedAt) {
+        const tick = () => setOrchElapsed(Math.floor((Date.now() - new Date(briefSubmittedAt).getTime()) / 1000))
+        tick()
+        orchTimerRef.current = setInterval(tick, 1000)
+      }
+      return () => { if (orchTimerRef.current) clearInterval(orchTimerRef.current) }
+    }
+
+    if (orchestratorOutput && briefSubmittedAt) {
+      // Completed — compute final duration once from the output record's created_at vs brief submitted_at
+      const endTime   = orchestratorOutput.created_at ? new Date(orchestratorOutput.created_at).getTime() : Date.now()
+      const startTime = new Date(briefSubmittedAt).getTime()
+      const elapsed   = Math.max(0, Math.floor((endTime - startTime) / 1000))
+      setOrchCompletedIn(elapsed)
+      setOrchElapsed(elapsed)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orchIsStreaming, orchestratorOutput, briefs[0]?.submitted_at])
 
   async function loadBriefToken() {
     const { data } = await supabase
@@ -3721,6 +3763,19 @@ The Forge Agency Team`
           : orchestratorOutput?.output_text
           ? { dot: 'bg-emerald-400', label: 'Orchestrator complete', color: 'text-emerald-400' }
           : { dot: 'bg-amber-400 animate-pulse', label: 'Orchestrator is analysing the brief…', color: 'text-amber-400' }
+
+        // Helper: format seconds as "Xm Ys" or just "Xs"
+        const fmtDuration = (s) => s >= 60 ? `${Math.floor(s / 60)}m ${s % 60}s` : `${s}s`
+        // Elapsed time capped at 90s for progress bar (the typical max)
+        const ORCH_TYPICAL_MAX = 90
+        const progressPct = Math.min(100, Math.round((orchElapsed / ORCH_TYPICAL_MAX) * 100))
+        // Sequential status messages
+        const orchPhaseMsg = orchElapsed >= 45
+          ? 'Finalising agent instructions'
+          : orchElapsed >= 15
+          ? 'Breaking down tasks for each agent'
+          : 'Reading and interpreting your brief'
+
         return (
         <div className="space-y-0">
           <div
@@ -3730,11 +3785,25 @@ The Forge Agency Team`
             <div className="flex items-center gap-3">
               <span className="text-sm font-medium text-zinc-300">Orchestrator — Project breakdown</span>
               <span className="text-xs font-medium text-violet-400 bg-violet-400/10 px-2 py-0.5 rounded-full border border-violet-400/20">Orchestrator</span>
-              {/* Live status indicator */}
-              <span className="flex items-center gap-1.5">
-                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${orchStatus.dot}`} />
-                <span className={`text-xs ${orchStatus.color}`}>{orchStatus.label}</span>
-              </span>
+              {/* Live status indicator — compact in header */}
+              {orchestratorOutput ? (
+                <span className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-emerald-400" />
+                  <span className="text-xs text-emerald-400">
+                    Complete{orchCompletedIn != null ? ` · ${fmtDuration(orchCompletedIn)}` : ''}
+                  </span>
+                </span>
+              ) : orchIsStreaming ? (
+                <span className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-amber-400 animate-pulse" />
+                  <span className="text-xs text-amber-400 tabular-nums">Running · {orchElapsed}s</span>
+                </span>
+              ) : hasBrief ? (
+                <span className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-amber-400 animate-pulse" />
+                  <span className="text-xs text-amber-400">Waiting to start…</span>
+                </span>
+              ) : null}
             </div>
             <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
               {orchIsStreaming && orchLiveText && (
@@ -3773,31 +3842,60 @@ The Forge Agency Team`
           </div>
           {orchestratorOpen && (
             <div className="bg-zinc-950 border border-zinc-800 rounded-b-lg">
-              {!orchIsStreaming && !orchestratorOutput ? (
-                /* Waiting state — brief exists but orchestrator hasn't run yet */
-                <div className="flex items-center gap-3 px-5 py-8 justify-center">
-                  <span className="relative flex h-2.5 w-2.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500" />
-                  </span>
-                  <p className="text-sm text-zinc-500">Waiting for Orchestrator to analyse the brief…</p>
+              {(orchIsStreaming || (!orchIsStreaming && !orchestratorOutput && hasBrief)) ? (
+                /* Running or waiting state — show detailed status panel */
+                <div className="px-6 py-6 space-y-5">
+                  {/* Top row: pulsing dot + primary message + timer */}
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <span className="relative flex h-3 w-3 flex-shrink-0">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500" />
+                      </span>
+                      <span className="text-sm font-medium text-zinc-200">Orchestrator is analysing your brief</span>
+                    </div>
+                    <span className="text-xs text-zinc-500 tabular-nums flex-shrink-0">Running for {orchElapsed}s</span>
+                  </div>
+
+                  {/* Progress bar */}
+                  <div className="space-y-1.5">
+                    <div className="h-1.5 w-full rounded-full bg-zinc-800 overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-amber-500 transition-all duration-1000 ease-linear"
+                        style={{ width: `${progressPct}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Sequential phase message */}
+                  <p className="text-xs text-zinc-400">{orchPhaseMsg}</p>
+
+                  {/* Overtime warning */}
+                  {orchElapsed >= 120 && (
+                    <div className="rounded-md bg-amber-500/10 border border-amber-500/25 px-4 py-3">
+                      <p className="text-xs text-amber-400 leading-relaxed">
+                        This is taking longer than usual — the Orchestrator is still working. You can wait or come back later and the result will appear automatically.
+                      </p>
+                    </div>
+                  )}
                 </div>
-              ) : orchIsStreaming ? (
-                <ScrollBox storageKey="orchestrator" isStreaming={true} contentLength={orchLiveText.length} maxHeight="500px" className="">
-                  <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-zinc-800 bg-violet-500/5">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-violet-400 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-violet-500" />
-                    </span>
-                    <span className="text-xs text-violet-400 font-medium">Orchestrator is working…</span>
-                  </div>
-                  <div className="p-5">
-                    <pre className="whitespace-pre-wrap text-sm text-zinc-300 leading-relaxed font-sans">
-                      {orchLiveText || <span className="text-zinc-600 animate-pulse">Breaking down the brief into agent task lists…</span>}
-                    </pre>
-                  </div>
-                </ScrollBox>
-              ) : (() => {
+              ) : orchestratorOutput && orchCompletedIn != null && !(() => {
+                // Peek ahead — if sections parse successfully we skip the completion banner and go straight to cards
+                const orchText = orchestratorOutput?.output_text ?? ''
+                const sections = parseResponse(orchText)
+                return sections?.some(s => s.content.trim().length > 0)
+              })() ? (
+                /* Completed banner — only shown when fallback rendering is used (no parsed sections) */
+                <div className="flex items-center gap-3 px-6 py-4 border-b border-zinc-800 bg-emerald-500/5">
+                  <svg className="w-4 h-4 text-emerald-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-xs font-medium text-emerald-400">
+                    Orchestrator complete · {fmtDuration(orchCompletedIn)}
+                  </span>
+                </div>
+              ) : null}
+              {!orchIsStreaming && !orchestratorOutput ? null : (!orchIsStreaming && orchestratorOutput) ? (() => {
                 const orchText = orchestratorOutput?.output_text ?? ''
                 const sections = parseResponse(orchText)
                 const hasSections = sections?.some(s => s.content.trim().length > 0)
@@ -3867,7 +3965,7 @@ The Forge Agency Team`
                     </div>
                   </ScrollBox>
                 )
-              })()}
+              })() : null}
             </div>
           )}
         </div>
