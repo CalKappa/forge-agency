@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useLocation, Link, useNavigate } from 'react-router-dom'
 import { useUI } from '../context/UIContext'
 import { usePipeline } from '../hooks/usePipeline'
+import { supabase } from '../lib/supabase'
 import NewClientPanel from './NewClientPanel'
 import NewProjectPanel from './NewProjectPanel'
 import NewBriefPanel from './NewBriefPanel'
@@ -132,8 +133,15 @@ export default function Layout() {
         )}
 
         {/* Footer */}
-        <div className="px-4 py-4 border-t border-zinc-800">
-          <p className="text-xs text-zinc-600">© 2026 Forge Agency</p>
+        <div className="px-4 py-4 border-t border-zinc-800 space-y-3">
+          <button
+            onClick={() => supabase.auth.signOut()}
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300 transition-colors"
+          >
+            <SignOutIcon className="w-4 h-4 flex-shrink-0" />
+            Sign Out
+          </button>
+          <p className="text-xs text-zinc-600 pl-1">© 2026 Forge Agency</p>
         </div>
       </aside>
 
@@ -250,6 +258,14 @@ function CodeIcon({ className }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
       <path strokeLinecap="round" strokeLinejoin="round" d="m16 18 6-6-6-6M8 6l-6 6 6 6" />
+    </svg>
+  )
+}
+
+function SignOutIcon({ className }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
     </svg>
   )
 }
