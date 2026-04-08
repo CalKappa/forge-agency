@@ -720,14 +720,18 @@ export default function ClientBrief() {
   // ── Submit ──────────────────────────────────────────────────────────────────
 
   async function handleSubmit() {
+    console.log('[ClientBrief] Client brief submission started')
     setSubmitting(true)
     setSubmitError(null)
 
     const briefText = compileBrief(f, clientName, projectName)
-    const projectId = tokenRecord.project_id
-    const clientId  = tokenRecord.client_id
+    const projectId = tokenRecord?.project_id ?? null
+    const clientId  = tokenRecord?.client_id  ?? null
+    console.log('[ClientBrief] tokenRecord:', tokenRecord)
+    console.log('[ClientBrief] project_id:', projectId, '| client_id:', clientId, '| briefText length:', briefText?.length)
 
     // 1. Save to briefs_structured
+    console.log('[ClientBrief] Inserting into briefs_structured…')
     const { error: structuredErr } = await supabase.from('briefs_structured').insert({
       client_id:  clientId,
       project_id: projectId,
@@ -737,46 +741,59 @@ export default function ClientBrief() {
       step3: { hasLogo: f.hasLogo, logoUrl: f.logoUrl, hasColours: f.hasColours, colours: f.colours, hasFonts: f.hasFonts, fonts: f.fonts, feel: f.feel, brandNotes: f.brandNotes },
       step4: { copyReady: f.copyReady, imagesReady: f.imagesReady, imageUrls: f.imageUrls, contentNotes: f.contentNotes, comp1Url: f.comp1Url, comp1Likes: f.comp1Likes, comp2Url: f.comp2Url, comp2Likes: f.comp2Likes, comp3Url: f.comp3Url, comp3Likes: f.comp3Likes },
     })
-
     if (structuredErr) {
-      console.error('[ClientBrief] briefs_structured insert failed:', structuredErr)
+      console.error('[ClientBrief] briefs_structured insert FAILED:', structuredErr)
       setSubmitError('Something went wrong saving your brief. Please try again.')
       setSubmitting(false)
       return
     }
+    console.log('[ClientBrief] briefs_structured saved OK')
 
     // 2. Insert into briefs (populates the activity feed)
+    console.log('[ClientBrief] Inserting into briefs…')
     const { data: briefRecord, error: briefErr } = await supabase.from('briefs').insert({
       client_id:  clientId,
       project_id: projectId,
       brief_text: briefText,
     }).select('id').single()
-
     if (briefErr) {
-      console.error('[ClientBrief] briefs insert failed:', briefErr)
+      console.error('[ClientBrief] briefs insert FAILED:', briefErr)
     } else {
-      console.log('[ClientBrief] Client brief saved to briefs table', { project_id: projectId, brief_id: briefRecord?.id })
+      console.log('[ClientBrief] Brief saved successfully — id:', briefRecord?.id, 'project_id:', projectId)
     }
 
     // 3. Mark token as submitted
-    await supabase
+    console.log('[ClientBrief] Marking token as submitted…')
+    const { error: tokenErr } = await supabase
       .from('client_brief_tokens')
       .update({ status: 'submitted', submitted_at: new Date().toISOString() })
       .eq('token', token)
+    if (tokenErr) console.error('[ClientBrief] token update FAILED:', tokenErr)
+    else console.log('[ClientBrief] Token marked submitted OK')
 
-    // 4. Trigger Orchestrator — runs asynchronously so the success screen shows immediately.
-    //    Errors are logged but do not block submission since the brief is already saved.
-    triggerOrchestrator(projectId, clientId, briefText)
-
+    // 4. Show success screen immediately — component stays mounted so the
+    //    Orchestrator call below continues running even after this re-render.
     setTokenState('done')
     setSubmitting(false)
+
+    // 5. Trigger Orchestrator — awaited so the promise is not abandoned.
+    //    The success screen is already visible; this runs in the background.
+    console.log('[ClientBrief] About to trigger Orchestrator')
+    await triggerOrchestrator(projectId, clientId, briefText)
+    console.log('[ClientBrief] triggerOrchestrator returned')
   }
 
   async function triggerOrchestrator(projectId, clientId, briefText) {
-    console.log('[ClientBrief] Orchestrator trigger starting')
-    console.log('[ClientBrief] project_id:', projectId, '| client_id:', clientId)
-    if (!projectId) { console.error('[ClientBrief] ABORT: project_id is null — cannot save Orchestrator output'); return }
-    if (!briefText) { console.error('[ClientBrief] ABORT: briefText is empty'); return }
+    console.log('[ClientBrief] triggerOrchestrator called — project_id:', projectId, '| client_id:', clientId)
+
+    if (!projectId) {
+      console.error('[ClientBrief] ABORT: project_id is null — cannot save Orchestrator output')
+      return
+    }
+    if (!briefText) {
+      console.error('[ClientBrief] ABORT: briefText is empty')
+      return
+    }
 
     try {
       console.log('[ClientBrief] Orchestrator API call started')
@@ -785,24 +802,31 @@ export default function ClientBrief() {
         messages:     [{ role: 'user', content: briefText }],
         systemPrompt: ORCHESTRATOR_SYSTEM,
         maxTokens:    30000,
-        onChunk: (chunk) => { orchText += chunk },
+        onChunk:      (chunk) => { orchText += chunk },
       })
+      console.log('[ClientBrief] Orchestrator response received — length:', orchText.length, '— preview:', orchText.slice(0, 100))
 
-      console.log('[ClientBrief] Orchestrator response received:', orchText.slice(0, 100))
-      console.log('[ClientBrief] project_id before agent_outputs save:', projectId, '| client_id:', clientId)
+      if (!orchText.trim()) {
+        console.error('[ClientBrief] Orchestrator returned empty text — skipping save')
+        return
+      }
 
-      // Save to agent_outputs with field name 'output_text' — matches what ProjectDetail queries
+      console.log('[ClientBrief] Saving to agent_outputs — project_id:', projectId)
       const { data: orchRecord, error: orchErr } = await supabase.from('agent_outputs').insert({
         project_id:  projectId,
         agent_name:  'Orchestrator',
-        output_text: orchText,      // ProjectDetail fetches orchestratorOutput?.output_text
+        output_text: orchText,   // field name ProjectDetail queries: orchestratorOutput?.output_text
         status:      'approved',
       }).select('id').single()
 
-      if (orchErr) throw new Error('agent_outputs insert failed: ' + orchErr.message)
-      console.log('[ClientBrief] Orchestrator saved to agent_outputs with record id:', orchRecord?.id)
+      if (orchErr) {
+        console.error('[ClientBrief] agent_outputs insert FAILED:', orchErr)
+        return
+      }
+      console.log('[ClientBrief] Orchestrator saved to agent_outputs — record id:', orchRecord?.id)
     } catch (err) {
-      console.error('[ClientBrief] Orchestrator trigger failed — full error:', err)
+      console.error('[ClientBrief] Orchestrator trigger threw an exception:', err?.message ?? err)
+      console.error('[ClientBrief] Full error object:', err)
     }
   }
 
