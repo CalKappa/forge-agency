@@ -1590,6 +1590,10 @@ export default function ProjectDetail() {
   const orchPrevTextRef = useRef(null)
   const orchMountedRef  = useRef(false)
 
+  // Derived from agentOutputs state — declared here so useEffect dependency arrays
+  // below can reference it without a temporal dead zone error
+  const orchestratorOutput = agentOutputs.find(o => o.agent_name === 'Orchestrator') ?? null
+
   useEffect(() => {
     load()
     loadBriefToken()
@@ -3271,7 +3275,7 @@ The Forge Agency Team`
   const currentIdx     = STAGES.indexOf(project.current_stage)
   const nextStage      = currentIdx < STAGES.length - 1 ? STAGES[currentIdx + 1] : null
   const latestBrief    = briefs[0] ?? null
-  const orchestratorOutput = agentOutputs.find(o => o.agent_name === 'Orchestrator') ?? null
+  // orchestratorOutput is declared above the useEffects to avoid TDZ in dependency arrays
   const researchOutput     = agentOutputs.find(o => o.agent_name === 'researcher') ?? null
   const designOutput       = agentOutputs.find(o => o.agent_name === 'designer')   ?? null
 
