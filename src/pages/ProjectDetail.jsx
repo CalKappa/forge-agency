@@ -295,27 +295,48 @@ async function generatePageWireframe(briefSummary, page, tokenCallsList, moodboa
 // ── Orchestrator response parser ──────────────────────────────────────────────
 const PIPELINE_AGENTS = ['Researcher', 'Designer', 'Developer', 'Reviewer']
 
+// Matches a line that IS an agent section heading — strips all markdown decoration
+// Covers: ## Researcher  ## 1. Researcher  ## 1) Researcher  **Researcher**
+//         # Researcher   1. Researcher:   **1. Researcher**  ### Researcher Tasks
+const AGENT_HEADING_RE = /^[ \t]*(?:#{1,3}[ \t]+)?(?:\*{1,2})?(?:\d+[.)]\s+)?(?:\*{0,2})(Researcher|Designer|Developer|Reviewer)(?:\*{0,2})(?:[ \t]+(?:Tasks?|Phase|Section|Agent|Work|Report|Brief))?[ \t]*[:\-]?[ \t]*(?:\*{0,2})[ \t]*$/i
+
 function parseResponse(text) {
   if (!text) return null
-  // Handles all heading variants the Orchestrator may produce:
-  //   ## Researcher         ## 1. Researcher      ## 1) Researcher
-  //   **Researcher**        1) Researcher:        Researcher:
-  //   ## **Researcher**     ### Developer Tasks
-  const re = /(?:^|\n)\s*(?:#{1,3}\s*)?\**(?:\d+[\.\)]\s*)?\**(Researcher|Designer|Developer|Reviewer)\**(?:\s+(?:Tasks?|Section|Agent))?[:\s]*/gi
-  const parts = []
-  let lastIndex = 0
-  let match
-  while ((match = re.exec(text)) !== null) {
-    if (parts.length > 0) parts[parts.length - 1].content = text.slice(lastIndex, match.index).trim()
-    parts.push({ label: match[1].trim(), content: '' })
-    lastIndex = match.index + match[0].length
+
+  // Normalise line endings so \r\n doesn't break heading detection
+  const normalised = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+  console.log('[Orchestrator] parseResponse — raw preview:', normalised.slice(0, 400))
+
+  const lines = normalised.split('\n')
+  const hits = []
+
+  for (let i = 0; i < lines.length; i++) {
+    const m = AGENT_HEADING_RE.exec(lines[i])
+    if (m) hits.push({ name: m[1], lineIndex: i })
   }
-  if (parts.length === 0) return null
-  if (parts.length > 0) parts[parts.length - 1].content = text.slice(lastIndex).trim()
-  return PIPELINE_AGENTS.map(name => {
-    const found = parts.find(p => p.label.toLowerCase() === name.toLowerCase())
-    return { name, content: found?.content ?? '' }
+
+  console.log('[Orchestrator] parseResponse — heading hits:', hits.map(h => `${h.name}@L${h.lineIndex}`))
+
+  if (hits.length < 2) {
+    console.log('[Orchestrator] parseResponse — method: FALLBACK (only', hits.length, 'heading(s) matched)')
+    return null
+  }
+
+  console.log('[Orchestrator] parseResponse — method: SECTIONS (' + hits.length + ' headings found)')
+
+  const sectionMap = {}
+  hits.forEach((hit, i) => {
+    const content = lines
+      .slice(hit.lineIndex + 1, hits[i + 1]?.lineIndex ?? lines.length)
+      .join('\n')
+      .trim()
+    sectionMap[hit.name.toLowerCase()] = content
   })
+
+  return PIPELINE_AGENTS.map(name => ({
+    name,
+    content: sectionMap[name.toLowerCase()] ?? '',
+  }))
 }
 
 // ── Developer output parser ───────────────────────────────────────────────────
@@ -3789,7 +3810,6 @@ The Forge Agency Team`
                 const orchText = orchestratorOutput?.output_text ?? ''
                 const sections = parseResponse(orchText)
                 const hasSections = sections?.some(s => s.content.trim().length > 0)
-                console.log('[Orchestrator] parseResponse result:', sections?.map(s => ({ name: s.name, contentLength: s.content.length })) ?? 'null — no headings matched')
                 if (hasSections) {
                   return (
                     <div className="p-5 space-y-4">
@@ -3800,7 +3820,7 @@ The Forge Agency Team`
                           const agent    = AGENT_CONFIG[agentKey]
                           const c        = agent ? COLOR_CLASSES[agent.color] : null
                           return (
-                            <div key={name} className={`rounded-md bg-zinc-900 border p-4 space-y-3 ${c ? `border-zinc-800` : 'border-zinc-800'}`}>
+                            <div key={name} className="rounded-md bg-zinc-900 border border-zinc-800 p-4 space-y-3">
                               <div className="flex items-center gap-2">
                                 {c && (
                                   <div className={`w-5 h-5 rounded flex items-center justify-center border ${c.badge}`}>
@@ -3812,24 +3832,30 @@ The Forge Agency Team`
                               {content ? (
                                 <div className="text-xs text-zinc-400 leading-relaxed space-y-1">
                                   {content.split('\n').filter(l => l.trim()).map((line, i) => {
-                                    const isBullet = /^[-*•]\s/.test(line.trim())
-                                    const isNum    = /^\d+[\.\)]\s/.test(line.trim())
-                                    const isHeading = /^#{1,3}\s/.test(line.trim())
-                                    const clean    = line.trim()
-                                      .replace(/^[-*•]\s*/, '')
-                                      .replace(/^\d+[\.\)]\s*/, '')
-                                      .replace(/^#{1,3}\s*/, '')
-                                      .replace(/\*\*([^*]+)\*\*/g, '$1')
+                                    const raw      = line.trim()
+                                    const isBullet  = /^[-*•]\s/.test(raw)
+                                    const isNum     = /^\d+[.)]\s/.test(raw)
+                                    const isHeading = /^#{1,3}\s/.test(raw)
+                                    const stripped  = raw
+                                      .replace(/^[-*•]\s+/, '')
+                                      .replace(/^\d+[.)]\s+/, '')
+                                      .replace(/^#{1,3}\s+/, '')
+                                    // Render **bold** inline
+                                    const inlined = stripped.split(/(\*\*[^*]+\*\*)/).map((seg, j) =>
+                                      seg.startsWith('**') && seg.endsWith('**')
+                                        ? <strong key={j} className="text-zinc-200 font-medium">{seg.slice(2, -2)}</strong>
+                                        : seg
+                                    )
                                     if (isHeading) return (
-                                      <p key={i} className="text-xs font-semibold text-zinc-300 pt-1">{clean}</p>
+                                      <p key={i} className="text-xs font-semibold text-zinc-300 pt-1">{inlined}</p>
                                     )
                                     if (isBullet || isNum) return (
                                       <div key={i} className="flex items-start gap-1.5">
                                         <span className={`w-1 h-1 rounded-full mt-1.5 flex-shrink-0 ${c ? c.dot : 'bg-zinc-600'}`} />
-                                        <span>{clean}</span>
+                                        <span>{inlined}</span>
                                       </div>
                                     )
-                                    return <p key={i} className="text-zinc-500">{clean}</p>
+                                    return <p key={i} className="text-zinc-500">{inlined}</p>
                                   })}
                                 </div>
                               ) : (
@@ -3842,7 +3868,7 @@ The Forge Agency Team`
                     </div>
                   )
                 }
-                // Fallback — formatting didn't match; show full response
+                // Fallback — sections not parsed; render full response with proper markdown
                 return (
                   <ScrollBox storageKey="orchestrator" isStreaming={false} contentLength={orchText.length} maxHeight="500px" className="">
                     <div className="p-5">
@@ -5840,9 +5866,6 @@ function BriefCard({ brief, index, orchestratorOutput, isSendingOrchestrator, on
                 const agentKey = name.toLowerCase()
                 const agent = AGENT_CONFIG[agentKey]
                 const c = agent ? COLOR_CLASSES[agent.color] : null
-                const tasks = content
-                  ? content.split('\n').map(l => l.replace(/^[-*•]\s*/, '').replace(/^\d+\.\s*/, '').trim()).filter(Boolean)
-                  : []
                 return (
                   <div key={name} className="rounded-md bg-zinc-950 border border-zinc-800 p-3.5 space-y-2">
                     <div className="flex items-center gap-2">
@@ -5853,15 +5876,34 @@ function BriefCard({ brief, index, orchestratorOutput, isSendingOrchestrator, on
                       )}
                       <span className={`text-xs font-semibold ${c ? c.heading : 'text-zinc-400'}`}>{name}</span>
                     </div>
-                    {tasks.length > 0 ? (
-                      <ul className="space-y-1">
-                        {tasks.map((task, i) => (
-                          <li key={i} className="flex items-start gap-1.5 text-xs text-zinc-400 leading-relaxed">
-                            <span className={`w-1 h-1 rounded-full mt-1.5 flex-shrink-0 ${c ? c.dot : 'bg-zinc-600'}`} />
-                            {task}
-                          </li>
-                        ))}
-                      </ul>
+                    {content ? (
+                      <div className="space-y-1">
+                        {content.split('\n').filter(l => l.trim()).map((line, i) => {
+                          const raw       = line.trim()
+                          const isBullet  = /^[-*•]\s/.test(raw)
+                          const isNum     = /^\d+[.)]\s/.test(raw)
+                          const isHeading = /^#{1,3}\s/.test(raw)
+                          const stripped  = raw
+                            .replace(/^[-*•]\s+/, '')
+                            .replace(/^\d+[.)]\s+/, '')
+                            .replace(/^#{1,3}\s+/, '')
+                          const inlined = stripped.split(/(\*\*[^*]+\*\*)/).map((seg, j) =>
+                            seg.startsWith('**') && seg.endsWith('**')
+                              ? <strong key={j} className="text-zinc-200 font-medium">{seg.slice(2, -2)}</strong>
+                              : seg
+                          )
+                          if (isHeading) return (
+                            <p key={i} className="text-xs font-semibold text-zinc-300 pt-1">{inlined}</p>
+                          )
+                          if (isBullet || isNum) return (
+                            <div key={i} className="flex items-start gap-1.5 text-xs text-zinc-400 leading-relaxed">
+                              <span className={`w-1 h-1 rounded-full mt-1.5 flex-shrink-0 ${c ? c.dot : 'bg-zinc-600'}`} />
+                              <span>{inlined}</span>
+                            </div>
+                          )
+                          return <p key={i} className="text-xs text-zinc-500">{inlined}</p>
+                        })}
+                      </div>
                     ) : (
                       <p className="text-xs text-zinc-600 italic">No tasks parsed</p>
                     )}
@@ -5870,7 +5912,10 @@ function BriefCard({ brief, index, orchestratorOutput, isSendingOrchestrator, on
               })}
             </div>
           ) : (
-            <p className="text-sm text-zinc-400 leading-relaxed whitespace-pre-wrap">{orchText}</p>
+            // Fallback — sections not parsed; render with proper markdown
+            <div className="rounded-lg bg-zinc-950 border border-zinc-800 p-4 max-h-[400px] overflow-y-auto">
+              {renderMarkdown(orchText)}
+            </div>
           )}
         </div>
       )}
