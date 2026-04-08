@@ -1540,6 +1540,8 @@ export default function ProjectDetail() {
   const [submittingReview,     setSubmittingReview]     = useState(false)
   const [goingBackFromReview,  setGoingBackFromReview]  = useState(false)
   const [deliveryModalOpen,    setDeliveryModalOpen]    = useState(false)
+  const [briefLinkModal,       setBriefLinkModal]       = useState(null)  // null | { url, emailDraft }
+  const [briefLinkCopied,      setBriefLinkCopied]      = useState(false)
 
   // Section open/close state — most recent section auto-opens, handled in load()
   const [briefOpen,        setBriefOpen]        = useState(false)
@@ -3087,6 +3089,42 @@ export default function ProjectDetail() {
     }
   }
 
+  // ── Send brief to client ──────────────────────────────────────────────────
+
+  async function sendBriefToClient() {
+    const token = crypto.randomUUID()
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+    const { error } = await supabase.from('client_brief_tokens').insert({
+      token,
+      project_id: projectId,
+      client_id:  project.client_id,
+      status:     'pending',
+      expires_at: expiresAt,
+    })
+    if (error) { showToast('Failed to generate brief link'); return }
+    const url = `https://forge-agency-lemon.vercel.app/brief/${token}`
+    const clientName  = project.clients?.name ?? 'there'
+    const projectName = project.name ?? 'your project'
+    const emailDraft  = `Subject: We need a few details about your project
+
+Hi ${clientName},
+
+To get started on ${projectName}, we'd love to learn a bit more about your business, brand and goals.
+
+Please take 5–10 minutes to fill in our quick brief form using the link below:
+
+${url}
+
+The link is valid for 7 days. Once submitted, we'll review your answers and be in touch shortly.
+
+Looking forward to working with you!
+
+Best,
+The Forge Agency Team`
+    setBriefLinkModal({ url, emailDraft })
+    setBriefLinkCopied(false)
+  }
+
   // ── Delete project ────────────────────────────────────────────────────────
 
   async function deleteProject() {
@@ -3332,6 +3370,15 @@ export default function ProjectDetail() {
               Delivered
             </span>
           )}
+          <button
+            onClick={sendBriefToClient}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium border border-blue-600/60 text-blue-400 hover:bg-blue-950/40 transition-colors"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
+            </svg>
+            Send Brief to Client
+          </button>
           <button
             onClick={deleteProject}
             disabled={isAgentRunning}
@@ -5439,6 +5486,62 @@ export default function ProjectDetail() {
     )}
 
     {/* ── Delivery congratulations modal ── */}
+    {/* ── Send Brief to Client modal ── */}
+    {briefLinkModal && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/60" onClick={() => setBriefLinkModal(null)} />
+        <div className="relative z-10 w-full max-w-lg rounded-xl bg-zinc-900 border border-zinc-700 shadow-2xl overflow-hidden">
+          <div className="h-1 w-full bg-gradient-to-r from-blue-500 to-violet-500" />
+          <div className="px-6 py-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-semibold text-white">Send Brief to Client</h2>
+              <button onClick={() => setBriefLinkModal(null)} className="text-zinc-500 hover:text-zinc-300 transition-colors">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <p className="text-sm text-zinc-400">A unique link has been generated for this project. Share it with your client so they can fill in their brief.</p>
+            {/* URL row */}
+            <div className="flex items-center gap-2 rounded-lg bg-zinc-800 border border-zinc-700 px-3 py-2.5">
+              <span className="flex-1 text-xs text-zinc-300 truncate font-mono">{briefLinkModal.url}</span>
+              <button
+                onClick={() => { navigator.clipboard.writeText(briefLinkModal.url); setBriefLinkCopied(true); setTimeout(() => setBriefLinkCopied(false), 2000) }}
+                className="flex-shrink-0 px-2.5 py-1 rounded-md text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white transition-colors"
+              >
+                {briefLinkCopied ? 'Copied!' : 'Copy Link'}
+              </button>
+              <a
+                href={briefLinkModal.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-shrink-0 px-2.5 py-1 rounded-md text-xs font-medium bg-zinc-700 hover:bg-zinc-600 text-zinc-200 transition-colors"
+              >
+                Open
+              </a>
+            </div>
+            {/* Email draft */}
+            <div className="space-y-1.5">
+              <p className="text-xs font-medium text-zinc-400">Email draft</p>
+              <textarea
+                readOnly
+                value={briefLinkModal.emailDraft}
+                rows={10}
+                className="w-full rounded-lg bg-zinc-800 border border-zinc-700 px-3 py-2.5 text-xs text-zinc-300 font-mono resize-none focus:outline-none"
+              />
+              <button
+                onClick={() => { navigator.clipboard.writeText(briefLinkModal.emailDraft); showToast('Email draft copied') }}
+                className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+              >
+                Copy email draft
+              </button>
+            </div>
+            <p className="text-xs text-zinc-600">This link expires in 7 days and can only be submitted once.</p>
+          </div>
+        </div>
+      </div>
+    )}
+
     {deliveryModalOpen && (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div className="absolute inset-0 bg-black/60" onClick={() => setDeliveryModalOpen(false)} />
