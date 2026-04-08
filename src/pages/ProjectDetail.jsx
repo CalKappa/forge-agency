@@ -4369,6 +4369,164 @@ The Forge Agency Team`
             </>
           )}
 
+          {/* ── Moodboard ── */}
+          {showDesignSection && designOutput && !designIsStreaming && (() => {
+            let mb = null
+            try { mb = designOutput.output_moodboard ? JSON.parse(designOutput.output_moodboard) : null } catch { mb = null }
+            return (
+              <div className="rounded-lg overflow-hidden mt-3">
+                {/* Header */}
+                <div
+                  onClick={() => setMoodboardOpen(o => !o)}
+                  className={`flex items-center justify-between px-5 py-3 bg-zinc-900 border border-zinc-800 cursor-pointer hover:bg-zinc-800 transition-colors select-none ${moodboardOpen ? 'rounded-t-lg border-b-0' : 'rounded-lg'}`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <PaletteIcon className="w-4 h-4 text-violet-400 flex-shrink-0" />
+                    <span className="text-sm font-medium text-zinc-300">Moodboard</span>
+                    {mb && <span className="text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-full">Ready</span>}
+                    {!mb && !isRegeneratingMoodboard && <span className="text-xs text-zinc-600 italic">Not generated yet</span>}
+                    {isRegeneratingMoodboard && (
+                      <span className="flex items-center gap-1.5 text-xs text-violet-400">
+                        <SpinnerIcon className="w-3 h-3 animate-spin" />
+                        Regenerating…
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                    {mb && (
+                      <button
+                        onClick={() => downloadMoodboardPdf({
+                          projectName: project.name,
+                          clientName:  project.clients?.name ?? '—',
+                          date:        new Date(designOutput.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
+                          moodboard:   mb,
+                          filename:    `Forge-Agency-Moodboard-${project.name.replace(/\s+/g, '-')}.pdf`,
+                        })}
+                        className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium text-zinc-400 bg-zinc-800 hover:bg-zinc-700 hover:text-white transition-colors"
+                      >
+                        Download PDF
+                      </button>
+                    )}
+                    <button
+                      onClick={() => regenerateMoodboard()}
+                      disabled={isRegeneratingMoodboard || isAgentRunning}
+                      className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium text-zinc-400 bg-zinc-800 hover:bg-zinc-700 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <RefreshIcon className="w-3 h-3" />
+                      {isRegeneratingMoodboard ? 'Regenerating…' : 'Regenerate'}
+                    </button>
+                    <ChevronLeftIcon
+                      className="w-4 h-4 text-zinc-500"
+                      style={{ transform: moodboardOpen ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}
+                    />
+                  </div>
+                </div>
+
+                {/* Body */}
+                {moodboardOpen && (
+                  <div className="bg-zinc-950 border border-zinc-800 rounded-b-lg p-5 space-y-6">
+                    {!mb ? (
+                      <div className="flex items-center justify-center py-10">
+                        <p className="text-xs text-zinc-600 italic">No moodboard data — click Regenerate to generate one</p>
+                      </div>
+                    ) : (
+                      <>
+                        {/* Colour Palette */}
+                        <div className="space-y-2">
+                          <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Colour Palette</p>
+                          <div className="flex flex-wrap gap-3">
+                            {(mb.palette ?? []).map((swatch, i) => (
+                              <div key={i} className="flex flex-col items-center gap-1">
+                                <div
+                                  className="rounded-md border border-white/10 shadow-sm"
+                                  style={{ width: 80, height: 80, backgroundColor: swatch.hex }}
+                                />
+                                <span className="text-xs font-mono text-zinc-400">{swatch.hex}</span>
+                                <span className="text-xs text-zinc-500 text-center max-w-[80px] leading-tight">{swatch.label}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Typography */}
+                        {mb.typography && (
+                          <div className="space-y-2">
+                            <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Typography</p>
+                            <div className="grid grid-cols-2 gap-3">
+                              {[
+                                { key: 'heading', label: 'Heading Font', sizeStyle: { fontSize: 28, fontWeight: 700 } },
+                                { key: 'body',    label: 'Body Font',    sizeStyle: { fontSize: 14, fontWeight: 400 } },
+                              ].map(({ key, label, sizeStyle }) => {
+                                const entry = mb.typography[key]
+                                if (!entry) return null
+                                return (
+                                  <div key={key} className="rounded-lg bg-zinc-900 border border-zinc-800 p-4 space-y-2">
+                                    <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">{label}</div>
+                                    <div className="text-xs text-violet-400 font-medium">{entry.font}</div>
+                                    <div
+                                      style={{ fontFamily: `'${entry.font}', sans-serif`, ...sizeStyle, lineHeight: 1.3, color: '#e4e4e7', wordBreak: 'break-word' }}
+                                    >
+                                      {entry.sample}
+                                    </div>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Mood Words */}
+                        {mb.mood_words?.length > 0 && (
+                          <div className="space-y-2">
+                            <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Mood Words</p>
+                            <div className="flex flex-wrap gap-2">
+                              {mb.mood_words.map((word, i) => (
+                                <span key={i} className="px-3 py-1 rounded-full text-sm font-medium border border-violet-500/30 bg-violet-500/10 text-violet-300">
+                                  {word}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Textures + Imagery */}
+                        <div className="space-y-2">
+                          <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Textures &amp; Surfaces</p>
+                          <div className="space-y-2">
+                            {(mb.textures ?? []).map((tex, i) => (
+                              <div key={i} className="flex items-start gap-3 pl-3 border-l-2 border-violet-500/40">
+                                <span className="text-sm text-zinc-300 leading-relaxed">{tex}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {mb.imagery_direction && (
+                          <div className="space-y-2">
+                            <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Imagery Direction</p>
+                            <div className="pl-3 border-l-2 border-violet-500/40">
+                              <p className="text-sm text-zinc-300 leading-relaxed">{mb.imagery_direction}</p>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* UI Style */}
+                        {mb.ui_style && (
+                          <div className="space-y-2">
+                            <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">UI Component Style</p>
+                            <blockquote className="pl-4 border-l-2 border-violet-500/40">
+                              <p className="text-sm text-zinc-400 italic leading-relaxed">"{mb.ui_style}"</p>
+                            </blockquote>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            )
+          })()}
+
           {/* Wireframe subsections — per-page collapsible */}
           {(wireframeOutputs.length > 0 || designOutput?.output_wireframe) && !designIsStreaming && (
             <div className="mt-3 space-y-1.5">
@@ -4588,164 +4746,6 @@ The Forge Agency Team`
           )}
         </div>
       )}
-
-      {/* ── Moodboard ── */}
-      {showDesignSection && designOutput && !designIsStreaming && (() => {
-        let mb = null
-        try { mb = designOutput.output_moodboard ? JSON.parse(designOutput.output_moodboard) : null } catch { mb = null }
-        return (
-          <div className="rounded-lg overflow-hidden">
-            {/* Header */}
-            <div
-              onClick={() => setMoodboardOpen(o => !o)}
-              className={`flex items-center justify-between px-5 py-3 bg-zinc-900 border border-zinc-800 cursor-pointer hover:bg-zinc-800 transition-colors select-none ${moodboardOpen ? 'rounded-t-lg border-b-0' : 'rounded-lg'}`}
-            >
-              <div className="flex items-center gap-2.5">
-                <PaletteIcon className="w-4 h-4 text-violet-400 flex-shrink-0" />
-                <span className="text-sm font-medium text-zinc-300">Moodboard</span>
-                {mb && <span className="text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-full">Ready</span>}
-                {!mb && !isRegeneratingMoodboard && <span className="text-xs text-zinc-600 italic">Not generated yet</span>}
-                {isRegeneratingMoodboard && (
-                  <span className="flex items-center gap-1.5 text-xs text-violet-400">
-                    <SpinnerIcon className="w-3 h-3 animate-spin" />
-                    Regenerating…
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
-                {mb && (
-                  <button
-                    onClick={() => downloadMoodboardPdf({
-                      projectName: project.name,
-                      clientName:  project.clients?.name ?? '—',
-                      date:        new Date(designOutput.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
-                      moodboard:   mb,
-                      filename:    `Forge-Agency-Moodboard-${project.name.replace(/\s+/g, '-')}.pdf`,
-                    })}
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium text-zinc-400 bg-zinc-800 hover:bg-zinc-700 hover:text-white transition-colors"
-                  >
-                    Download PDF
-                  </button>
-                )}
-                <button
-                  onClick={() => regenerateMoodboard()}
-                  disabled={isRegeneratingMoodboard || isAgentRunning}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium text-zinc-400 bg-zinc-800 hover:bg-zinc-700 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <RefreshIcon className="w-3 h-3" />
-                  {isRegeneratingMoodboard ? 'Regenerating…' : 'Regenerate'}
-                </button>
-                <ChevronLeftIcon
-                  className="w-4 h-4 text-zinc-500"
-                  style={{ transform: moodboardOpen ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}
-                />
-              </div>
-            </div>
-
-            {/* Body */}
-            {moodboardOpen && (
-              <div className="bg-zinc-950 border border-zinc-800 rounded-b-lg p-5 space-y-6">
-                {!mb ? (
-                  <div className="flex items-center justify-center py-10">
-                    <p className="text-xs text-zinc-600 italic">No moodboard data — click Regenerate to generate one</p>
-                  </div>
-                ) : (
-                  <>
-                    {/* Colour Palette */}
-                    <div className="space-y-2">
-                      <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Colour Palette</p>
-                      <div className="flex flex-wrap gap-3">
-                        {(mb.palette ?? []).map((swatch, i) => (
-                          <div key={i} className="flex flex-col items-center gap-1">
-                            <div
-                              className="rounded-md border border-white/10 shadow-sm"
-                              style={{ width: 80, height: 80, backgroundColor: swatch.hex }}
-                            />
-                            <span className="text-xs font-mono text-zinc-400">{swatch.hex}</span>
-                            <span className="text-xs text-zinc-500 text-center max-w-[80px] leading-tight">{swatch.label}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Typography */}
-                    {mb.typography && (
-                      <div className="space-y-2">
-                        <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Typography</p>
-                        <div className="grid grid-cols-2 gap-3">
-                          {[
-                            { key: 'heading', label: 'Heading Font', sizeStyle: { fontSize: 28, fontWeight: 700 } },
-                            { key: 'body',    label: 'Body Font',    sizeStyle: { fontSize: 14, fontWeight: 400 } },
-                          ].map(({ key, label, sizeStyle }) => {
-                            const entry = mb.typography[key]
-                            if (!entry) return null
-                            return (
-                              <div key={key} className="rounded-lg bg-zinc-900 border border-zinc-800 p-4 space-y-2">
-                                <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">{label}</div>
-                                <div className="text-xs text-violet-400 font-medium">{entry.font}</div>
-                                <div
-                                  style={{ fontFamily: `'${entry.font}', sans-serif`, ...sizeStyle, lineHeight: 1.3, color: '#e4e4e7', wordBreak: 'break-word' }}
-                                >
-                                  {entry.sample}
-                                </div>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Mood Words */}
-                    {mb.mood_words?.length > 0 && (
-                      <div className="space-y-2">
-                        <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Mood Words</p>
-                        <div className="flex flex-wrap gap-2">
-                          {mb.mood_words.map((word, i) => (
-                            <span key={i} className="px-3 py-1 rounded-full text-sm font-medium border border-violet-500/30 bg-violet-500/10 text-violet-300">
-                              {word}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Textures + Imagery */}
-                    <div className="space-y-2">
-                      <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Textures &amp; Surfaces</p>
-                      <div className="space-y-2">
-                        {(mb.textures ?? []).map((tex, i) => (
-                          <div key={i} className="flex items-start gap-3 pl-3 border-l-2 border-violet-500/40">
-                            <span className="text-sm text-zinc-300 leading-relaxed">{tex}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {mb.imagery_direction && (
-                      <div className="space-y-2">
-                        <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Imagery Direction</p>
-                        <div className="pl-3 border-l-2 border-violet-500/40">
-                          <p className="text-sm text-zinc-300 leading-relaxed">{mb.imagery_direction}</p>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* UI Style */}
-                    {mb.ui_style && (
-                      <div className="space-y-2">
-                        <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">UI Component Style</p>
-                        <blockquote className="pl-4 border-l-2 border-violet-500/40">
-                          <p className="text-sm text-zinc-400 italic leading-relaxed">"{mb.ui_style}"</p>
-                        </blockquote>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
-          </div>
-        )
-      })()}
 
       {/* ── Developer Output ── */}
       {showDevSection && (
