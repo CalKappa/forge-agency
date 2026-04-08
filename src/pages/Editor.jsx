@@ -30,6 +30,8 @@ import * as prettierEstree  from 'prettier/plugins/estree'
 import { supabase }   from '../lib/supabase'
 import { safeUpdate } from '../lib/supabaseHelpers'
 import { useConfirm } from '../context/ConfirmContext'
+import { useToast }   from '../context/ToastContext'
+import { saveFilesToDisk, openProjectFolder } from '../lib/fileSystemHelpers'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -107,7 +109,8 @@ function buildExtensions(lang, themeComp, wrapComp, isDark, wordWrap, onUpdate, 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function Editor() {
-  const confirm = useConfirm()
+  const confirm   = useConfirm()
+  const showToast = useToast()
 
   const [clients,      setClients]      = useState([])
   const [projects,     setProjects]     = useState([])
@@ -354,6 +357,9 @@ export default function Editor() {
       if (!error) {
         setSavedContent(content)
         setAgentOutputs(prev => prev.map(o => o.id === file.recordId ? { ...o, output_text: content } : o))
+        if (file.clientName && file.projectName) {
+          await saveFilesToDisk(file.clientName, file.projectName, [{ filename: file.label ?? file.filename ?? 'file', content }], showToast)
+        }
       }
     }
     setSaving(false)
@@ -1132,6 +1138,15 @@ Respond with ONLY a JSON object in this exact format (no markdown, no explanatio
                 <ToolbarBtn onClick={() => setIsDark(d => !d)} isDark={isDark} title="Toggle theme">
                   {isDark ? '☀' : '☾'}
                 </ToolbarBtn>
+                {selectedFile?.clientName && selectedFile?.projectName && (
+                  <ToolbarBtn
+                    onClick={() => openProjectFolder(selectedFile.clientName, selectedFile.projectName, showToast)}
+                    isDark={isDark}
+                    title="Open project folder in Explorer"
+                  >
+                    Open Folder
+                  </ToolbarBtn>
+                )}
               </div>
             </div>
 

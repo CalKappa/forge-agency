@@ -8,6 +8,7 @@ import { jsPDF } from 'jspdf'
 import { useConfirm } from '../context/ConfirmContext'
 import { useToast } from '../context/ToastContext'
 import { usePipeline } from '../hooks/usePipeline'
+import { saveFilesToDisk, openProjectFolder } from '../lib/fileSystemHelpers'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const STAGES = ['Not Started', 'Research', 'Design', 'Dev', 'Review', 'Delivered']
@@ -106,7 +107,9 @@ You must add clear comments throughout the CSS file explaining what each block o
    ============================================ */
 before every group of related styles. For individual properties or small groups add inline comments like this: /* affects the hero headline font size on desktop */ or /* controls mobile menu slide-in animation */. Every CSS rule that targets a specific component must have a comment above it explaining which part of the HTML it styles. Group all related styles together under their section comment — for example all navigation styles under a NAVIGATION comment, all hero styles under a HERO comment, all card styles under a CARDS comment and so on. Never output CSS without comments. This is mandatory for maintainability.
 
-MANDATORY RESPONSIVE DESIGN REQUIREMENTS — these are non-negotiable and must be implemented on every single project without exception: 1) Always include a viewport meta tag in the HTML head: meta name=viewport content=width=device-width initial-scale=1.0. 2) Never use fixed pixel widths on layout containers — always use width 100% with a max-width for desktop. 3) All grid layouts must use CSS Grid with repeat(auto-fit, minmax(280px, 1fr)) or Flexbox with flex-wrap wrap so columns automatically stack on small screens. 4) Include these three breakpoints as a minimum in every stylesheet: max-width 1024px for tablet, max-width 768px for mobile landscape, max-width 480px for mobile portrait. 5) At 768px and below: the navigation must collapse to a hamburger menu, all multi-column layouts must become single column, font sizes must reduce by 20 to 30 percent, padding and margins must reduce, any fixed heights must be removed or changed to min-height auto. 6) At 480px and below: body font size minimum 16px for readability, buttons must be minimum 44px tall for touch targets, images must be width 100%, no horizontal scrolling under any circumstances — test by mentally tracing every element at 320px width. 7) Use clamp() for fluid typography on headings: clamp(1.5rem, 4vw, 3rem) so text scales smoothly between mobile and desktop. 8) Never use position absolute on elements inside sections without checking they do not break layout on mobile.`
+MANDATORY RESPONSIVE DESIGN REQUIREMENTS — these are non-negotiable and must be implemented on every single project without exception: 1) Always include a viewport meta tag in the HTML head: meta name=viewport content=width=device-width initial-scale=1.0. 2) Never use fixed pixel widths on layout containers — always use width 100% with a max-width for desktop. 3) All grid layouts must use CSS Grid with repeat(auto-fit, minmax(280px, 1fr)) or Flexbox with flex-wrap wrap so columns automatically stack on small screens. 4) Include these three breakpoints as a minimum in every stylesheet: max-width 1024px for tablet, max-width 768px for mobile landscape, max-width 480px for mobile portrait. 5) At 768px and below: the navigation must collapse to a hamburger menu, all multi-column layouts must become single column, font sizes must reduce by 20 to 30 percent, padding and margins must reduce, any fixed heights must be removed or changed to min-height auto. 6) At 480px and below: body font size minimum 16px for readability, buttons must be minimum 44px tall for touch targets, images must be width 100%, no horizontal scrolling under any circumstances — test by mentally tracing every element at 320px width. 7) Use clamp() for fluid typography on headings: clamp(1.5rem, 4vw, 3rem) so text scales smoothly between mobile and desktop. 8) Never use position absolute on elements inside sections without checking they do not break layout on mobile.
+
+HERO VISIBILITY — CRITICAL: Always set opacity: 1 and visibility: visible as the default state on hero headlines, hero subheadings, hero CTAs and any other above-the-fold content. Never set these elements to opacity: 0 in CSS — let JavaScript handle initial hidden states only when absolutely necessary and always with a guaranteed animation to restore visibility.`
 
 const DEVELOPER_JS_SYSTEM = `You are an expert web developer. You are given the CSS stylesheet already written. Use the exact same class names and IDs from that CSS. Write all interactions, animations, navigation behaviour, form handling and any other dynamic functionality. IntersectionObserver callbacks must add the exact same class names that the CSS uses to reveal elements — never use animate-in if the CSS expects visible, or any other mismatch. Output raw JavaScript only with no HTML, no CSS, no script tags, no explanation and no markdown code blocks.
 
@@ -155,7 +158,9 @@ SUPABASE AUTH — IMPLEMENT WHEN AUTHENTICATION IS REQUESTED:
 When the brief specifies that authentication is required you must implement a fully working Supabase Auth integration. Here is exactly how to do it: 1) Add the Supabase JS client via CDN by adding this script tag in the HTML head: <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script> — note this must be added before script.js and is handled by the HTML developer, do not add script tags in your JavaScript output. 2) Initialise the Supabase client at the top of script.js using: const supabaseUrl = 'YOUR_SUPABASE_URL' and const supabaseKey = 'YOUR_SUPABASE_ANON_KEY' and const supabase = window.supabase.createClient(supabaseUrl, supabaseKey) — use placeholder values that the client will replace with their own Supabase project credentials. 3) Implement email and password sign up using supabase.auth.signUp with email and password. 4) Implement email and password login using supabase.auth.signInWithPassword. 5) If Google login is requested implement using supabase.auth.signInWithOAuth with provider google. 6) If magic link is requested implement using supabase.auth.signInWithOtp with email. 7) Implement sign out using supabase.auth.signOut. 8) Implement session checking using supabase.auth.getSession on page load — if a session exists show the authenticated state of the page, if no session exists redirect to the login page or show the login form. 9) Implement an auth state listener using supabase.auth.onAuthStateChange to handle login and logout events in real time. 10) For protected content — wrap any protected sections in a div with class protected-content and set it to display none by default, only showing it when a valid session is detected. 11) Add a comment block at the top of the auth section of the JS file in this exact format: /* SUPABASE AUTH SETUP — Replace YOUR_SUPABASE_URL and YOUR_SUPABASE_ANON_KEY with your project credentials from supabase.com/dashboard */
 
 SUPABASE STORAGE — IMPLEMENT WHEN DOWNLOADABLE FILES ARE REQUESTED:
-When downloadable files are requested implement Supabase Storage integration as follows: 1) For public downloads create a function called downloadFile that takes a bucket name and file path, calls supabase.storage.from(bucketName).getPublicUrl(filePath) to get the public URL, then triggers a download by creating a temporary anchor element with the href set to the public URL and the download attribute set to the filename and clicking it programmatically. 2) For protected downloads create a function called downloadProtectedFile that first checks for a valid Supabase auth session using supabase.auth.getSession — if no session exists redirect to the login page; if a session exists call supabase.storage.from(bucketName).createSignedUrl(filePath, 60) to generate a temporary signed URL valid for 60 seconds, then trigger the download using the same anchor approach. 3) Add click event listeners to all download buttons in the HTML — read the data-bucket and data-file attributes from each button and pass them to the appropriate download function. 4) Add a comment block above the storage section of the JS file in this exact format: /* SUPABASE STORAGE SETUP — Create a storage bucket in your Supabase dashboard and upload your files there. Update the bucket name and file paths in the download buttons to match your uploaded files. Set the bucket to public for public downloads or private for protected downloads */`
+When downloadable files are requested implement Supabase Storage integration as follows: 1) For public downloads create a function called downloadFile that takes a bucket name and file path, calls supabase.storage.from(bucketName).getPublicUrl(filePath) to get the public URL, then triggers a download by creating a temporary anchor element with the href set to the public URL and the download attribute set to the filename and clicking it programmatically. 2) For protected downloads create a function called downloadProtectedFile that first checks for a valid Supabase auth session using supabase.auth.getSession — if no session exists redirect to the login page; if a session exists call supabase.storage.from(bucketName).createSignedUrl(filePath, 60) to generate a temporary signed URL valid for 60 seconds, then trigger the download using the same anchor approach. 3) Add click event listeners to all download buttons in the HTML — read the data-bucket and data-file attributes from each button and pass them to the appropriate download function. 4) Add a comment block above the storage section of the JS file in this exact format: /* SUPABASE STORAGE SETUP — Create a storage bucket in your Supabase dashboard and upload your files there. Update the bucket name and file paths in the download buttons to match your uploaded files. Set the bucket to public for public downloads or private for protected downloads */
+
+CRITICAL ANIMATION RULE — Never animate hero text or hero content with opacity 0 as a starting state unless you are 100% certain the animation will complete successfully. For hero sections specifically always use this safe pattern: set the initial state AFTER the element is visible by using gsap.from() instead of gsap.set() followed by gsap.to(). Use gsap.from(".hero-content", { opacity: 0, y: 30, duration: 1, ease: "power2.out" }) which starts invisible and animates to the natural visible state — never use gsap.set(".hero-content", { opacity: 0 }) without a guaranteed follow-up animation. Always wrap hero animations in a window load event listener not DOMContentLoaded to ensure all resources are ready before animating. Always add a failsafe by setting a CSS rule .hero-content { opacity: 1 } as the default and only overriding it with GSAP — this way if GSAP fails to load or the animation errors the content remains visible. Never use ScrollTrigger on hero elements since the hero is already in view on page load — ScrollTrigger animations only trigger when elements scroll into view which means if the hero is the starting point the animation may never fire.`
 
 const DEVELOPER_HTML_SYSTEM = `You are an expert web developer. You are given the CSS and JavaScript files already written. Use the exact same class names and IDs from those files. In the head section include: meta charset UTF-8, meta viewport, the page title, any Google Fonts links from the CSS, and a link tag with rel=stylesheet href=styles.css. Just before the closing body tag include the following script tags in this exact order: first the GSAP CDN script, then the ScrollTrigger CDN script, then the main script.js — like this:
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -2547,6 +2552,24 @@ export default function ProjectDetail() {
       await checkDevIntegrity(cssText, jsText)
       pipeline.complete()
 
+      // ── Save all Developer files to local disk ──
+      {
+        const filesToSave = [
+          { filename: 'styles.css', content: cssText },
+          { filename: 'script.js', content: jsText },
+        ]
+        const { data: htmlRecs } = await supabase
+          .from('agent_outputs')
+          .select('agent_name, output_text')
+          .eq('project_id', projectId)
+        for (const rec of htmlRecs ?? []) {
+          if (rec.agent_name.startsWith('Developer-HTML-') && rec.output_text?.trim()) {
+            filesToSave.push({ filename: rec.agent_name.slice('Developer-HTML-'.length), content: rec.output_text })
+          }
+        }
+        await saveFilesToDisk(project?.clients?.name ?? '', project?.name ?? '', filesToSave, showToast)
+      }
+
       // ── Setup guide: generate when auth or downloads are requested ──
       const needsSetupGuide = /Authentication:\s*Required|Downloadable files:\s*Required/i.test(briefText)
       if (needsSetupGuide) {
@@ -4470,6 +4493,14 @@ export default function ProjectDetail() {
                   Download PDF
                 </button>
               )}
+              {devOutput && (
+                <button
+                  onClick={() => openProjectFolder(project?.clients?.name ?? '', project?.name ?? '', showToast)}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium text-zinc-400 bg-zinc-800 hover:bg-zinc-700 hover:text-white transition-colors"
+                >
+                  Open Folder
+                </button>
+              )}
               <ChevronLeftIcon className="w-4 h-4 text-zinc-500" style={{ transform: devOpen ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
             </div>
           </div>
@@ -4608,6 +4639,7 @@ export default function ProjectDetail() {
                     const { error } = await safeUpdate('agent_outputs', devCssOutput.id, { output_text: fixed, token_usage: tu }, { output_text: fixed })
                     if (error) throw new Error(error.message)
                     await load()
+                    await saveFilesToDisk(project?.clients?.name ?? '', project?.name ?? '', [{ filename: 'styles.css', content: fixed }], showToast)
                   }}
                   onFresh={async (direction) => {
                     if (!await confirm({ title: 'Start Fresh', message: 'This will delete the current CSS stylesheet and regenerate it from scratch. Are you sure?', confirmLabel: 'Start Fresh', variant: 'danger' })) return
@@ -4676,6 +4708,7 @@ export default function ProjectDetail() {
                     const { error } = await safeUpdate('agent_outputs', devJsOutput.id, { output_text: fixed, token_usage: tu }, { output_text: fixed })
                     if (error) throw new Error(error.message)
                     await load()
+                    await saveFilesToDisk(project?.clients?.name ?? '', project?.name ?? '', [{ filename: 'script.js', content: fixed }], showToast)
                   }}
                   onFresh={async (direction) => {
                     if (!await confirm({ title: 'Start Fresh', message: 'This will delete the current JavaScript file and regenerate it from scratch. Are you sure?', confirmLabel: 'Start Fresh', variant: 'danger' })) return
@@ -4758,6 +4791,7 @@ export default function ProjectDetail() {
                             const { error } = await safeUpdate('agent_outputs', htmlRec.id, { output_text: fixed, token_usage: tu }, { output_text: fixed })
                             if (error) throw new Error(error.message)
                             await load()
+                            await saveFilesToDisk(project?.clients?.name ?? '', project?.name ?? '', [{ filename: pg.filename, content: fixed }], showToast)
                           }}
                           onFresh={async (direction) => {
                             if (!await confirm({ title: 'Start Fresh', message: `This will delete the current ${pg.filename} file and regenerate it from scratch. Are you sure?`, confirmLabel: 'Start Fresh', variant: 'danger' })) return
