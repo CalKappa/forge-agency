@@ -3686,116 +3686,6 @@ The Forge Agency Team`
         </div>
       )}
 
-      {/* ── Pages detected ── */}
-      {latestBrief && (
-        <div className="rounded-lg bg-zinc-900 border border-zinc-800 px-5 py-4">
-          <div className="flex items-center justify-between gap-3 mb-3">
-            <p className="text-xs font-medium text-zinc-500 uppercase tracking-wide">Pages detected</p>
-            <div className="flex items-center gap-2">
-              {!pagesEditing && (
-                <>
-                  <button
-                    onClick={() => { setEditedPages(project?.pages?.length ? [...project.pages] : []); setPagesEditing(true) }}
-                    disabled={isRedetectingPages || isAgentRunning}
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium text-zinc-400 bg-zinc-800 hover:bg-zinc-700 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <EditIcon className="w-3 h-3" />
-                    Edit Pages
-                  </button>
-                  <button
-                    onClick={redetectPages}
-                    disabled={isRedetectingPages || isAgentRunning}
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium text-zinc-400 bg-zinc-800 hover:bg-zinc-700 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isRedetectingPages ? (
-                      <>
-                        <SpinnerIcon className="w-3 h-3 animate-spin" />
-                        Detecting…
-                      </>
-                    ) : (
-                      <>
-                        <RefreshIcon className="w-3 h-3" />
-                        Redetect Pages
-                      </>
-                    )}
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-
-          {pagesEditing ? (
-            <div className="space-y-3">
-              <div className="space-y-2">
-                {editedPages.map((p, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <input
-                      value={p.name}
-                      onChange={e => setEditedPages(prev => prev.map((pg, idx) => idx === i ? { ...pg, name: e.target.value } : pg))}
-                      placeholder="Page name"
-                      className="flex-1 px-2.5 py-1.5 rounded-md bg-zinc-950 border border-zinc-700 text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
-                    />
-                    <input
-                      value={p.filename}
-                      onChange={e => setEditedPages(prev => prev.map((pg, idx) => idx === i ? { ...pg, filename: e.target.value } : pg))}
-                      placeholder="filename.html"
-                      className="flex-1 px-2.5 py-1.5 rounded-md bg-zinc-950 border border-zinc-700 text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 font-mono"
-                    />
-                    <button
-                      onClick={() => setEditedPages(prev => prev.filter((_, idx) => idx !== i))}
-                      className="p-1 rounded text-zinc-600 hover:text-red-400 transition-colors"
-                    >
-                      <TrashIcon className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-              <button
-                onClick={() => setEditedPages(prev => [...prev, { name: '', filename: '' }])}
-                className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
-              >
-                <PlusIcon className="w-3 h-3" />
-                Add page
-              </button>
-              <div className="flex items-center gap-2 pt-1">
-                <button
-                  onClick={async () => {
-                    const cleaned = sanitiseExtractedPages(editedPages.filter(p => p.name.trim() && p.filename.trim()))
-                    console.log('[PageEditor] Saving edited pages:', JSON.stringify(cleaned))
-                    await safeUpdate('projects', projectId, { pages: cleaned })
-                    await load()
-                    setPagesEditing(false)
-                    showToast('Pages saved')
-                  }}
-                  className="px-3 py-1.5 rounded-md text-xs font-medium bg-violet-600 text-white hover:bg-violet-500 transition-colors"
-                >
-                  Save
-                </button>
-                <button
-                  onClick={() => setPagesEditing(false)}
-                  className="px-3 py-1.5 rounded-md text-xs font-medium text-zinc-400 bg-zinc-800 hover:bg-zinc-700 hover:text-white transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          ) : project?.pages?.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {project.pages.map(p => (
-                <span key={p.filename} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-zinc-800 text-xs text-zinc-300">
-                  {p.name}
-                  <span className="text-zinc-600">({p.filename})</span>
-                </span>
-              ))}
-            </div>
-          ) : (
-            <p className="text-xs text-amber-400">
-              No pages detected yet. Click <span className="font-medium">Redetect Pages</span> to extract them from the brief.
-            </p>
-          )}
-        </div>
-      )}
-
       {/* ── Orchestrator breakdown ── */}
       {(orchestratorOutput || isSendingOrchestrator) && (
         <div className="space-y-0">
@@ -3931,6 +3821,116 @@ The Forge Agency Team`
                 )
               })()}
             </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Pages detected — only shown once Orchestrator has completed ── */}
+      {orchestratorOutput && (
+        <div className="rounded-lg bg-zinc-900 border border-zinc-800 px-5 py-4">
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <p className="text-xs font-medium text-zinc-500 uppercase tracking-wide">Pages detected</p>
+            <div className="flex items-center gap-2">
+              {!pagesEditing && (
+                <>
+                  <button
+                    onClick={() => { setEditedPages(project?.pages?.length ? [...project.pages] : []); setPagesEditing(true) }}
+                    disabled={isRedetectingPages || isAgentRunning}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium text-zinc-400 bg-zinc-800 hover:bg-zinc-700 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <EditIcon className="w-3 h-3" />
+                    Edit Pages
+                  </button>
+                  <button
+                    onClick={redetectPages}
+                    disabled={isRedetectingPages || isAgentRunning}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium text-zinc-400 bg-zinc-800 hover:bg-zinc-700 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isRedetectingPages ? (
+                      <>
+                        <SpinnerIcon className="w-3 h-3 animate-spin" />
+                        Detecting…
+                      </>
+                    ) : (
+                      <>
+                        <RefreshIcon className="w-3 h-3" />
+                        Redetect Pages
+                      </>
+                    )}
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+
+          {pagesEditing ? (
+            <div className="space-y-3">
+              <div className="space-y-2">
+                {editedPages.map((p, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <input
+                      value={p.name}
+                      onChange={e => setEditedPages(prev => prev.map((pg, idx) => idx === i ? { ...pg, name: e.target.value } : pg))}
+                      placeholder="Page name"
+                      className="flex-1 px-2.5 py-1.5 rounded-md bg-zinc-950 border border-zinc-700 text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                    />
+                    <input
+                      value={p.filename}
+                      onChange={e => setEditedPages(prev => prev.map((pg, idx) => idx === i ? { ...pg, filename: e.target.value } : pg))}
+                      placeholder="filename.html"
+                      className="flex-1 px-2.5 py-1.5 rounded-md bg-zinc-950 border border-zinc-700 text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 font-mono"
+                    />
+                    <button
+                      onClick={() => setEditedPages(prev => prev.filter((_, idx) => idx !== i))}
+                      className="p-1 rounded text-zinc-600 hover:text-red-400 transition-colors"
+                    >
+                      <TrashIcon className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => setEditedPages(prev => [...prev, { name: '', filename: '' }])}
+                className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+              >
+                <PlusIcon className="w-3 h-3" />
+                Add page
+              </button>
+              <div className="flex items-center gap-2 pt-1">
+                <button
+                  onClick={async () => {
+                    const cleaned = sanitiseExtractedPages(editedPages.filter(p => p.name.trim() && p.filename.trim()))
+                    console.log('[PageEditor] Saving edited pages:', JSON.stringify(cleaned))
+                    await safeUpdate('projects', projectId, { pages: cleaned })
+                    await load()
+                    setPagesEditing(false)
+                    showToast('Pages saved')
+                  }}
+                  className="px-3 py-1.5 rounded-md text-xs font-medium bg-violet-600 text-white hover:bg-violet-500 transition-colors"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={() => setPagesEditing(false)}
+                  className="px-3 py-1.5 rounded-md text-xs font-medium text-zinc-400 bg-zinc-800 hover:bg-zinc-700 hover:text-white transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : project?.pages?.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {project.pages.map(p => (
+                <span key={p.filename} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-zinc-800 text-xs text-zinc-300">
+                  {p.name}
+                  <span className="text-zinc-600">({p.filename})</span>
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-amber-400">
+              No pages detected yet. Click <span className="font-medium">Redetect Pages</span> to extract them from the brief.
+            </p>
           )}
         </div>
       )}
