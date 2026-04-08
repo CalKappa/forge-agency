@@ -300,18 +300,22 @@ function Step2({ f, set }) {
       <Field label="What is the primary goal of the website?">
         <div className="space-y-2 mt-1">
           {PRIMARY_GOALS.map(g => (
-            <label key={g} className={`flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition-all ${
-              f.primaryGoal === g
-                ? 'bg-violet-50 border-violet-400 ring-2 ring-violet-100'
-                : 'border-gray-200 hover:border-gray-300'
-            }`}>
+            <div
+              key={g}
+              onClick={() => set('primaryGoal', g)}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition-all ${
+                f.primaryGoal === g
+                  ? 'bg-violet-50 border-violet-400 ring-2 ring-violet-100'
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
               <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 transition-all flex items-center justify-center ${
                 f.primaryGoal === g ? 'border-violet-500 bg-violet-500' : 'border-gray-300'
               }`}>
                 {f.primaryGoal === g && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
               </div>
               <span className={`text-sm font-medium ${f.primaryGoal === g ? 'text-violet-700' : 'text-gray-700'}`}>{g}</span>
-            </label>
+            </div>
           ))}
         </div>
       </Field>
