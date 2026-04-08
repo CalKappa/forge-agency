@@ -3216,6 +3216,7 @@ The Forge Agency Team`
 
   const isNotStarted      = project.current_stage === 'Not Started'
   const isResearch        = project.current_stage === 'Research'
+  const hasBrief          = briefs.length > 0
 
   // ── Pipeline-context derived state ────────────────────────────────────────
   // These stay true even after navigating away and back, because the context
@@ -3345,14 +3346,24 @@ The Forge Agency Team`
 
         <div className="flex items-center gap-2 flex-shrink-0">
           {isNotStarted && (
-            <button
-              onClick={openAutoRunModal}
-              disabled={isAgentRunning}
-              className="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium bg-blue-600 text-white hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <PlayIcon className="w-3.5 h-3.5" />
-              Start Project
-            </button>
+            <div className="relative group">
+              <button
+                onClick={hasBrief ? openAutoRunModal : undefined}
+                disabled={isAgentRunning || !hasBrief}
+                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium bg-blue-600 text-white transition-colors ${hasBrief ? 'hover:bg-blue-500' : 'opacity-40 cursor-not-allowed'} disabled:opacity-40 disabled:cursor-not-allowed`}
+              >
+                <PlayIcon className="w-3.5 h-3.5" />
+                Start Project
+              </button>
+              {!hasBrief && (
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 pointer-events-none hidden group-hover:block">
+                  <div className="bg-zinc-800 border border-zinc-700 text-zinc-200 text-xs rounded-md px-3 py-2 whitespace-nowrap shadow-lg">
+                    A brief is required before starting the project — add one using the New Brief button above.
+                  </div>
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-zinc-800" />
+                </div>
+              )}
+            </div>
           )}
           {showAdvance && (
             <button
@@ -3554,23 +3565,33 @@ The Forge Agency Team`
               >
                 Download PDF
               </button>
-              <button
-                onClick={sendToOrchestrator}
-                disabled={isSendingOrchestrator}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium text-violet-400 border border-violet-500/40 bg-violet-500/10 hover:bg-violet-500/20 hover:border-violet-500/60 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {isSendingOrchestrator ? (
-                  <>
-                    <SpinnerIcon className="w-3 h-3 animate-spin" />
-                    Sending to orchestrator…
-                  </>
-                ) : (
-                  <>
-                    <SparkleIcon className="w-3 h-3" />
-                    Send to Orchestrator
-                  </>
+              <div className="relative group">
+                <button
+                  onClick={hasBrief ? sendToOrchestrator : undefined}
+                  disabled={isSendingOrchestrator || !hasBrief}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium text-violet-400 border border-violet-500/40 bg-violet-500/10 transition-colors ${hasBrief ? 'hover:bg-violet-500/20 hover:border-violet-500/60' : 'opacity-40 cursor-not-allowed'} disabled:opacity-40 disabled:cursor-not-allowed`}
+                >
+                  {isSendingOrchestrator ? (
+                    <>
+                      <SpinnerIcon className="w-3 h-3 animate-spin" />
+                      Sending to orchestrator…
+                    </>
+                  ) : (
+                    <>
+                      <SparkleIcon className="w-3 h-3" />
+                      Send to Orchestrator
+                    </>
+                  )}
+                </button>
+                {!hasBrief && (
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 pointer-events-none hidden group-hover:block">
+                    <div className="bg-zinc-800 border border-zinc-700 text-zinc-200 text-xs rounded-md px-3 py-2 whitespace-nowrap shadow-lg">
+                      A brief is required before sending to the Orchestrator.
+                    </div>
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-zinc-800" />
+                  </div>
                 )}
-              </button>
+              </div>
               <ChevronLeftIcon
                 className="w-4 h-4 text-zinc-500"
                 style={{ transform: briefOpen ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}
