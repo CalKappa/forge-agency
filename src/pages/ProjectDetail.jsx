@@ -1563,6 +1563,7 @@ export default function ProjectDetail() {
   const [deliveryModalOpen,    setDeliveryModalOpen]    = useState(false)
   const [briefLinkModal,       setBriefLinkModal]       = useState(null)  // null | { url, emailDraft }
   const [briefLinkCopied,      setBriefLinkCopied]      = useState(false)
+  const [briefToken,           setBriefToken]           = useState(null)  // most recent client_brief_tokens record
 
   // Section open/close state — most recent section auto-opens, handled in load()
   const [briefOpen,        setBriefOpen]        = useState(false)
@@ -1588,13 +1589,16 @@ export default function ProjectDetail() {
 
   useEffect(() => {
     load()
+    loadBriefToken()
 
     const channel = supabase
       .channel(`project-detail-${projectId}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' },      () => load())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'briefs' },        () => load())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'invoices' },      () => load())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'agent_outputs' }, () => load())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' },             () => load())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'briefs' },               () => load())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'invoices' },             () => load())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'agent_outputs' },        () => load())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'client_brief_tokens',
+          filter: `project_id=eq.${projectId}` },                                               () => loadBriefToken())
       .subscribe()
 
     return () => supabase.removeChannel(channel)
@@ -1647,6 +1651,17 @@ export default function ProjectDetail() {
     const t = setTimeout(() => load(), 3000)
     return () => clearTimeout(t)
   }, [loading, agentOutputs, briefs])
+
+  async function loadBriefToken() {
+    const { data } = await supabase
+      .from('client_brief_tokens')
+      .select('id, token, status, submitted_at, expires_at, created_at')
+      .eq('project_id', projectId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    setBriefToken(data ?? null)
+  }
 
   async function load() {
     // Claim a generation slot. If a newer load() starts before this one
@@ -3115,14 +3130,16 @@ export default function ProjectDetail() {
   async function sendBriefToClient() {
     const token = crypto.randomUUID()
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-    const { error } = await supabase.from('client_brief_tokens').insert({
+    const { data: inserted, error } = await supabase.from('client_brief_tokens').insert({
       token,
       project_id: projectId,
       client_id:  project.client_id,
       status:     'pending',
       expires_at: expiresAt,
-    })
+    }).select('id, token, status, submitted_at, expires_at, created_at').single()
     if (error) { showToast('Failed to generate brief link'); return }
+    // Optimistically update state so the button swaps to "Awaiting" immediately
+    setBriefToken(inserted)
     const url = `https://forge-agency-lemon.vercel.app/brief/${token}`
     const clientName  = project.clients?.name ?? 'there'
     const projectName = project.name ?? 'your project'
@@ -3402,15 +3419,51 @@ The Forge Agency Team`
               Delivered
             </span>
           )}
-          <button
-            onClick={sendBriefToClient}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium border border-blue-600/60 text-blue-400 hover:bg-blue-950/40 transition-colors"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
-            </svg>
-            Send Brief to Client
-          </button>
+          {briefToken?.status === 'submitted' ? (
+            /* ── Submitted: green received badge ── */
+            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+              <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Client brief received{briefToken.submitted_at ? ` · ${new Date(briefToken.submitted_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : ''}
+            </span>
+          ) : briefToken?.status === 'pending' ? (
+            /* ── Pending: disabled button + amber badge ── */
+            <div className="flex items-center gap-2">
+              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-amber-500/10 border border-amber-500/30 text-amber-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse flex-shrink-0" />
+                Awaiting client brief
+              </span>
+              <div className="relative group">
+                <button
+                  disabled
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium border border-zinc-700 text-zinc-600 opacity-50 cursor-not-allowed"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
+                  </svg>
+                  Send Brief to Client
+                </button>
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 pointer-events-none hidden group-hover:block">
+                  <div className="bg-zinc-800 border border-zinc-700 text-zinc-200 text-xs rounded-md px-3 py-2 whitespace-nowrap shadow-lg">
+                    Brief link already sent — awaiting client submission.
+                  </div>
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-zinc-800" />
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* ── No token: normal button ── */
+            <button
+              onClick={sendBriefToClient}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium border border-blue-600/60 text-blue-400 hover:bg-blue-950/40 transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
+              </svg>
+              Send Brief to Client
+            </button>
+          )}
           <button
             onClick={deleteProject}
             disabled={isAgentRunning}
