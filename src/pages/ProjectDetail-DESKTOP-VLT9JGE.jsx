@@ -11,16 +11,15 @@ import { usePipeline } from '../hooks/usePipeline'
 import { saveFilesToDisk, openProjectFolder } from '../lib/fileSystemHelpers'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
-const STAGES = ['Not Started', 'Research', 'Design', 'Dev', 'QA', 'Review', 'Delivered']
+const STAGES = ['Not Started', 'Research', 'Design', 'Dev', 'Review', 'Delivered']
 
 const STAGE_CONFIG = {
-  'Not Started': { bg: 'bg-red-500/15',        text: 'text-red-400',        border: 'border-red-500/30',        ring: 'ring-red-500',        fill: 'bg-red-500'        },
-  Research:      { bg: 'bg-blue-500/15',        text: 'text-blue-400',       border: 'border-blue-500/30',       ring: 'ring-blue-500',       fill: 'bg-blue-500'       },
-  Design:        { bg: 'bg-violet-500/15',      text: 'text-violet-400',     border: 'border-violet-500/30',     ring: 'ring-violet-500',     fill: 'bg-violet-500'     },
-  Dev:           { bg: 'bg-orange-500/15',      text: 'text-orange-400',     border: 'border-orange-500/30',     ring: 'ring-orange-500',     fill: 'bg-orange-500'     },
-  QA:            { bg: 'bg-[#E0F4F4]',          text: 'text-[#0D7E7E]',      border: 'border-[#0D7E7E]/40',      ring: 'ring-[#0D7E7E]',      fill: 'bg-[#0D7E7E]'      },
-  Review:        { bg: 'bg-amber-500/15',       text: 'text-amber-400',      border: 'border-amber-500/30',      ring: 'ring-amber-500',      fill: 'bg-amber-500'      },
-  Delivered:     { bg: 'bg-emerald-500/15',     text: 'text-emerald-400',    border: 'border-emerald-500/30',    ring: 'ring-emerald-500',    fill: 'bg-emerald-500'    },
+  'Not Started': { bg: 'bg-red-500/15',     text: 'text-red-400',     border: 'border-red-500/30',     ring: 'ring-red-500',     fill: 'bg-red-500'     },
+  Research:      { bg: 'bg-blue-500/15',    text: 'text-blue-400',    border: 'border-blue-500/30',    ring: 'ring-blue-500',    fill: 'bg-blue-500'    },
+  Design:        { bg: 'bg-violet-500/15',  text: 'text-violet-400',  border: 'border-violet-500/30',  ring: 'ring-violet-500',  fill: 'bg-violet-500'  },
+  Dev:           { bg: 'bg-orange-500/15',  text: 'text-orange-400',  border: 'border-orange-500/30',  ring: 'ring-orange-500',  fill: 'bg-orange-500'  },
+  Review:        { bg: 'bg-amber-500/15',   text: 'text-amber-400',   border: 'border-amber-500/30',   ring: 'ring-amber-500',   fill: 'bg-amber-500'   },
+  Delivered:     { bg: 'bg-emerald-500/15', text: 'text-emerald-400', border: 'border-emerald-500/30', ring: 'ring-emerald-500', fill: 'bg-emerald-500' },
 }
 
 const INVOICE_STATUS = {
@@ -41,8 +40,7 @@ const PAGE_EXTRACTOR_SYSTEM = `Output ONLY a valid JSON array of page objects. E
 const AUTORUN_STAGES = [
   { key: 'researcher', label: 'Researcher', description: 'auto approve and move to Designer' },
   { key: 'designer',   label: 'Designer',   description: 'auto approve and move to Developer' },
-  { key: 'developer',  label: 'Developer',  description: 'auto approve and run QA Test' },
-  { key: 'qa',         label: 'QA Test',    description: 'auto run fixes and move to Reviewer' },
+  { key: 'developer',  label: 'Developer',  description: 'auto approve and move to Reviewer' },
   { key: 'reviewer',   label: 'Reviewer',   description: 'auto approve and mark as Ready for Delivery' },
 ]
 
@@ -72,11 +70,11 @@ const SVG_JSON_RULE = `Output ONLY a valid JSON array with no explanation and no
 
 const SVG_SPACING_RULES = ` STRICT SPACING RULES: Never place a text element within 20px of another element. Every rect must have at least 10px padding from its container rect — inner rects must start at least 10px inside the outer rect on all sides. Text elements inside a rect must have their y position set to the rect y plus at least 25px so text never sits on the edge of a box. Never overlap two rect elements unless one is intentionally a container for the other. Section label text (short uppercase words like HERO or ABOUT) must be placed at least 30px above the first content element in that section.`
 
-const SVG_NAV_SYSTEM     = SVG_JSON_RULE + SVG_SPACING_RULES + ` You are generating the navigation bar wireframe. Place the nav at y=0. Width is 1200px. Choose a height between 60px and 100px — a bold brand with a tall logo may use 100px; a minimal brand may use 60-70px. Design a navigation layout appropriate for this site type and brand aesthetic — the arrangement of the logo, links and any utility elements should reflect the brand personality described in the brief. A playful or creative brand might use an unconventional layout; a corporate or professional brand might use a clean structured grid.`
-const SVG_HERO_SYSTEM    = SVG_JSON_RULE + SVG_SPACING_RULES + ` You are generating the hero section wireframe. Start the hero at y=100. Width is 1200px. ACTIVELY choose a hero height between 200px and 600px based on what this specific site type and brand aesthetic requires — do not default to any single height. Examples: a bold creative portfolio may use 550-600px; a minimal SaaS tool may use 250-350px; a legal services firm may use 300-400px; a fashion brand may use 500-600px; a simple utility app may use 200-280px. Create a hero section appropriate for this type of site and brand — do not default to a standard split layout. A bold brand may use a full-bleed tall hero with a single dominant element; a minimal brand may use compact typographic content; a portfolio site may lead with a large image placeholder; a service business may use overlapping content zones. Include only the content elements appropriate for this particular brand.`
-const SVG_CONTENT_A_SYSTEM = SVG_JSON_RULE + SVG_SPACING_RULES + ` You are generating the first content area wireframe. Start this section at approximately y=720. Width is 1200px. Choose a height between 200px and 500px based on content requirements — a features grid with 3 columns may use 400-500px; a simple about blurb with one image may use 200-280px; a services list may use 350-450px. Design this section based on the site type and brand aesthetic — it could be a features grid, services overview, about summary, portfolio highlights or any section appropriate to the brief. The number of columns, proportions and internal arrangement should vary based on the brand personality: asymmetric and varied for playful brands, structured and grid-based for corporate brands.`
-const SVG_CONTENT_B_SYSTEM = SVG_JSON_RULE + SVG_SPACING_RULES + ` You are generating the second content area wireframe covering two distinct sections. Start at approximately y=1260. Width is 1200px. Choose a total height between 400px and 700px across both sub-sections — vary the split between them based on content. Choose two section types appropriate to this site — for example testimonials and a CTA band, a portfolio grid and a contact teaser, a team section and a stats row, or any combination that fits the brief. Do not use generic placeholder names — infer appropriate section types from the brief. Each section should have a background rect, a heading, and content elements arranged to reflect the brand aesthetic. Vary the proportions and layout between the two sections.`
-const SVG_FOOTER_SYSTEM  = SVG_JSON_RULE + SVG_SPACING_RULES + ` You are generating the footer wireframe. Start the footer at approximately y=1980. Width is 1200px. Choose a height between 80px and 200px — a content-rich site with multiple columns may use 160-200px; a minimal brand may use 80-100px. Design a footer appropriate for this site type and brand — include elements relevant to the site such as logo, navigation links, contact details, social links or newsletter signup, chosen and arranged based on the brief. A minimal brand may use a single-row footer; a content-rich site may use a multi-column layout.`
+const SVG_NAV_SYSTEM     = SVG_JSON_RULE + SVG_SPACING_RULES + ` You are generating the navigation bar wireframe. Work within the vertical band y=0 to y=80. The minimum height for this section is 80px. Width is 1200px. Design a navigation layout appropriate for this site type and brand aesthetic — the arrangement of the logo, links and any utility elements should reflect the brand personality described in the brief. A playful or creative brand might use an unconventional layout; a corporate or professional brand might use a clean structured grid.`
+const SVG_HERO_SYSTEM    = SVG_JSON_RULE + SVG_SPACING_RULES + ` You are generating the hero section wireframe. Work within the vertical band y=100 to y=600. The minimum height for this section is 500px. Width is 1200px. Create a hero section appropriate for this type of site and brand — do not default to a standard split layout. A bold brand may use a full-bleed tall hero with a single dominant element; a minimal brand may use compact typographic content; a portfolio site may lead with a large image placeholder; a service business may use overlapping content zones. Decide the hero height and internal arrangement based on the brief, mood and site type. Include only the content elements appropriate for this particular brand.`
+const SVG_CONTENT_A_SYSTEM = SVG_JSON_RULE + SVG_SPACING_RULES + ` You are generating the first content area wireframe. Work within the vertical band y=620 to y=1020. The minimum height for this section is 400px. Width is 1200px. Design this section based on the site type and brand aesthetic — it could be a features grid, services overview, about summary, portfolio highlights or any section appropriate to the brief. The number of columns, proportions and internal arrangement should vary based on the brand personality: asymmetric and varied for playful brands, structured and grid-based for corporate brands.`
+const SVG_CONTENT_B_SYSTEM = SVG_JSON_RULE + SVG_SPACING_RULES + ` You are generating the second content area wireframe covering two distinct sections. Work within the vertical band y=1040 to y=1640. The minimum height for this section is 600px total, at least 400px per sub-section. Width is 1200px. Choose two section types appropriate to this site — for example testimonials and a CTA band, a portfolio grid and a contact teaser, a team section and a stats row, or any combination that fits the brief. Do not use generic placeholder names — infer appropriate section types from the brief. Each section should have a background rect, a heading, and content elements arranged to reflect the brand aesthetic. Vary the proportions and layout between the two sections.`
+const SVG_FOOTER_SYSTEM  = SVG_JSON_RULE + SVG_SPACING_RULES + ` You are generating the footer wireframe. Work within the vertical band y=1660 to y=1810. The minimum height for this section is 150px. Width is 1200px. Design a footer appropriate for this site type and brand — include elements relevant to the site such as logo, navigation links, contact details, social links or newsletter signup, chosen and arranged based on the brief. A minimal brand may use a single-row footer; a content-rich site may use a multi-column layout.`
 
 const LAYOUT_SEEDS = [
   'Asymmetric split layout with large image left and text right',
@@ -87,14 +85,6 @@ const LAYOUT_SEEDS = [
   'Overlapping elements with layered depth and offset cards',
   'Minimal whitespace heavy layout with sparse content and large negative space',
   'Dynamic zigzag layout alternating image and text left and right per section',
-  'Full bleed hero with overlapping content cards that break the grid',
-  'Magazine style with a large left column and narrow right sidebar',
-  'Cards first layout with the hero below a featured content grid',
-  'Horizontal scrolling hero with vertical content sections below',
-  'Dark hero transitioning to light content sections',
-  'Split screen hero with contrasting left and right halves',
-  'Stacked full-width banner sections with alternating text alignment',
-  'Timeline style layout with content flowing along a central axis',
 ]
 
 const DEVELOPER_STACK_SYSTEM = `You are an expert web developer. Based on the client brief, research report and design brief provided, output ONLY two sections: first a Tech Stack section recommending specific technologies with a one sentence reason for each choice, second a File Structure section showing the complete folder and file structure for the project as a simple indented text tree. Be concise and specific. Use markdown formatting.`
@@ -123,9 +113,7 @@ HERO VISIBILITY — CRITICAL: Always set opacity: 1 and visibility: visible as t
 
 FULL-WIDTH ELEMENTS — CRITICAL: The html, body, header, nav, footer and all full-width section elements must always have width: 100% with no max-width restriction on the element itself. Only content containers inside sections should have max-width. Never apply max-width directly to section, header, footer, nav, html or body elements.
 
-STAGGER ANIMATIONS — CRITICAL: Never use opacity as part of a stagger animation on product cards or any grid items. Stagger animations must only use transform properties like y or scale — never opacity. Products, cards and grid items must always remain fully visible regardless of animation state. The correct pattern for card animations is: gsap.from(cards, { y: 20, duration: 0.5, ease: 'power2.out' }) with no stagger and no opacity. Always add a visibility reset immediately before any GSAP animation that targets cards or grid items: elements.forEach(function(el) { el.style.opacity = '1'; el.style.visibility = 'visible'; }); Also place a global reset as the very first executable line of the script — before DOMContentLoaded and before gsap.registerPlugin — targeting all card-like elements: document.querySelectorAll("[class*='product'], [class*='card'], [class*='item']").forEach(function(el) { el.style.opacity = '1'; el.style.visibility = 'visible'; el.style.transform = 'none'; });
-
-WIREFRAME COMPLIANCE — CRITICAL: The CSS must support the exact layout shown in the wireframe. If the wireframe shows a split two-column hero with image on the right, build a two-column CSS Grid or Flexbox layout for the hero section with the image on the right. If the wireframe shows overlapping sections, use negative margins, absolute positioning or CSS transforms to create the overlap. If the wireframe shows a three-column card grid, write a CSS Grid with three columns. If the wireframe shows a sidebar layout, write a two-column grid with a narrow sidebar and wide main area. Match the wireframe structure precisely — do not default to a simple centred single-column layout when the wireframe specifies something more complex.`
+STAGGER ANIMATIONS — CRITICAL: Never use opacity as part of a stagger animation on product cards or any grid items. Stagger animations must only use transform properties like y or scale — never opacity. Products, cards and grid items must always remain fully visible regardless of animation state. The correct pattern for card animations is: gsap.from(cards, { y: 20, duration: 0.5, ease: 'power2.out' }) with no stagger and no opacity. Always add a visibility reset immediately before any GSAP animation that targets cards or grid items: elements.forEach(function(el) { el.style.opacity = '1'; el.style.visibility = 'visible'; }); Also place a global reset as the very first executable line of the script — before DOMContentLoaded and before gsap.registerPlugin — targeting all card-like elements: document.querySelectorAll("[class*='product'], [class*='card'], [class*='item']").forEach(function(el) { el.style.opacity = '1'; el.style.visibility = 'visible'; el.style.transform = 'none'; });`
 
 const DEVELOPER_JS_SYSTEM = `You are an expert web developer. You are given the CSS stylesheet already written. Use the exact same class names and IDs from that CSS. Write all interactions, animations, navigation behaviour, form handling and any other dynamic functionality. IntersectionObserver callbacks must add the exact same class names that the CSS uses to reveal elements — never use animate-in if the CSS expects visible, or any other mismatch. Output raw JavaScript only with no HTML, no CSS, no script tags, no explanation and no markdown code blocks.
 
@@ -222,40 +210,6 @@ Always include these sections when relevant to the features requested:
 
 End the guide with this exact note as a final section: ---\n\n*This guide was prepared by Forge Agency. If you need help with setup, please contact us.*`
 
-const QA_SYSTEM = `You are a senior QA engineer for a web design agency. You will be given the HTML, CSS, and JavaScript files for a website. Run a comprehensive automated quality check and produce a structured QA report. Check for these issues in this exact order and label each as PASS, FAIL, or WARNING:
-
-1) Viewport meta tag — does every HTML file contain <meta name="viewport" content="width=device-width, initial-scale=1.0">. List any files missing it.
-2) GSAP opacity trap — does the JavaScript set opacity: 0 on any content elements without a guaranteed animation to restore visibility. List every affected selector.
-3) Missing CSS classes — are there any classList.add() calls in the JS that have no matching CSS rule. List every missing class name.
-4) Fixed pixel widths — are there any width values above 600px set directly on section, header, footer, or body elements outside a media query. List every occurrence.
-5) Mobile breakpoints — does the CSS include at least one media query at max-width 768px or below.
-6) Cross-file class consistency — do all class names used in HTML attributes exist in the CSS. List any missing.
-7) Image src attributes — do all img tags have a non-empty src attribute. List any empty ones.
-8) Broken JS selectors — do all document.querySelector and document.querySelectorAll calls reference selectors that exist in the HTML. List any that do not match.
-9) Console error risks — are there any obvious JavaScript errors such as accessing properties of null, undefined variables, calling methods that do not exist, or referencing functions before they are defined. List each risk with the line context.
-10) Accessibility basics — does every img have an alt attribute, do all form inputs have associated label elements or aria-label attributes, is there at least one h1 element on each page. List any violations.
-
-After the checks write a section called ## Automated Fixes listing every single FAIL and WARNING issue. For each issue state: the file name, the exact issue, and what the automated fix will do. Every issue — without exception — should be listed here for automated fixing.
-
-End with ## QA Score followed by a score out of 100 with a one-paragraph explanation of how the score was calculated.`
-
-const QA_FIX_CSS_SYSTEM = `You are a senior CSS developer applying aggressive automated QA fixes. You will be given the current CSS file and a specific issue to fix. Fix the issue completely — rewrite entire sections, restructure rules, or add substantial new code if that is what the fix requires. Do not make minimal changes if a thorough rewrite of the affected section would produce a better result. Your only constraint is not to break unrelated working styles. Output the complete fixed CSS file with no explanation and no markdown code blocks.`
-
-const QA_FIX_JS_SYSTEM = `You are a senior JavaScript developer applying aggressive automated QA fixes. You will be given the current JavaScript file and a specific issue to fix. Fix the issue completely — rewrite functions, restructure logic, or add new code if that is what the fix requires. Do not make minimal changes if a thorough rewrite of the affected section would produce a better result. Your only constraint is not to break unrelated working functionality. Output the complete fixed JavaScript file with no explanation and no markdown code blocks.`
-
-const QA_FIX_HTML_SYSTEM = `You are a senior HTML developer applying aggressive automated QA fixes. You will be given a single HTML file and a specific issue to fix. Fix the issue completely — rewrite entire sections, restructure markup, or add substantial new elements if that is what the fix requires. Do not make minimal changes if a thorough rewrite of the affected section would produce a better result. Your only constraint is not to break unrelated working markup. Output the complete fixed HTML file with no explanation and no markdown code blocks.`
-
-const EXTRACT_LESSONS_SYSTEM = `You are a QA knowledge engineer. You will be given one or two QA reports for a website build. Extract concrete, reusable lessons that developers should remember for future builds.
-
-For each lesson output a JSON object in a JSON array. Each object must have exactly these fields:
-- "category": one of "CSS", "JavaScript", "HTML", "Performance", "Accessibility", "SEO", "Security", "UX"
-- "issue": a concise description of what went wrong (max 100 chars)
-- "fix": a concise description of the correct approach (max 150 chars)
-- "agent": one of "Developer-CSS", "Developer-JS", "Developer-HTML", "Developer-Pages"
-- "severity": one of "low", "medium", "high", "critical"
-
-Only extract lessons from items that were marked FAIL or WARNING. Do not invent lessons — only extract from actual findings. Output ONLY the JSON array with no explanation, no markdown, no code blocks. If there are no lessons to extract, output an empty array [].`
-
 const PROJ_ORCHESTRATOR_SYSTEM = `You are the orchestrator for an AI web design agency. You will be given a detailed structured client brief. Break it down into four clearly labelled task lists for: 1) Researcher — what to research about the industry, audience, competitors and SEO. 2) Designer — what design decisions to make, what pages to wireframe, what brand direction to follow. 3) Developer — what pages to build, what technical requirements to implement, what integrations to set up. 4) Reviewer — what specific things to check against the brief during the quality review. Be specific and actionable for each agent. Use markdown formatting with clear headings.`
 
 const _FIX = (role) => `You are an expert ${role} making a targeted fix to your previous output. You will be given the original brief, your previous output and a specific issue to fix. Your job is to fix ONLY what has been described and leave everything else completely identical. Do not rewrite, restructure or improve anything that was not mentioned in the fix request. Output only the complete fixed version with no explanation, no preamble and no commentary.`
@@ -308,162 +262,12 @@ async function callJsonSection(system, userContent, label, tokenCallsList) {
   return shapes
 }
 
-// ── Wireframe SVG → layout description ───────────────────────────────────────
-
-function detectSectionLayout(rects) {
-  if (rects.length === 0) return 'empty'
-  const wide = rects.filter(r => r.w > 900)
-  const content = rects.filter(r => r.w > 40 && r.w < 1180)
-  if (content.length === 0) return 'full-width background only'
-  if (wide.length > 0 && content.length <= wide.length) return 'full-width stacked layout'
-  // Detect narrow same-row cards
-  const narrow = content.filter(r => r.w < 450)
-  if (narrow.length >= 2) {
-    const topY = Math.min(...narrow.map(r => r.y))
-    const sameRow = narrow.filter(r => Math.abs(r.y - topY) < 80)
-    if (sameRow.length >= 3) return `${sameRow.length}-column card grid`
-    if (sameRow.length === 2) return '2-column layout'
-  }
-  // Detect two-column split
-  const left  = content.filter(r => r.x < 500  && r.x + r.w < 800)
-  const right = content.filter(r => r.x >= 450 && r.x + r.w > 700)
-  if (left.length > 0 && right.length > 0) {
-    const leftW  = Math.max(...left.map(r => r.x + r.w))
-    const rightX = Math.min(...right.map(r => r.x))
-    if (rightX > leftW - 80) {
-      const leftDominant = left[0]?.w > right[0]?.w
-      return leftDominant
-        ? 'two-column split (large left, smaller right)'
-        : 'two-column split (smaller left, large right)'
-    }
-  }
-  return 'mixed/custom layout'
-}
-
-function parseSvgToLayoutDescription(svgString) {
-  if (!svgString) return null
-  try {
-    const parser = new DOMParser()
-    const doc    = parser.parseFromString(svgString, 'image/svg+xml')
-
-    const allTexts = Array.from(doc.querySelectorAll('text'))
-      .map(el => ({
-        y:        parseFloat(el.getAttribute('y') || '0'),
-        x:        parseFloat(el.getAttribute('x') || '0'),
-        label:    el.textContent?.trim() || '',
-        fontSize: parseFloat(el.getAttribute('font-size') || '14'),
-        fill:     el.getAttribute('fill') || '#000',
-      }))
-      .filter(t => t.label && t.label.length > 1 && t.fill !== '#999999')
-      .sort((a, b) => a.y - b.y)
-
-    const contentRects = Array.from(doc.querySelectorAll('rect'))
-      .map(el => ({
-        x: parseFloat(el.getAttribute('x') || '0'),
-        y: parseFloat(el.getAttribute('y') || '0'),
-        w: parseFloat(el.getAttribute('width') || '0'),
-        h: parseFloat(el.getAttribute('height') || '0'),
-      }))
-      .filter(r => r.w < 1190 && r.w > 20 && r.h > 8)
-      .sort((a, b) => a.y - b.y)
-
-    const sections = [
-      { name: 'Navigation Bar',    yMin: 0,    yMax: 120  },
-      { name: 'Hero Section',      yMin: 100,  yMax: 730  },
-      { name: 'Content Section 1', yMin: 710,  yMax: 1270 },
-      { name: 'Content Section 2', yMin: 1250, yMax: 1990 },
-      { name: 'Footer',            yMin: 1970, yMax: 2400 },
-    ]
-
-    const lines = []
-    for (const sec of sections) {
-      const secTexts = allTexts.filter(t => t.y >= sec.yMin && t.y < sec.yMax)
-      const secRects = contentRects.filter(r => r.y >= sec.yMin && r.y < sec.yMax)
-      if (secTexts.length === 0 && secRects.length === 0) continue
-      const layout   = detectSectionLayout(secRects)
-      const bottomY  = secRects.length > 0 ? Math.max(...secRects.map(r => r.y + r.h)) : 0
-      const height   = bottomY > sec.yMin ? Math.round(bottomY - sec.yMin) : 0
-      const labels   = secTexts.map(t => t.label).filter(l => l.length < 50).join(', ')
-      lines.push(`• ${sec.name}${height > 0 ? ` (~${height}px tall)` : ''}: ${layout}. Elements: ${labels || 'none detected'}`)
-    }
-    return lines.length > 0 ? lines.join('\n') : null
-  } catch (err) {
-    console.warn('[Wireframe] SVG parse error:', err.message)
-    return null
-  }
-}
-
-// Build the full wireframe context string to inject into Developer prompts
-function buildWireframeContext(outputWireframe, outputText, pageName) {
-  if (!outputWireframe) return ''
-  const { layoutSeed } = parseWireframeOutputText(outputText)
-  const description    = parseSvgToLayoutDescription(outputWireframe)
-  if (!description) return `\n\n---\n\nWireframe context: A wireframe exists for the ${pageName} page. Follow its layout structure.`
-  const seedLine = layoutSeed ? `Approved layout style: ${layoutSeed}\n\n` : ''
-  return `\n\n---\n\nWIREFRAME LAYOUT SPECIFICATION — You MUST follow this layout exactly. Do not invent a different layout. Do not use a centred hero if the wireframe shows a split hero. Do not add sections that are not in the wireframe. The wireframe is the approved layout — build it precisely.\n\n${seedLine}Section breakdown (top to bottom):\n${description}`
-}
-
-// Extract site type, industry and aesthetic from a brief text string
-function extractBriefContext(briefText) {
-  if (!briefText) return { siteType: '', industry: '', aesthetic: '' }
-  const get = (patterns, text) => {
-    for (const pat of patterns) {
-      const m = text.match(pat)
-      if (m?.[1]?.trim()) return m[1].trim()
-    }
-    return ''
-  }
-  const t = briefText
-  return {
-    siteType:  get([/Site type[:\s]+([^\n]+)/i, /Type of site[:\s]+([^\n]+)/i, /Website type[:\s]+([^\n]+)/i], t),
-    industry:  get([/Industry[:\s]+([^\n]+)/i, /Sector[:\s]+([^\n]+)/i, /Business type[:\s]+([^\n]+)/i], t),
-    aesthetic: get([/Aesthetic[:\s]+([^\n]+)/i, /Brand style[:\s]+([^\n]+)/i, /Visual style[:\s]+([^\n]+)/i, /Design style[:\s]+([^\n]+)/i], t),
-  }
-}
-
-// Compute a simple fingerprint from nav + hero shapes for similarity checks
-function computeWireframeFingerprint(navShapes, heroShapes) {
-  const counts = (shapes) => ({
-    rects: shapes.filter(s => s.type === 'rect').length,
-    texts: shapes.filter(s => s.type === 'text').length,
-    maxY:  Math.max(...shapes.map(s => (Number(s.y) || 0) + (Number(s.height) || 0)), 0),
-  })
-  return { nav: counts(navShapes), hero: counts(heroShapes) }
-}
-
-// Returns true if two fingerprints are more than `threshold` similar
-function fingerprintsAreSimilar(a, b, threshold = 0.80) {
-  if (!a || !b) return false
-  const sim = (x, y) => 1 - Math.abs(x - y) / (Math.max(x, y, 1))
-  const scores = [
-    sim(a.nav.rects,  b.nav.rects),
-    sim(a.nav.texts,  b.nav.texts),
-    sim(a.hero.rects, b.hero.rects),
-    sim(a.hero.texts, b.hero.texts),
-    sim(a.hero.maxY,  b.hero.maxY),
-  ]
-  return scores.reduce((s, v) => s + v, 0) / scores.length >= threshold
-}
-
-// Parse output_text which may be a plain layoutSeed string (legacy) or JSON {layoutSeed, fingerprint}
-function parseWireframeOutputText(outputText) {
-  if (!outputText) return { layoutSeed: null, fingerprint: null }
-  try {
-    const parsed = JSON.parse(outputText)
-    if (parsed && typeof parsed === 'object' && 'layoutSeed' in parsed) {
-      return { layoutSeed: parsed.layoutSeed, fingerprint: parsed.fingerprint ?? null }
-    }
-  } catch { /* legacy plain string */ }
-  return { layoutSeed: outputText, fingerprint: null }
-}
-
-async function generatePageWireframe(briefSummary, page, tokenCallsList, moodboardJson, excludeSeed, briefContext) {
+async function generatePageWireframe(briefSummary, page, tokenCallsList, moodboardJson, excludeSeed) {
   // Pick a random layout seed, excluding the current one if requested
-  const { layoutSeed: excludedSeed } = parseWireframeOutputText(excludeSeed ?? null)
-  const availableSeeds = excludedSeed
-    ? LAYOUT_SEEDS.filter(s => s !== excludedSeed)
+  const availableSeeds = excludeSeed
+    ? LAYOUT_SEEDS.filter(s => s !== excludeSeed)
     : LAYOUT_SEEDS
-  let layoutSeed = availableSeeds[Math.floor(Math.random() * availableSeeds.length)]
+  const layoutSeed = availableSeeds[Math.floor(Math.random() * availableSeeds.length)]
 
   // Build brand context from moodboard if available
   let brandCtx = ''
@@ -477,62 +281,19 @@ async function generatePageWireframe(briefSummary, page, tokenCallsList, moodboa
     } catch { /* moodboard parse failed — proceed without it */ }
   }
 
-  // Build mandatory layout context from brief fields
-  const bc = briefContext ?? {}
-  const layoutConstraint = (bc.siteType || bc.industry || bc.aesthetic)
-    ? `\n\nMANDATORY LAYOUT CONTEXT — The layout MUST visually reflect this context: Site type: ${bc.siteType || 'unknown'}. Industry: ${bc.industry || 'unknown'}. Aesthetic: ${bc.aesthetic || 'unknown'}. Layout seed: ${layoutSeed}. A portfolio site must look different from a legal services site. A playful brand must have different proportions and spacing than a corporate brand. Adapt every section height, content arrangement and element sizing to match this context.`
-    : ''
+  const RAND = `You must produce a unique layout — vary the arrangement, proportions and composition from standard templates. Do not use the same layout twice. Consider the site type, brand aesthetic and content requirements when deciding on layout. For example a portfolio site hero should look different from a corporate site hero. The overall layout style for this wireframe must follow this approach: ${layoutSeed}. All sections must feel consistent with this layout direction. `
 
-  const buildRAND = (seed) => `You must produce a unique layout — vary the arrangement, proportions and composition from standard templates. Do not use the same layout twice. The overall layout style for this wireframe must follow this approach: ${seed}. All sections must feel consistent with this layout direction. `
-
-  const ctx = `Design Brief Summary:\n\n${briefSummary}${brandCtx}${layoutConstraint}\n\nLayout Style: ${layoutSeed}\n\nThis wireframe is for the ${page.name} page (filename: ${page.filename}).`
+  const ctx = `Design Brief Summary:\n\n${briefSummary}${brandCtx}\n\nLayout Style: ${layoutSeed}\n\nThis wireframe is for the ${page.name} page (filename: ${page.filename}).`
   const pageNote = ` This wireframe is for the ${page.name} page (${page.filename}). Generate layout structure appropriate for this specific page type.`
 
-  const RAND = buildRAND(layoutSeed)
-
-  let [nav, hero, contentA, contentB, footer] = await Promise.all([
-    callJsonSection(RAND + SVG_NAV_SYSTEM       + pageNote, ctx, `${page.filename}-Nav`,      tokenCallsList),
-    callJsonSection(RAND + SVG_HERO_SYSTEM      + pageNote, ctx, `${page.filename}-Hero`,     tokenCallsList),
+  const [nav, hero, contentA, contentB, footer] = await Promise.all([
+    callJsonSection(RAND + SVG_NAV_SYSTEM      + pageNote, ctx, `${page.filename}-Nav`,      tokenCallsList),
+    callJsonSection(RAND + SVG_HERO_SYSTEM     + pageNote, ctx, `${page.filename}-Hero`,     tokenCallsList),
     callJsonSection(RAND + SVG_CONTENT_A_SYSTEM + pageNote, ctx, `${page.filename}-ContentA`, tokenCallsList),
     callJsonSection(RAND + SVG_CONTENT_B_SYSTEM + pageNote, ctx, `${page.filename}-ContentB`, tokenCallsList),
-    callJsonSection(RAND + SVG_FOOTER_SYSTEM    + pageNote, ctx, `${page.filename}-Footer`,   tokenCallsList),
+    callJsonSection(RAND + SVG_FOOTER_SYSTEM   + pageNote, ctx, `${page.filename}-Footer`,   tokenCallsList),
   ])
-
-  // ── Fingerprint check ────────────────────────────────────────────────────────
-  const fingerprint = computeWireframeFingerprint(nav, hero)
-  let tooSimilar = false
-  try {
-    const { data: recentWfs } = await supabase
-      .from('agent_outputs')
-      .select('output_text')
-      .like('agent_name', 'Designer-Wireframe-%')
-      .not('output_text', 'is', null)
-      .order('created_at', { ascending: false })
-      .limit(3)
-    tooSimilar = (recentWfs ?? []).some(wf => {
-      const { fingerprint: prevFp } = parseWireframeOutputText(wf.output_text)
-      return fingerprintsAreSimilar(fingerprint, prevFp)
-    })
-  } catch (fpErr) {
-    console.warn('[Designer] Fingerprint check failed (non-fatal):', fpErr.message)
-  }
-
-  if (tooSimilar) {
-    console.log('[Designer] Wireframe fingerprint too similar to a recent project — regenerating nav + hero with alternate seed')
-    const altSeeds = LAYOUT_SEEDS.filter(s => s !== layoutSeed && s !== excludedSeed)
-    layoutSeed = altSeeds[Math.floor(Math.random() * altSeeds.length)] ?? layoutSeed
-    const altRAND = buildRAND(layoutSeed)
-    const altCtx  = `Design Brief Summary:\n\n${briefSummary}${brandCtx}${layoutConstraint.replace(/Layout seed:[^\n.]+/, `Layout seed: ${layoutSeed}`)}\n\nLayout Style: ${layoutSeed}\n\nThis wireframe is for the ${page.name} page (filename: ${page.filename}).`
-    ;[nav, hero] = await Promise.all([
-      callJsonSection(altRAND + SVG_NAV_SYSTEM  + pageNote, altCtx, `${page.filename}-Nav-alt`,  tokenCallsList),
-      callJsonSection(altRAND + SVG_HERO_SYSTEM + pageNote, altCtx, `${page.filename}-Hero-alt`, tokenCallsList),
-    ])
-  }
-
-  const finalFingerprint = computeWireframeFingerprint(nav, hero)
-  const outputText = JSON.stringify({ layoutSeed, fingerprint: finalFingerprint })
-
-  return { svg: buildSvgFromShapes([nav, hero, contentA, contentB, footer]), layoutSeed, outputText }
+  return { svg: buildSvgFromShapes([nav, hero, contentA, contentB, footer]), layoutSeed }
 }
 
 // ── Orchestrator response parser ──────────────────────────────────────────────
@@ -799,11 +560,11 @@ function parseJsonSection(raw, label) {
 }
 
 const SECTION_META = [
-  { name: 'NAV',     dividerY: 100  },
-  { name: 'HERO',    dividerY: 720  },
-  { name: 'CONTENT', dividerY: 1260 },
-  { name: 'CONTENT', dividerY: 1980 },
-  { name: 'FOOTER',  dividerY: 2200 },
+  { name: 'NAV',       dividerY: 80   },
+  { name: 'HERO',      dividerY: 600  },
+  { name: 'ABOUT',     dividerY: 1020 },
+  { name: 'EXP+SKILLS',dividerY: 1640 },
+  { name: 'FOOTER',    dividerY: 1810 },
 ]
 
 function buildSvgFromShapes(sections) {
@@ -811,12 +572,12 @@ function buildSvgFromShapes(sections) {
   const svg = document.createElementNS(ns, 'svg')
   svg.setAttribute('xmlns', ns)
   svg.setAttribute('width', '1200')
-  svg.setAttribute('height', '2400')
+  svg.setAttribute('height', '1900')
 
   // White background
   const bg = document.createElementNS(ns, 'rect')
   bg.setAttribute('width', '1200')
-  bg.setAttribute('height', '2400')
+  bg.setAttribute('height', '1900')
   bg.setAttribute('fill', 'white')
   svg.appendChild(bg)
 
@@ -1794,13 +1555,6 @@ export default function ProjectDetail() {
   const [isPatchingCss,        setIsPatchingCss]        = useState(false)
   const [setupGuideOpen,       setSetupGuideOpen]       = useState(false)
   const [isGeneratingGuide,    setIsGeneratingGuide]    = useState(false)
-  const [isRunningQA,          setIsRunningQA]          = useState(false)
-  const [isRunningQAFix,       setIsRunningQAFix]       = useState(false)
-  const [qaOpen,               setQaOpen]               = useState(true)
-  const [qaFixSummary,         setQaFixSummary]         = useState(null)   // { found, fixed, manualCount, scoreBefore, scoreAfter }
-  const [qaFixStatus,          setQaFixStatus]          = useState('')     // live status label during fix pass
-  const [qaManualAcknowledged, setQaManualAcknowledged] = useState(false)
-  const [approvingQA,          setApprovingQA]          = useState(false)
 
   // Reviewer state
   const [isReviewing,          setIsReviewing]          = useState(false)
@@ -1834,7 +1588,6 @@ export default function ProjectDetail() {
   const designStreamRef       = useRef('')
   const reviewStreamRef       = useRef('')
   const orchestratorStreamRef = useRef('')
-  const orchAbortRef          = useRef(null)
   // Monotonically-increasing generation counter — only the latest load() wins
   const loadGenRef      = useRef(0)
   // Track previous orchestrator text to detect completion for browser notification
@@ -2226,19 +1979,17 @@ export default function ProjectDetail() {
     await runResearcher(brief?.brief_text ?? `Project: ${project.name}`, null, pages)
   }
 
-  async function sendToOrchestrator({ skipConfirm = false, model: overrideModel, maxTokens: overrideMaxTokens, timeoutMs } = {}) {
+  async function sendToOrchestrator() {
     const briefText = latestBrief?.brief_text
     if (!briefText) return
 
-    if (!skipConfirm) {
-      const ok = await confirm({
-        title:        'Send to Orchestrator',
-        message:      'This will send the brief to the Orchestrator agent which will break it down into task lists for all four agents. If an Orchestrator response already exists it will be replaced. Continue?',
-        confirmLabel: 'Send to Orchestrator',
-        variant:      'primary',
-      })
-      if (!ok) return
-    }
+    const ok = await confirm({
+      title:        'Send to Orchestrator',
+      message:      'This will send the brief to the Orchestrator agent which will break it down into task lists for all four agents. If an Orchestrator response already exists it will be replaced. Continue?',
+      confirmLabel: 'Send to Orchestrator',
+      variant:      'primary',
+    })
+    if (!ok) return
 
     const { isReplication: orchRepl, replicationUrl: orchReplUrl } = await fetchReplicationConfig()
     setIsSendingOrchestrator(true)
@@ -2247,28 +1998,18 @@ export default function ProjectDetail() {
     setOrchestratorOpen(true)
     pipeline.start({ projectId, projectName: project?.name, clientName: project?.clients?.name, agentName: 'Orchestrator', stepLabel: 'Project Breakdown' })
 
-    const abortCtrl = new AbortController()
-    orchAbortRef.current = abortCtrl
-
-    // Optional hard timeout — fires abort() after timeoutMs
-    let timeoutId = null
-    if (timeoutMs) timeoutId = setTimeout(() => abortCtrl.abort(), timeoutMs)
-
     try {
       const orchSystem = PROJ_ORCHESTRATOR_SYSTEM + (orchRepl ? replicationAddition('orchestrator', orchReplUrl) : '')
       const { inputTokens: orchIn, outputTokens: orchOut, stopReason: orchStop } = await streamAnthropicCall({
         messages:     [{ role: 'user', content: briefText }],
         systemPrompt: orchSystem,
-        model:        overrideModel,                    // undefined = streamHelper default (Opus)
-        maxTokens:    overrideMaxTokens ?? 30000,
-        signal:       abortCtrl.signal,
+        maxTokens:    30000,
         onChunk: (chunk) => {
           orchestratorStreamRef.current += chunk
           setOrchestratorStreamDisplay(orchestratorStreamRef.current)
           pipeline.append(chunk)
         },
       })
-      if (timeoutId) clearTimeout(timeoutId)
 
       const orchText   = orchestratorStreamRef.current
       const tokenUsage = {
@@ -2294,44 +2035,14 @@ export default function ProjectDetail() {
       await load()
       showToast('Orchestrator has broken down the project successfully')
     } catch (err) {
-      if (timeoutId) clearTimeout(timeoutId)
-      if (err.name === 'AbortError' || /abort/i.test(err.message)) {
-        // Silently absorbed — stopAndRetryOrchestrator handles the restart
-        console.log('[Orchestrator] Call aborted')
-        pipeline.errorPipeline('Aborted')
-      } else {
-        console.error('[Orchestrator] Error:', err)
-        pipeline.errorPipeline(err.message)
-        showToast('Orchestrator failed: ' + (err.message ?? 'Unknown error'), 'error')
-      }
+      console.error('[Orchestrator] Error:', err)
+      pipeline.errorPipeline(err.message)
+      showToast('Orchestrator failed: ' + (err.message ?? 'Unknown error'), 'error')
     } finally {
-      orchAbortRef.current = null
       setIsSendingOrchestrator(false)
       setOrchestratorStreamDisplay('')
       orchestratorStreamRef.current = ''
     }
-  }
-
-  function stopAndRetryOrchestrator() {
-    // Immediately kill any in-flight request and reset all running state
-    if (orchAbortRef.current) {
-      orchAbortRef.current.abort()
-      orchAbortRef.current = null
-    }
-    setIsSendingOrchestrator(false)
-    setOrchestratorStreamDisplay('')
-    orchestratorStreamRef.current = ''
-    pipeline.errorPipeline('Stopped — retrying')
-
-    // Retry with Sonnet, 8000 tokens, 90-second hard timeout
-    setTimeout(() => {
-      sendToOrchestrator({
-        skipConfirm: true,
-        model:       'claude-sonnet-4-20250514',
-        maxTokens:   8000,
-        timeoutMs:   90_000,
-      })
-    }, 100)
   }
 
   async function runResearcher(briefText, feedback, pages = []) {
@@ -2629,8 +2340,7 @@ export default function ProjectDetail() {
           setWireframeProgress({ current: i + 1, total: wireframePages.length, pageName: page.name })
           setDesignStreamDisplay(designBriefText + `\n\n--- Generating wireframe for ${page.name} (${page.filename})…`)
           pipeline.start({ projectId, projectName: project?.name, clientName: project?.clients?.name, agentName: 'designer', stepLabel: `Wireframe — ${page.name}` })
-          const briefCtx = extractBriefContext(briefText)
-          const { svg, outputText: wfOutputText } = await generatePageWireframe(briefSummary, page, designTokenCalls, moodboardJson, undefined, briefCtx)
+          const { svg, layoutSeed } = await generatePageWireframe(briefSummary, page, designTokenCalls, moodboardJson)
           const wfAgentName = `Designer-Wireframe-${page.filename}`
           const { data: existingWf } = await supabase
             .from('agent_outputs')
@@ -2641,13 +2351,13 @@ export default function ProjectDetail() {
             .limit(1)
             .maybeSingle()
           if (existingWf) {
-            await safeUpdate('agent_outputs', existingWf.id, { output_wireframe: svg, output_text: wfOutputText, status: 'pending' })
+            await safeUpdate('agent_outputs', existingWf.id, { output_wireframe: svg, output_text: layoutSeed, status: 'pending' })
           } else {
             await supabase.from('agent_outputs').insert({
               project_id:       projectId,
               agent_name:       wfAgentName,
               output_wireframe: svg,
-              output_text:      wfOutputText,
+              output_text:      layoutSeed,
               status:           'pending',
             })
           }
@@ -2907,55 +2617,19 @@ export default function ProjectDetail() {
       validateCrossFileClasses(cssText, jsText)
     }
 
-    // ── Fetch top lessons learned to guide this build ────────────────────────
-    let lessonsPrefix = ''
-    try {
-      const { data: topLessons } = await supabase
-        .from('lessons_learned')
-        .select('category, issue, fix, agent, severity')
-        .eq('resolved', false)
-        .order('occurrence_count', { ascending: false })
-        .limit(20)
-      if (topLessons?.length) {
-        const lines = topLessons.map(l => `• [${l.category}] ISSUE: ${l.issue} → FIX: ${l.fix}`)
-        lessonsPrefix = `LESSONS LEARNED FROM PREVIOUS BUILDS (apply these proactively):\n${lines.join('\n')}\n\n`
-        console.log(`[Developer] Injecting ${topLessons.length} lessons learned into build prompts`)
-      }
-    } catch (lessonErr) {
-      console.warn('[Developer] Could not fetch lessons:', lessonErr.message)
-    }
-
-    // ── Fetch index page wireframe before CSS step so layout can inform stylesheet ──
-    const _indexPageForCss = effectivePages.find(p => p.filename === 'index.html') ?? effectivePages[0]
-    let indexWireCtxForCss = ''
-    try {
-      const { data: cssWireRec } = await supabase
-        .from('agent_outputs')
-        .select('output_wireframe, output_text')
-        .eq('project_id', projectId)
-        .eq('agent_name', `Designer-Wireframe-${_indexPageForCss.filename}`)
-        .maybeSingle()
-      if (cssWireRec?.output_wireframe) {
-        indexWireCtxForCss = buildWireframeContext(cssWireRec.output_wireframe, cssWireRec.output_text, _indexPageForCss.name)
-        console.log(`[Developer] Wireframe context for CSS step (${_indexPageForCss.filename}): ${indexWireCtxForCss.length} chars`)
-      }
-    } catch (wfErr) {
-      console.warn('[Developer] Could not fetch wireframe for CSS step (non-fatal):', wfErr.message)
-    }
-
     pipeline.start({ projectId, projectName: project?.name, clientName: project?.clients?.name, agentName: 'Developer-Stack', stepLabel: `Step 1 of ${totalSteps}: Tech Stack` })
     try {
       // Step 1: Tech Stack and File Structure
       await runDevStep(`Step 1 of ${totalSteps}: Tech Stack and File Structure`, DEVELOPER_STACK_SYSTEM + devReplSnippet, summaryWithFeedback, 'Developer-Stack')
 
-      // Step 2: CSS — generated from design brief + wireframe layout context
+      // Step 2: CSS — generated from design brief
       pipeline.setStep('Developer-CSS', `Step 2 of ${totalSteps}: CSS Stylesheet`, Math.round(1 / totalSteps * 100))
-      const cssText = await runDevStep(`Step 2 of ${totalSteps}: CSS Stylesheet`, lessonsPrefix + DEVELOPER_CSS_SYSTEM + devReplSnippet, summaryContext + indexWireCtxForCss, 'Developer-CSS', { transform: stripCodeFences })
+      const cssText = await runDevStep(`Step 2 of ${totalSteps}: CSS Stylesheet`, DEVELOPER_CSS_SYSTEM + devReplSnippet, summaryContext, 'Developer-CSS', { transform: stripCodeFences })
 
       // Step 3: JS — receives the CSS so it can use matching class names
       pipeline.setStep('Developer-JS', `Step 3 of ${totalSteps}: JavaScript`, Math.round(2 / totalSteps * 100))
       const jsCtx  = `${summaryContext}\n\n---\n\nCSS stylesheet (styles.css) already written:\n\n${cssText}`
-      const jsText = await runDevStep(`Step 3 of ${totalSteps}: JavaScript`, lessonsPrefix + DEVELOPER_JS_SYSTEM + devReplSnippet, jsCtx, 'Developer-JS', { transform: stripCodeFences })
+      const jsText = await runDevStep(`Step 3 of ${totalSteps}: JavaScript`, DEVELOPER_JS_SYSTEM + devReplSnippet, jsCtx, 'Developer-JS', { transform: stripCodeFences })
 
       // Step 4: Generate index.html only — remaining pages generated after per-page approval
       const indexPage = effectivePages.find(p => p.filename === 'index.html') ?? effectivePages[0]
@@ -2964,17 +2638,19 @@ export default function ProjectDetail() {
       pipeline.setStep(`Developer-HTML-${indexPage.filename}`, `Step 4 of ${totalSteps}: HTML – ${indexPage.name}`, Math.round(3 / totalSteps * 100))
       const { data: indexWireRec } = await supabase
         .from('agent_outputs')
-        .select('output_wireframe, output_text')
+        .select('output_wireframe')
         .eq('project_id', projectId)
         .eq('agent_name', `Designer-Wireframe-${indexPage.filename}`)
         .maybeSingle()
-      const indexWireCtx = buildWireframeContext(indexWireRec?.output_wireframe, indexWireRec?.output_text, indexPage.name)
-      console.log(`[Developer] Wireframe for ${indexPage.filename}: ${indexWireRec?.output_wireframe ? `found (${indexWireCtx.length} chars context)` : 'not found'}`)
+      const indexWireCtx = indexWireRec?.output_wireframe
+        ? `\n\n---\n\nWireframe context: A wireframe SVG exists for the ${indexPage.name} page (${indexPage.filename}). Follow its layout structure.`
+        : ''
+      console.log(`[Developer] Wireframe for ${indexPage.filename}: ${indexWireRec?.output_wireframe ? 'found' : 'not found'}`)
       const indexHtmlCtx = `${summaryContext}\n\n---\n\nCSS stylesheet (styles.css) already written:\n\n${cssText}\n\n---\n\nJavaScript (script.js) already written:\n\n${jsText}${indexWireCtx}`
       try {
         await runDevStep(
           `Step 4 of ${totalSteps}: HTML for ${indexPage.name} (${indexPage.filename})`,
-          lessonsPrefix + devHtmlPageSystem(indexPage.name) + devReplSnippet,
+          devHtmlPageSystem(indexPage.name) + devReplSnippet,
           indexHtmlCtx,
           `Developer-HTML-${indexPage.filename}`,
           { transform: stripCodeFences }
@@ -2989,6 +2665,8 @@ export default function ProjectDetail() {
       await checkDevIntegrity(cssText, jsText)
       pipeline.complete()
 
+<<<<<<< HEAD
+=======
       // ── Save all Developer files to local disk ──
       {
         const filesToSave = [
@@ -3007,6 +2685,7 @@ export default function ProjectDetail() {
         await saveFilesToDisk(project?.clients?.name ?? '', project?.name ?? '', filesToSave, showToast)
       }
 
+>>>>>>> e025a34aa284272171f58cff09d313cca1aa76d8
       // ── Setup guide: generate when auth or downloads are requested ──
       const needsSetupGuide = /Authentication:\s*Required|Downloadable files:\s*Required/i.test(briefText)
       if (needsSetupGuide) {
@@ -3040,7 +2719,7 @@ export default function ProjectDetail() {
       // agentOutputs state is frozen at the render when runDeveloper was called (before any
       // dev records existed), so we query the DB fresh to find the records to approve.
       if (autoRunSettingsRef.current.autoDeveloper && !autoRunAbortedRef.current) {
-        completeAutoRunStage('developer', 'qa')
+        completeAutoRunStage('developer', 'reviewer')
         setApprovingDev(true)
         const { data: freshRecs } = await supabase
           .from('agent_outputs')
@@ -3052,21 +2731,16 @@ export default function ProjectDetail() {
         )
         await Promise.all([
           ...devRecsToApprove.map(r => safeUpdate('agent_outputs', r.id, { status: 'approved' })),
-          safeUpdate('projects', projectId, { current_stage: 'QA' }),
+          safeUpdate('projects', projectId, { current_stage: 'Review' }),
         ])
+        // Build HTML context from fresh records; use local cssText/jsText/briefText etc.
         const htmlPageRecs = (freshRecs ?? []).filter(o => o.agent_name.startsWith('Developer-HTML-'))
         const htmlText = htmlPageRecs.length
           ? htmlPageRecs.map(r => `=== ${r.agent_name.replace('Developer-HTML-', '')} ===\n\n${r.output_text}`).join('\n\n---\n\n')
           : ((freshRecs ?? []).find(o => o.agent_name === 'Developer-HTML')?.output_text ?? '')
         await load()
         setApprovingDev(false)
-        // Run QA — auto-proceeds if score > 80, otherwise user clicks Proceed to Review
-        const { autoApproved } = await runQA(briefText, cssText, jsText, htmlText)
-        // If not auto-approved and auto-reviewer is enabled, approve QA and proceed
-        if (!autoApproved && autoRunSettingsRef.current.autoReviewer && !autoRunAbortedRef.current) {
-          completeAutoRunStage('qa', 'reviewer')
-          await approveQA()
-        }
+        await runReviewer(briefText, researchText, designText, htmlText, cssText, jsText)
       }
     } catch (err) {
       console.error('Developer agent error:', err)
@@ -3085,9 +2759,11 @@ export default function ProjectDetail() {
     const allPages    = project?.pages ?? []
     const allPagesCtx = allPages.length ? `\n\nAll pages in this site: ${allPages.map(p => `${p.name} → ${p.filename}`).join(', ')}.` : ''
     const { data: wireRec } = await supabase
-      .from('agent_outputs').select('output_wireframe, output_text')
+      .from('agent_outputs').select('output_wireframe')
       .eq('project_id', projectId).eq('agent_name', `Designer-Wireframe-${page.filename}`).maybeSingle()
-    const wireCtx = buildWireframeContext(wireRec?.output_wireframe, wireRec?.output_text, page.name)
+    const wireCtx = wireRec?.output_wireframe
+      ? `\n\n---\n\nWireframe context: A wireframe SVG exists for the ${page.name} page (${page.filename}). Follow its layout structure.`
+      : ''
     const ctx = `Design Brief:\n\n${design}${allPagesCtx}\n\n---\n\nCSS stylesheet (styles.css):\n\n${css}\n\n---\n\nJavaScript (script.js):\n\n${js}${wireCtx}`
     console.log(`[Developer] Retrying HTML for ${page.filename}`)
     setPageStatuses(prev => ({ ...prev, [page.filename]: 'generating' }))
@@ -3127,29 +2803,18 @@ export default function ProjectDetail() {
       ? `Developer Summary:\n\n${devSumRec.developer_summary}${allPagesCtx}`
       : `Pages in this site:${allPagesCtx}`
     const { data: wireRec } = await supabase
-      .from('agent_outputs').select('output_wireframe, output_text')
+      .from('agent_outputs').select('output_wireframe')
       .eq('project_id', projectId).eq('agent_name', `Designer-Wireframe-${page.filename}`).maybeSingle()
-    const wireCtx = buildWireframeContext(wireRec?.output_wireframe, wireRec?.output_text, page.name)
-    console.log(`[Developer] Wireframe for ${page.filename}: ${wireRec?.output_wireframe ? `found (${wireCtx.length} chars context)` : 'not found'}`)
+    const wireCtx = wireRec?.output_wireframe
+      ? `\n\n---\n\nWireframe context: A wireframe SVG exists for the ${page.name} page (${page.filename}). Follow its layout structure.`
+      : ''
+    console.log(`[Developer] Wireframe for ${page.filename}: ${wireRec?.output_wireframe ? 'found' : 'not found'}`)
     const htmlCtx = `${baseCtx}\n\n---\n\nCSS stylesheet (styles.css) already written:\n\n${css}\n\n---\n\nJavaScript (script.js) already written:\n\n${js}${wireCtx}`
     console.log(`[Developer] Generating HTML for ${page.filename} (${page.name}) via per-page approval flow`)
-    let singlePageLessonsPrefix = ''
-    try {
-      const { data: singleLessons } = await supabase
-        .from('lessons_learned')
-        .select('category, issue, fix')
-        .eq('resolved', false)
-        .order('occurrence_count', { ascending: false })
-        .limit(20)
-      if (singleLessons?.length) {
-        const lines = singleLessons.map(l => `• [${l.category}] ISSUE: ${l.issue} → FIX: ${l.fix}`)
-        singlePageLessonsPrefix = `LESSONS LEARNED FROM PREVIOUS BUILDS (apply these proactively):\n${lines.join('\n')}\n\n`
-      }
-    } catch { /* non-fatal */ }
     try {
       await runDevStep(
         `HTML for ${page.name} (${page.filename})`,
-        singlePageLessonsPrefix + devHtmlPageSystem(page.name),
+        devHtmlPageSystem(page.name),
         htmlCtx,
         `Developer-HTML-${page.filename}`,
         { transform: stripCodeFences }
@@ -3232,313 +2897,6 @@ export default function ProjectDetail() {
     showToast(`Patched ${missingClasses.length} missing class${missingClasses.length > 1 ? 'es' : ''}: ${missingClasses.join(', ')}`)
   }
 
-  // ── QA helpers ───────────────────────────────────────────────────────────────
-
-  function extractQAScore(reportText) {
-    const m = reportText.match(/##\s*QA Score[\s\S]*?(\d{1,3})\s*(?:\/\s*100|out of 100)/i)
-    return m ? parseInt(m[1], 10) : null
-  }
-
-  function extractQAFailItems(reportText) {
-    // Returns array of { checkNum, checkName, detail, fileType } for FAIL and WARNING items
-    const items = []
-    const lines = reportText.split('\n')
-    for (const line of lines) {
-      const m = line.match(/\*?\*?(\d+)\)\s*(.*?)\*?\*?\s*[—–-]\s*(FAIL|WARNING)[:\s]*(.*)/i)
-      if (m) {
-        const checkNum  = parseInt(m[1], 10)
-        const checkName = m[2].replace(/\*+/g, '').trim()
-        const detail    = m[4].replace(/\*+/g, '').trim()
-        const fileType  = [1, 7, 10].includes(checkNum) ? 'html'
-          : [3, 4, 5, 6].includes(checkNum) ? 'css'
-          : [2, 8, 9].includes(checkNum)    ? 'js'
-          : 'unknown'
-        items.push({ checkNum, checkName, detail, fileType })
-      }
-    }
-    return items
-  }
-
-  function buildFixPrompt(failItem, fileContent) {
-    const { checkNum, detail } = failItem
-    switch (checkNum) {
-      case 1:  return `You are fixing an HTML file. Add <meta name="viewport" content="width=device-width, initial-scale=1.0"> as the second line in the head section. The affected issue: ${detail}. Output the complete fixed HTML file only.`
-      case 2:  return `You are fixing a specific JavaScript bug. The GSAP opacity trap issue: ${detail}. Add a window load event listener that sets opacity: 1 and visibility: visible on all affected selectors before any GSAP code runs. Output the complete fixed JavaScript file only.`
-      case 3:  return `You are fixing missing CSS rules. The following classes are used in JavaScript but missing from the stylesheet: ${detail}. Add CSS rules for each missing class using sensible default styles based on the class names. Output the complete fixed CSS file only.`
-      case 4:  return `You are fixing CSS layout issues. Replace these fixed pixel width declarations with width: 100% and an appropriate max-width: ${detail}. Output the complete fixed CSS file only.`
-      case 5:  return `You are fixing missing mobile breakpoints in CSS. Add responsive media query rules at max-width: 768px to address: ${detail}. Output the complete fixed CSS file only.`
-      case 6:  return `You are fixing cross-file class consistency. Add CSS rules for these class names that exist in HTML but are missing from the stylesheet: ${detail}. Output the complete fixed CSS file only.`
-      case 7:  return `You are fixing broken images in HTML. Replace all empty src attributes with https://placehold.co/400x300/cccccc/666666?text=Image. The affected elements: ${detail}. Output the complete fixed HTML file only.`
-      case 8:  return `You are fixing broken JavaScript selectors. Update these querySelector calls so they match elements that actually exist in the HTML: ${detail}. Output the complete fixed JavaScript file only.`
-      case 9:  return `You are fixing JavaScript console error risks. Fix these potential runtime errors: ${detail}. Add null checks, optional chaining, or safe guards as needed. Output the complete fixed JavaScript file only.`
-      case 10: return `You are fixing HTML accessibility issues. Fix these problems: ${detail}. Add alt attributes to images, associate labels with inputs, and ensure at least one h1 per page. Output the complete fixed HTML file only.`
-      default: return `You are fixing this issue in the file: ${detail}. Output the complete fixed file only.`
-    }
-  }
-
-  async function runQA(briefText, cssText, jsText, htmlText) {
-    setIsRunningQA(true)
-    setQaOpen(true)
-    setQaFixSummary(null)
-    setQaFixStatus('')
-    console.log('[QA] Starting automated quality check')
-    try {
-      // ── Phase 1: Run QA check ────────────────────────────────────────────────
-      setQaFixStatus('Running 10-point quality check…')
-      const userContent = `Client Brief:\n\n${briefText}\n\n---\n\nCSS File (styles.css):\n\n${cssText}\n\n---\n\nJavaScript File (script.js):\n\n${jsText}\n\n---\n\nHTML Files:\n\n${htmlText}`
-      const { text: qaText } = await streamAnthropicCall({
-        messages:     [{ role: 'user', content: userContent }],
-        systemPrompt: QA_SYSTEM,
-        model:        'claude-sonnet-4-20250514',
-        maxTokens:    30000,
-      })
-
-      // Upsert QA-Report record
-      const { data: existingQA } = await supabase.from('agent_outputs').select('id').eq('project_id', projectId).eq('agent_name', 'QA-Report').maybeSingle()
-      let qaRecordId
-      if (existingQA?.id) {
-        await safeUpdate('agent_outputs', existingQA.id, { output_text: qaText, status: 'pending' })
-        qaRecordId = existingQA.id
-      } else {
-        const { data: inserted } = await supabase.from('agent_outputs').insert({ project_id: projectId, agent_name: 'QA-Report', output_text: qaText, status: 'pending' }).select('id').single()
-        qaRecordId = inserted?.id
-      }
-      console.log('[QA] ✓ QA-Report saved')
-      await load()
-      setIsRunningQA(false)
-
-      // ── Phase 2: Targeted fix engine (all FAIL + WARNING items) ─────────────
-      setIsRunningQAFix(true)
-      const failItems   = extractQAFailItems(qaText)
-      const scoreBefore = extractQAScore(qaText)
-      console.log(`[QA FixEngine] Found ${failItems.length} FAIL/WARNING items — attempting all`)
-
-      // Current live file states — mutated as each fix is applied
-      const fileState = {
-        css:  cssText,
-        js:   jsText,
-        html: {},
-      }
-      // Populate per-page HTML state from agentOutputs snapshot at call time
-      const htmlRecs = agentOutputs.filter(o => o.agent_name.startsWith('Developer-HTML-'))
-      for (const r of htmlRecs) fileState.html[r.agent_name] = r.output_text ?? ''
-
-      let fixesApplied = 0
-      let verifyCount  = 0  // items where the fix call errored — "please verify"
-
-      for (const fail of failItems) {
-        setQaFixStatus(`Fixing: ${fail.checkName} (${fixesApplied + verifyCount + 1}/${failItems.length})…`)
-        try {
-          if (fail.fileType === 'css') {
-            const cssRec = agentOutputs.find(o => o.agent_name === 'Developer-CSS')
-            if (!cssRec) { verifyCount++; continue }
-            await saveRevision('Developer-CSS', cssRec)
-            const { text: fixedCss } = await streamAnthropicCall({
-              messages:     [{ role: 'user', content: `${buildFixPrompt(fail, fileState.css)}\n\n---\n\nCurrent CSS file (styles.css):\n\n${fileState.css}` }],
-              systemPrompt: QA_FIX_CSS_SYSTEM,
-              model:        'claude-sonnet-4-20250514',
-              maxTokens:    12000,
-            })
-            const cleaned = stripCodeFences(fixedCss)
-            fileState.css = cleaned
-            await safeUpdate('agent_outputs', cssRec.id, { output_text: cleaned })
-            fixesApplied++
-            console.log(`[QA FixEngine] ✓ CSS fix applied: ${fail.checkName}`)
-
-          } else if (fail.fileType === 'js') {
-            const jsRec = agentOutputs.find(o => o.agent_name === 'Developer-JS')
-            if (!jsRec) { verifyCount++; continue }
-            await saveRevision('Developer-JS', jsRec)
-            const { text: fixedJs } = await streamAnthropicCall({
-              messages:     [{ role: 'user', content: `${buildFixPrompt(fail, fileState.js)}\n\n---\n\nCurrent JavaScript file (script.js):\n\n${fileState.js}` }],
-              systemPrompt: QA_FIX_JS_SYSTEM,
-              model:        'claude-sonnet-4-20250514',
-              maxTokens:    12000,
-            })
-            const cleaned = stripCodeFences(fixedJs)
-            fileState.js = cleaned
-            await safeUpdate('agent_outputs', jsRec.id, { output_text: cleaned })
-            fixesApplied++
-            console.log(`[QA FixEngine] ✓ JS fix applied: ${fail.checkName}`)
-
-          } else if (fail.fileType === 'html') {
-            for (const htmlRec of htmlRecs) {
-              await saveRevision(htmlRec.agent_name, htmlRec)
-              const currentHtml = fileState.html[htmlRec.agent_name] ?? ''
-              const { text: fixedHtml } = await streamAnthropicCall({
-                messages:     [{ role: 'user', content: `${buildFixPrompt(fail, currentHtml)}\n\n---\n\nCurrent HTML file (${htmlRec.agent_name.replace('Developer-HTML-', '')}):\n\n${currentHtml}` }],
-                systemPrompt: QA_FIX_HTML_SYSTEM,
-                model:        'claude-sonnet-4-20250514',
-                maxTokens:    12000,
-              })
-              const cleaned = stripCodeFences(fixedHtml)
-              fileState.html[htmlRec.agent_name] = cleaned
-              await safeUpdate('agent_outputs', htmlRec.id, { output_text: cleaned })
-            }
-            fixesApplied++
-            console.log(`[QA FixEngine] ✓ HTML fix applied: ${fail.checkName}`)
-
-          } else {
-            verifyCount++
-          }
-        } catch (fixErr) {
-          verifyCount++
-          console.warn(`[QA FixEngine] Fix errored for "${fail.checkName}" — marked for verify:`, fixErr.message)
-        }
-      }
-
-      await load()
-      console.log(`[QA FixEngine] ✓ Fix pass complete — ${fixesApplied}/${failItems.length} applied, ${verifyCount} to verify`)
-
-      // ── Phase 3: Second QA verification check ────────────────────────────────
-      setQaFixStatus('Running verification QA check…')
-      const postCss  = fileState.css
-      const postJs   = fileState.js
-      const postHtml = Object.values(fileState.html).join('\n\n---\n\n') || htmlText
-
-      const { text: qa2Text } = await streamAnthropicCall({
-        messages:     [{ role: 'user', content: `Client Brief:\n\n${briefText}\n\n---\n\nCSS File (styles.css):\n\n${postCss}\n\n---\n\nJavaScript File (script.js):\n\n${postJs}\n\n---\n\nHTML Files:\n\n${postHtml}` }],
-        systemPrompt: QA_SYSTEM,
-        model:        'claude-sonnet-4-20250514',
-        maxTokens:    30000,
-      })
-      const scoreAfter = extractQAScore(qa2Text)
-
-      const { data: existing2 } = await supabase.from('agent_outputs').select('id').eq('project_id', projectId).eq('agent_name', 'QA-Report-2').maybeSingle()
-      let qa2RecordId
-      if (existing2?.id) {
-        await safeUpdate('agent_outputs', existing2.id, { output_text: qa2Text, status: 'pending' })
-        qa2RecordId = existing2.id
-      } else {
-        const { data: ins2 } = await supabase.from('agent_outputs').insert({ project_id: projectId, agent_name: 'QA-Report-2', output_text: qa2Text, status: 'pending' }).select('id').single()
-        qa2RecordId = ins2?.id
-      }
-      console.log('[QA FixEngine] ✓ QA-Report-2 saved')
-
-      // Mark QA-Report approved
-      if (qaRecordId) await safeUpdate('agent_outputs', qaRecordId, { status: 'approved' })
-      await load()
-
-      setQaFixStatus('')
-      showToast(`QA complete — ${fixesApplied} issue${fixesApplied !== 1 ? 's' : ''} auto-fixed`, 'success')
-      console.log('[QA] ✓ Full QA cycle complete')
-
-      // ── Lessons learned extraction (fire-and-forget) ─────────────────────
-      extractAndSaveLessons(qaText, qa2Text).catch(e => console.warn('[Lessons] extraction failed:', e.message))
-
-      // ── Auto-proceed if score > 80 ────────────────────────────────────────
-      if (scoreAfter != null && scoreAfter > 80) {
-        console.log(`[QA] Score ${scoreAfter}/100 — auto-proceeding to Review`)
-        showToast(`QA score ${scoreAfter}/100 — auto-proceeding to Review`, 'success')
-        // Approve QA records fresh from DB (agentOutputs state is stale here)
-        await Promise.all([
-          qa2RecordId ? safeUpdate('agent_outputs', qa2RecordId, { status: 'approved' }) : Promise.resolve(),
-          safeUpdate('projects', projectId, { current_stage: 'Review' }),
-        ])
-        await load()
-        // Fetch fresh context for reviewer
-        const brief    = briefs[0]?.brief_text ?? `Project: ${project.name}`
-        const research = agentOutputs.find(o => o.agent_name === 'researcher')?.output_text ?? ''
-        const design   = agentOutputs.find(o => o.agent_name === 'designer')?.output_text   ?? ''
-        const { data: freshRecs } = await supabase.from('agent_outputs').select('agent_name, output_text').eq('project_id', projectId)
-        const css  = freshRecs?.find(o => o.agent_name === 'Developer-CSS')?.output_text ?? ''
-        const js   = freshRecs?.find(o => o.agent_name === 'Developer-JS')?.output_text  ?? ''
-        const htmlPageRecs = (freshRecs ?? []).filter(o => o.agent_name.startsWith('Developer-HTML-'))
-        const html = htmlPageRecs.length
-          ? htmlPageRecs.map(r => `=== ${r.agent_name.replace('Developer-HTML-', '')} ===\n\n${r.output_text}`).join('\n\n---\n\n')
-          : (freshRecs?.find(o => o.agent_name === 'Developer-HTML')?.output_text ?? '')
-        await runReviewer(brief, research, design, html, css, js)
-        return { autoApproved: true }
-      }
-
-      // Score <= 80 — show summary and let user proceed manually
-      setQaFixSummary({ found: failItems.length, fixed: fixesApplied, verifyCount, scoreBefore, scoreAfter })
-      return { autoApproved: false }
-    } catch (err) {
-      console.error('[QA] Error:', err.message)
-      showToast('QA check encountered an error: ' + err.message, 'error')
-      return { autoApproved: false }
-    } finally {
-      setIsRunningQA(false)
-      setIsRunningQAFix(false)
-      setQaFixStatus('')
-    }
-  }
-
-  async function extractAndSaveLessons(qaText, qa2Text) {
-    const combined = qa2Text ? `QA Report 1:\n\n${qaText}\n\n---\n\nQA Report 2 (post-fix verification):\n\n${qa2Text}` : qaText
-    const { text: lessonsJson } = await streamAnthropicCall({
-      messages:     [{ role: 'user', content: combined }],
-      systemPrompt: EXTRACT_LESSONS_SYSTEM,
-      model:        'claude-haiku-4-5-20251001',
-      maxTokens:    4000,
-    })
-    let lessons
-    try {
-      const cleaned = lessonsJson.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '')
-      lessons = JSON.parse(cleaned)
-      if (!Array.isArray(lessons)) return
-    } catch {
-      console.warn('[Lessons] Could not parse lessons JSON:', lessonsJson.slice(0, 200))
-      return
-    }
-    if (lessons.length === 0) return
-    for (const lesson of lessons) {
-      // Try to find existing lesson with same category + issue (case-insensitive match)
-      const { data: existing } = await supabase
-        .from('lessons_learned')
-        .select('id, occurrence_count')
-        .ilike('issue', lesson.issue)
-        .eq('category', lesson.category)
-        .maybeSingle()
-      if (existing?.id) {
-        await supabase.from('lessons_learned').update({
-          fix:              lesson.fix,
-          agent:            lesson.agent,
-          severity:         lesson.severity,
-          occurrence_count: (existing.occurrence_count ?? 1) + 1,
-          last_seen:        new Date().toISOString(),
-          resolved:         false,
-        }).eq('id', existing.id)
-      } else {
-        await supabase.from('lessons_learned').insert({
-          category:  lesson.category,
-          issue:     lesson.issue,
-          fix:       lesson.fix,
-          agent:     lesson.agent,
-          severity:  lesson.severity,
-        })
-      }
-    }
-    console.log(`[Lessons] ✓ Upserted ${lessons.length} lesson${lessons.length !== 1 ? 's' : ''}`)
-  }
-
-  async function approveQA() {
-    setApprovingQA(true)
-    // Mark QA-Report-2 approved if it exists, otherwise QA-Report
-    const qaRec2 = agentOutputs.find(o => o.agent_name === 'QA-Report-2')
-    const qaRec  = agentOutputs.find(o => o.agent_name === 'QA-Report')
-    await Promise.all([
-      qaRec2 ? safeUpdate('agent_outputs', qaRec2.id, { status: 'approved' }) : Promise.resolve(),
-      qaRec  ? safeUpdate('agent_outputs', qaRec.id,  { status: 'approved' }) : Promise.resolve(),
-      safeUpdate('projects', projectId, { current_stage: 'Review' }),
-    ])
-    await load()
-    setApprovingQA(false)
-    // Trigger Reviewer with QA-fixed code
-    const brief    = briefs[0]?.brief_text ?? `Project: ${project.name}`
-    const research = agentOutputs.find(o => o.agent_name === 'researcher')?.output_text ?? ''
-    const design   = agentOutputs.find(o => o.agent_name === 'designer')?.output_text   ?? ''
-    const { data: freshRecs } = await supabase.from('agent_outputs').select('agent_name, output_text').eq('project_id', projectId)
-    const css  = freshRecs?.find(o => o.agent_name === 'Developer-CSS')?.output_text ?? ''
-    const js   = freshRecs?.find(o => o.agent_name === 'Developer-JS')?.output_text  ?? ''
-    const htmlRecs = (freshRecs ?? []).filter(o => o.agent_name.startsWith('Developer-HTML-'))
-    const html = htmlRecs.length
-      ? htmlRecs.map(r => `=== ${r.agent_name.replace('Developer-HTML-', '')} ===\n\n${r.output_text}`).join('\n\n---\n\n')
-      : (freshRecs?.find(o => o.agent_name === 'Developer-HTML')?.output_text ?? '')
-    await runReviewer(brief, research, design, html, css, js)
-  }
-
   async function approveDev() {
     const allDevRecs = agentOutputs.filter(o =>
       ['Developer-Stack','Developer-CSS','Developer-JS','Developer-HTML','Developer-Pages'].includes(o.agent_name) ||
@@ -3548,20 +2906,22 @@ export default function ProjectDetail() {
     setApprovingDev(true)
     await Promise.all([
       ...allDevRecs.map(r => safeUpdate('agent_outputs', r.id, { status: 'approved' })),
-      safeUpdate('projects', projectId, { current_stage: 'QA' }),
+      safeUpdate('projects', projectId, { current_stage: 'Review' }),
     ])
     await load()
     setApprovingDev(false)
-    // Auto-trigger QA — user reviews summary then clicks Approve QA to move to Review
-    const brief = briefs[0]?.brief_text ?? `Project: ${project.name}`
-    const css   = agentOutputs.find(o => o.agent_name === 'Developer-CSS')?.output_text ?? ''
-    const js    = agentOutputs.find(o => o.agent_name === 'Developer-JS')?.output_text  ?? ''
+    // Auto-trigger Reviewer
+    const brief    = briefs[0]?.brief_text ?? `Project: ${project.name}`
+    const research = agentOutputs.find(o => o.agent_name === 'researcher')?.output_text ?? ''
+    const design   = agentOutputs.find(o => o.agent_name === 'designer')?.output_text   ?? ''
+    const css      = agentOutputs.find(o => o.agent_name === 'Developer-CSS')?.output_text ?? ''
+    const js       = agentOutputs.find(o => o.agent_name === 'Developer-JS')?.output_text  ?? ''
+    // Build combined HTML context — multi-page or legacy single file
     const htmlPageRecs = agentOutputs.filter(o => o.agent_name.startsWith('Developer-HTML-'))
     const htmlText = htmlPageRecs.length
       ? htmlPageRecs.map(r => `=== ${r.agent_name.replace('Developer-HTML-', '')} ===\n\n${r.output_text}`).join('\n\n---\n\n')
       : (agentOutputs.find(o => o.agent_name === 'Developer-HTML')?.output_text ?? '')
-    await runQA(brief, css, js, htmlText)
-    // QA is complete — user will see QA summary and click "Approve QA and move to Review"
+    await runReviewer(brief, research, design, htmlText, css, js)
   }
 
   async function runReviewer(briefText, researchText, designText, htmlText, cssText, jsText, feedback = null) {
@@ -3789,9 +3149,8 @@ export default function ProjectDetail() {
       regenTokenCalls.push({ label: 'Summary', input_tokens: rSumIn, output_tokens: rSumOut })
 
       const regenMoodboard = designRec.output_moodboard ?? null
-      const regenBriefCtx = extractBriefContext(briefs[0]?.brief_text ?? '')
-      const { svg, outputText: regenOutputText } = await generatePageWireframe(briefSummary, page, regenTokenCalls, regenMoodboard, excludeSeed, regenBriefCtx)
-      const { error: regenSaveErr } = await safeUpdate('agent_outputs', wfRecord.id, { output_wireframe: svg, output_text: regenOutputText })
+      const { svg, layoutSeed } = await generatePageWireframe(briefSummary, page, regenTokenCalls, regenMoodboard, excludeSeed)
+      const { error: regenSaveErr } = await safeUpdate('agent_outputs', wfRecord.id, { output_wireframe: svg, output_text: layoutSeed })
       if (regenSaveErr) throw new Error(`Regenerate save failed: ${regenSaveErr.message}`)
 
       await load()
@@ -3996,16 +3355,11 @@ The Forge Agency Team`
   const reviewLiveText    = reviewStreamDisplay     || pipeline.liveText(projectId, 'reviewer')
   const orchLiveText      = orchestratorStreamDisplay || pipeline.liveText(projectId, 'Orchestrator')
 
-  const isAgentRunning    = isGenerating || isDesigning || isRegenerating || !!regenPageFilename || isDeveloping || isReviewing || isRunningQA || isRunningQAFix || approvingQA || pipelineRunning
-  const showAdvance       = !isNotStarted && !isResearch && project.current_stage !== 'Design' && project.current_stage !== 'Dev' && project.current_stage !== 'QA' && project.current_stage !== 'Review' && nextStage
+  const isAgentRunning    = isGenerating || isDesigning || isRegenerating || !!regenPageFilename || isDeveloping || isReviewing || pipelineRunning
+  const showAdvance       = !isNotStarted && !isResearch && project.current_stage !== 'Design' && project.current_stage !== 'Dev' && project.current_stage !== 'Review' && nextStage
   const showDesignSection = currentIdx >= STAGES.indexOf('Design')
   const showDevSection    = currentIdx >= STAGES.indexOf('Dev')
-  const showQASection     = currentIdx >= STAGES.indexOf('QA')
   const showReviewSection = currentIdx >= STAGES.indexOf('Review')
-  const qaOutput          = agentOutputs.find(o => o.agent_name === 'QA-Report')   ?? null
-  const qaReport2Output   = agentOutputs.find(o => o.agent_name === 'QA-Report-2') ?? null
-  const qaPhaseComplete   = !isRunningQA && !isRunningQAFix && qaOutput != null && (qaReport2Output != null || qaFixSummary != null)
-  const canApproveQA      = qaPhaseComplete
   const reviewerOutput    = agentOutputs.find(o => o.agent_name === 'reviewer') ?? null
   const devStackOutput    = agentOutputs.find(o => o.agent_name === 'Developer-Stack') ?? null
   const devHtmlOutput     = agentOutputs.find(o => o.agent_name === 'Developer-HTML')  ?? null
@@ -4528,21 +3882,12 @@ The Forge Agency Team`
                   {/* Sequential phase message */}
                   <p className="text-xs text-zinc-400">{orchPhaseMsg}</p>
 
-                  {/* Overtime warning + Stop and retry */}
+                  {/* Overtime warning */}
                   {orchElapsed >= 120 && (
-                    <div className="rounded-md bg-amber-500/10 border border-amber-500/25 px-4 py-3 space-y-2.5">
+                    <div className="rounded-md bg-amber-500/10 border border-amber-500/25 px-4 py-3">
                       <p className="text-xs text-amber-400 leading-relaxed">
-                        This is taking longer than usual. You can wait, or stop this attempt and retry with a faster model.
+                        This is taking longer than usual — the Orchestrator is still working. You can wait or come back later and the result will appear automatically.
                       </p>
-                      <button
-                        onClick={stopAndRetryOrchestrator}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-amber-500/20 border border-amber-500/40 text-amber-300 hover:bg-amber-500/30 active:bg-amber-500/40 transition-colors"
-                      >
-                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
-                        </svg>
-                        Stop and retry with Sonnet (faster)
-                      </button>
                     </div>
                   )}
                 </div>
@@ -6001,146 +5346,7 @@ The Forge Agency Team`
           )}
 
           {devOutput?.status === 'approved' && (
-            <p className="text-xs text-zinc-600 pt-3">Developer output approved — QA Test running automatically.</p>
-          )}
-        </div>
-      )}
-
-      {/* ── QA Report ── */}
-      {showQASection && (
-        <div className="space-y-0 rounded-lg">
-          {/* Header */}
-          <div
-            onClick={() => setQaOpen(o => !o)}
-            className={`flex items-center justify-between px-5 py-3 bg-zinc-900 border border-zinc-800 cursor-pointer hover:bg-zinc-800 transition-colors select-none ${qaOpen ? 'rounded-t-lg border-b-0' : 'rounded-lg'}`}
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-medium" style={{ color: '#0D7E7E' }}>QA Test</span>
-              {(isRunningQA || isRunningQAFix) && (
-                <span className="flex items-center gap-1.5 text-xs" style={{ color: '#0D7E7E' }}>
-                  <span className="w-1.5 h-1.5 rounded-full animate-pulse inline-block" style={{ backgroundColor: '#0D7E7E' }} />
-                  {qaFixStatus || 'Running…'}
-                </span>
-              )}
-              {qaPhaseComplete && (
-                <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: '#E0F4F4', color: '#0D7E7E' }}>Complete</span>
-              )}
-            </div>
-            <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
-              {qaOutput && !isRunningQA && (
-                <button
-                  onClick={() => {
-                    const date = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
-                    const body = [qaOutput.output_text, qaReport2Output ? `\n\n---\n\n## Verification Check\n\n${qaReport2Output.output_text}` : ''].join('')
-                    downloadPdf({ agentName: 'QA Report', projectName: project?.name ?? 'Project', clientName: project?.clients?.name ?? 'Client', date, bodyText: body, filename: `${(project?.name ?? 'project').toLowerCase().replace(/\s+/g, '-')}-qa-report.pdf` })
-                  }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-200 transition-colors"
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                  </svg>
-                  Download PDF
-                </button>
-              )}
-              <svg className={`w-4 h-4 text-zinc-500 transition-transform ${qaOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-              </svg>
-            </div>
-          </div>
-
-          {qaOpen && (
-            <div className="border border-t-0 border-zinc-800 rounded-b-lg bg-zinc-900 px-5 py-5 space-y-5">
-
-              {/* Live status while running */}
-              {(isRunningQA || isRunningQAFix) && (
-                <div className="flex items-center gap-3 py-4 justify-center">
-                  <span className="w-2 h-2 rounded-full animate-pulse flex-shrink-0" style={{ backgroundColor: '#0D7E7E' }} />
-                  <span className="text-sm text-zinc-400">{qaFixStatus || 'Running quality checks…'}</span>
-                </div>
-              )}
-
-              {/* QA Auto-fix Summary */}
-              {qaFixSummary && (
-                <div className="rounded-lg border p-4 space-y-3" style={{ borderColor: '#0D7E7E33', backgroundColor: '#E0F4F408' }}>
-                  <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#0D7E7E' }}>QA Auto-fix Summary</p>
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                    <div className="rounded-md bg-zinc-900 border border-zinc-800 px-3 py-2.5 text-center">
-                      <p className="text-xl font-bold text-zinc-100">{qaFixSummary.found}</p>
-                      <p className="text-xs text-zinc-500 mt-0.5">Issues found</p>
-                    </div>
-                    <div className="rounded-md bg-zinc-900 border border-zinc-800 px-3 py-2.5 text-center">
-                      <p className="text-xl font-bold text-emerald-400">{qaFixSummary.fixed}</p>
-                      <p className="text-xs text-zinc-500 mt-0.5">Auto-fixed</p>
-                    </div>
-                    <div className="rounded-md bg-zinc-900 border border-zinc-800 px-3 py-2.5 text-center">
-                      <p className={`text-xl font-bold ${qaFixSummary.verifyCount > 0 ? 'text-amber-400' : 'text-zinc-400'}`}>{qaFixSummary.verifyCount ?? 0}</p>
-                      <p className="text-xs text-zinc-500 mt-0.5">Verify</p>
-                    </div>
-                    <div className="rounded-md bg-zinc-900 border border-zinc-800 px-3 py-2.5 text-center">
-                      <p className="text-sm font-bold text-zinc-100">
-                        {qaFixSummary.scoreBefore != null ? qaFixSummary.scoreBefore : '—'}
-                        <span className="text-zinc-600 mx-1">→</span>
-                        <span style={{ color: '#0D7E7E' }}>{qaFixSummary.scoreAfter != null ? qaFixSummary.scoreAfter : '—'}</span>
-                        <span className="text-xs text-zinc-600">/100</span>
-                      </p>
-                      <p className="text-xs text-zinc-500 mt-0.5">QA score</p>
-                    </div>
-                  </div>
-                  <div className="rounded-md px-3 py-2.5 flex items-start gap-3" style={{ backgroundColor: '#0D7E7E12', border: '1px solid #0D7E7E30' }}>
-                    <svg className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#0D7E7E' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                    </svg>
-                    <p className="text-xs" style={{ color: '#4DB8B8' }}>
-                      Auto-fix applied to all issues — please verify the results look correct in the browser preview.
-                      {qaFixSummary.verifyCount > 0 && ` ${qaFixSummary.verifyCount} item${qaFixSummary.verifyCount !== 1 ? 's' : ''} could not be fixed automatically and are marked for verification.`}
-                    </p>
-                  </div>
-                  {qaFixSummary.scoreAfter != null && qaFixSummary.scoreAfter <= 80 && (
-                    <p className="text-xs text-zinc-500">QA score: {qaFixSummary.scoreAfter} out of 100 — some issues may remain.</p>
-                  )}
-                </div>
-              )}
-
-              {/* Original QA report */}
-              {qaOutput && (
-                <div className="space-y-2">
-                  <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Initial QA Report</p>
-                  <div className={`rounded-lg bg-zinc-950 border border-zinc-800 p-5 ${isRunningQAFix ? 'opacity-50' : ''}`}>
-                    {renderMarkdown(qaOutput.output_text)}
-                  </div>
-                </div>
-              )}
-
-              {/* Verification QA report */}
-              {qaReport2Output && (
-                <div className="space-y-2">
-                  <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#0D7E7E' }}>Verification Check (post-fix)</p>
-                  <div className="rounded-lg bg-zinc-950 border p-5" style={{ borderColor: '#0D7E7E40' }}>
-                    {renderMarkdown(qaReport2Output.output_text)}
-                  </div>
-                </div>
-              )}
-
-              {/* Loading placeholder */}
-              {!qaOutput && !isRunningQA && (
-                <p className="text-xs text-zinc-600 py-4 text-center">QA check will run automatically after Developer files are approved.</p>
-              )}
-
-              {/* Approve QA and move to Review button */}
-              {canApproveQA && project.current_stage === 'QA' && (
-                <div className="pt-2 flex items-center gap-3">
-                  <button
-                    onClick={approveQA}
-                    disabled={approvingQA || isAgentRunning}
-                    className="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{ backgroundColor: '#0D7E7E' }}
-                  >
-                    <CheckIcon className="w-3.5 h-3.5" />
-                    {approvingQA ? 'Proceeding…' : 'Proceed to Review'}
-                  </button>
-                </div>
-              )}
-            </div>
+            <p className="text-xs text-zinc-600 pt-3">Developer output approved — Reviewer agent triggered automatically.</p>
           )}
         </div>
       )}

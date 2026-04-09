@@ -19,8 +19,7 @@ import ClientDetail  from './pages/ClientDetail'
 import Editor        from './pages/Editor'
 import Billing       from './pages/Billing'
 import NewBrief      from './pages/NewBrief'
-import SeoAudit        from './pages/SeoAudit'
-import LessonsLearned  from './pages/LessonsLearned'
+import SeoAudit      from './pages/SeoAudit'
 
 export default function App() {
   // null = still checking, false = no session, object = authenticated session
@@ -81,7 +80,6 @@ export default function App() {
               <Route path="editor"                 element={<Editor />} />
               <Route path="briefs/new"             element={<NewBrief />} />
               <Route path="seo-audit/:clientId"    element={<SeoAudit />} />
-              <Route path="lessons"               element={<LessonsLearned />} />
             </Route>
           </Routes>
         </ConfirmProvider>

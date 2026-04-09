@@ -1193,15 +1193,19 @@ export default function NewBrief() {
     if (projectId) {
       setSubmitPhase('orchestrating')
       console.log('[NewBrief] Orchestrator triggered from structured brief submission — project:', projectId, 'client:', clientId)
+      const orchAbort  = new AbortController()
+      const orchTimeout = setTimeout(() => orchAbort.abort(), 120_000)
       try {
         let orchFullResponse = ''
         await streamAnthropicCall({
           messages:     [{ role: 'user', content: briefText }],
           systemPrompt: ORCHESTRATOR_SYSTEM,
-          model:        'claude-opus-4-20250514',
-          maxTokens:    30000,
+          model:        'claude-sonnet-4-20250514',
+          maxTokens:    8000,
+          signal:       orchAbort.signal,
           onChunk:      (chunk) => { orchFullResponse += chunk },
         })
+        clearTimeout(orchTimeout)
 
         await supabase.from('agent_outputs').insert({
           project_id:  projectId,
@@ -1211,7 +1215,19 @@ export default function NewBrief() {
         })
         console.log('[NewBrief] Orchestrator response saved to agent_outputs — length:', orchFullResponse.length)
       } catch (err) {
-        console.warn('[NewBrief] Orchestrator failed:', err.message)
+        clearTimeout(orchTimeout)
+        const isTimeout = err.name === 'AbortError' || /abort/i.test(err.message)
+        if (isTimeout) {
+          console.warn('[NewBrief] Orchestrator timed out after 120s — saving fallback')
+          await supabase.from('agent_outputs').insert({
+            project_id:  projectId,
+            agent_name:  'Orchestrator',
+            output_text: 'Orchestrator timed out — please use the Send to Orchestrator button on the project detail page to retry.',
+            status:      'pending',
+          }).catch(() => {})
+        } else {
+          console.warn('[NewBrief] Orchestrator failed:', err.message)
+        }
       }
     }
 

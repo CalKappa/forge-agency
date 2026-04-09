@@ -15,7 +15,6 @@ const navItems = [
   { label: 'Agents', to: '/agents', icon: BotIcon },
   { label: 'Editor', to: '/editor', icon: CodeIcon },
   { label: 'Billing', to: '/billing', icon: CreditCardIcon },
-  { label: 'Lessons', to: '/lessons', icon: BookOpenIcon },
 ]
 
 const pageTitles = {
@@ -29,7 +28,6 @@ const pageTitles = {
   '/agents/developer':  'Developer',
   '/agents/reviewer':   'Reviewer',
   '/billing': 'Billing',
-  '/lessons': 'Lessons Learned',
   '/editor':  'Editor',
   '/briefs/new': 'New Brief',
 }
@@ -268,14 +266,6 @@ function SignOutIcon({ className }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
-    </svg>
-  )
-}
-
-function BookOpenIcon({ className }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
     </svg>
   )
 }

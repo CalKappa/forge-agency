@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products - Premium Pet Boutique</title>
+    <meta name="description" content="Discover our curated collection of luxury pet products. Premium quality food, toys, accessories and wellness products for your beloved companion.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- ============================================
+         HEADER & NAVIGATION - fixed top navigation
+         ============================================ -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="index.html">Pawsome</a>
+                </div>
+                <nav class="nav">
+                    <ul class="nav-list">
+                        <li><a href="index.html" class="nav-link">Home</a></li>
+                        <li><a href="products.html" class="nav-link active">Products</a></li>
+                        <li><a href="product-detail.html" class="nav-link">Details</a></li>
+                        <li><a href="about.html" class="nav-link">About</a></li>
+                        <li><a href="contact.html" class="nav-link">Contact</a></li>
+                        <li><a href="cart.html" class="nav-link">Cart</a></li>
+                    </ul>
+                </nav>
+                <button class="mobile-menu-toggle" aria-label="Toggle mobile menu">
+                    <span class="hamburger-bar"></span>
+                    <span class="hamburger-bar"></span>
+                    <span class="hamburger-bar"></span>
+                </button>
+                <div class="mobile-menu">
+                    <ul class="mobile-nav-list">
+                        <li><a href="index.html" class="mobile-nav-link">Home</a></li>
+                        <li><a href="products.html" class="mobile-nav-link active">Products</a></li>
+                        <li><a href="product-detail.html" class="mobile-nav-link">Details</a></li>
+                        <li><a href="about.html" class="mobile-nav-link">About</a></li>
+                        <li><a href="contact.html" class="mobile-nav-link">Contact</a></li>
+                        <li><a href="cart.html" class="mobile-nav-link">Cart</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- ============================================
+             HERO SECTION - page header with breadcrumbs
+             ============================================ -->
+        <section class="hero hero-animate">
+            <div class="container">
+                <div class="hero-content">
+                    <nav aria-label="Breadcrumb" style="margin-bottom: 20px;">
+                        <ol style="display: flex; list-style: none; gap: 8px; font-size: 14px; color: rgba(44, 44, 44, 0.6);">
+                            <li><a href="index.html" style="color: var(--rose-gold);">Home</a></li>
+                            <li aria-hidden="true">/</li>
+                            <li aria-current="page">Products</li>
+                        </ol>
+                    </nav>
+                    <h1 class="hero-headline">Premium Pet Products</h1>
+                    <p class="hero-subheading">Discover our curated collection of luxury items designed to pamper your beloved companion with the finest quality and care they deserve.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================
+             FILTERS SECTION - product filtering controls
+             ============================================ -->
+        <section class="filters-section">
+            <div class="container">
+                <div class="filters-content">
+                    <div class="filter-group">
+                        <label class="filter-label" for="category-filter">Category</label>
+                        <select id="category-filter" class="filter-select" data-filter="category">
+                            <option value="all">All Categories</option>
+                            <option value="food">Premium Food</option>
+                            <option value="toys">Luxury Toys</option>
+                            <option value="accessories">Accessories</option>
+                            <option value="wellness">Wellness</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label" for="price-filter">Price Range</label>
+                        <select id="price-filter" class="filter-select" data-filter="price">
+                            <option value="all">All Prices</option>
+                            <option value="0-25">$0 - $25</option>
+                            <option value="25-50">$25 - $50</option>
+                            <option value="50-100">$50 - $100</option>
+                            <option value="100-999">$100+</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label" for="sort-filter">Sort By</label>
+                        <select id="sort-filter" class="filter-select" data-filter="sort">
+                            <option value="featured">Featured</option>
+                            <option value="price-low">Price: Low to High</option>
+                            <option value="price-high">Price: High to Low</option>
+                            <option value="name">Name A-Z</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================
+             PRODUCTS GRID SECTION - main product listing
+             ============================================ -->
+        <section class="products-section section">
+            <div class="container">
+                <div class="products-grid">
+                    <article class="product-card" data-category="food" data-price="89">
+                        <div class="product-image">
+                            <img src="https://placehold.co/400x300/f5f0eb/999999?text=Premium+Organic+Dog+Food" alt="Premium Organic Dog Food" width="400" height="300" loading="eager" style="width: 100%; height: 250px; object-fit: cover; border-radius: 8px 8px 0 0">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">Premium Organic Dog Food</h3>
+                            <p class="product-price">$89.99</p>
+                            <p class="product-description">Farm-fresh ingredients with optimal nutrition for your companion's health and vitality.</p>
+                            <a href="product-detail.html" class="btn btn-primary">View Details</a>
+                        </div>
+                    </article>
+
+                    <article class="product-card" data-category="toys" data-price="45">
+                        <div class="product-image">
+                            <img src="https://placehold.co/400x300/f5f0eb/999999?text=Handcrafted+Rope+Toy" alt="Handcrafted Rope Toy" width="400" height="300" loading="eager" style="width: 100%; height: 250px; object-fit: cover; border-radius: 8px 8px 0 0">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">Handcrafted Rope Toy</h3>
+                            <p class="product-price">$45.00</p>
+                            <p class="product-description">Artisanal rope toy designed for hours of safe, engaging play and dental health.</p>
+                            <a href="product-detail.html" class="btn btn-primary">View Details</a>
+                        </div>
+                    </article>
+
+                    <article class="product-card" data-category="accessories" data-price="125">
+                        <div class="product-image">
+                            <img src="https://placehold.co/400x300/f5f0eb/999999?text=Luxury+Leather+Collar" alt="Luxury Leather Collar" width="400" height="300" loading="eager" style="width: 100%; height: 250px; object-fit: cover; border-radius: 8px 8px 0 0">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">Luxury Leather Collar</h3>
+                            <p class="product-price">$125.00</p>
+                            <p class="product-description">Hand-stitched Italian leather collar with rose gold hardware and custom engraving.</p>
+                            <a href="product-detail.html" class="btn btn-primary">View Details</a>
+                        </div>
+                    </article>
+
+                    <article class="product-card" data-category="wellness" data-price="65">
+                        <div class="product-image">
+                            <img src="https://placehold.co/400x300/f5f0eb/999999?text=Calming+Aromatherapy+Spray" alt="Calming Aromatherapy Spray" width="400" height="300" loading="eager" style="width: 100%; height: 250px; object-fit: cover; border-radius: 8px 8px 0 0">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">Calming Aromatherapy Spray</h3>
+                            <p class="product-price">$65.00</p>
+                            <p class="product-description">Natural lavender and chamomile blend to reduce anxiety and promote relaxation.</p>
+                            <a href="product-detail.html" class="btn btn-primary">View Details</a>
+                        </div>
+                    </article>
+
+                    <article class="product-card" data-category="food" data-price="15">
+                        <div class="product-image">
+                            <img src="https://placehold.co/400x300/f5f0eb/999999?text=Gourmet+Treat+Selection" alt="Gourmet Treat Selection" width="400" height="300" loading="eager" style="width: 100%; height: 250px; object-fit: cover; border-radius: 8px 8px 0 0">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">Gourmet Treat Selection</h3>
+                            <p class="product-price">$15.99</p>
+                            <p class="product-description">Artisanal treats made with organic ingredients and natural preservatives.</p>
+                            <a href="product-detail.html" class="btn btn-primary">View Details</a>
+                        </div>
+                    </article>
+
+                    <article class="product-card" data-category="toys" data-price="35">
+                        <div class="product-image">
+                            <img src="https://placehold.co/400x300/f5f0eb/999999?text=Interactive+Puzzle+Toy" alt="Interactive Puzzle Toy" width="400" height="300" loading="eager" style="width: 100%; height: 250px; object-fit: cover; border-radius: 8px 8px 0 0">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">Interactive Puzzle Toy</h3>
+                            <p class="product-price">$35.00</p>
+                            <p class="product-description">Mental stimulation toy designed to challenge and engage your pet's intelligence.</p>
+                            <a href="product-detail.html" class="btn btn-primary">View Details</a>
+                        </div>
+                    </article>
+
+                    <article class="product-card" data-category="accessories" data-price="180">
+                        <div class="product-image">
+                            <img src="https://placehold.co/400x300/f5f0eb/999999?text=Memory+Foam+Pet+Bed" alt="Memory Foam Pet Bed" width="400" height="300" loading="eager" style="width: 100%; height: 250px; object-fit: cover; border-radius: 8px 8px 0 0">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">Memory Foam Pet Bed</h3>
+                            <p class="product-price">$180.00</p>
+                            <p class="product-description">Orthopedic support with washable bamboo fiber cover for ultimate comfort.</p>
+                            <a href="product-detail.html" class="btn btn-primary">View Details</a>
+                        </div>
+                    </article>
+
+                    <article class="product-card" data-category="wellness" data-price="95">
+                        <div class="product-image">
+                            <img src="https://placehold.co/400x300/f5f0eb/999999?text=Joint+Support+Supplement" alt="Joint Support Supplement" width="400" height="300" loading="eager" style="width: 100%; height: 250px; object-fit: cover; border-radius: 8px 8px 0 0">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">Joint Support Supplement</h3>
+                            <p class="product-price">$95.00</p>
+                            <p class="product-description">Veterinarian-formulated glucosamine and chondroitin for optimal joint health.</p>
+                            <a href="product-detail.html" class="btn btn-primary">View Details</a>
+                        </div>
+                    </article>
+
+                    <article class="product-card" data-category="accessories" data-price="75">
+                        <div class="product-image">
+                            <img src="https://placehold.co/400x300/f5f0eb/999999?text=Designer+Feeding+Bowl+Set" alt="Designer Feeding Bowl Set" width="400" height="300" loading="eager" style="width: 100%; height: 250px; object-fit: cover; border-radius: 8px 8px 0 0">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">Designer Feeding Bowl Set</h3>
+                            <p class="product-price">$75.00</p>
+                            <p class="product-description">Ceramic bowl set with elevated stand to promote healthy eating posture.</p>
+                            <a href="product-detail.html" class="btn btn-primary">View Details</a>
+                        </div>
+                    </article>
+
+                    <article class="product-card" data-category="toys" data-price="28">
+                        <div class="product-image">
+                            <img src="https://placehold.co/400x300/f5f0eb/999999?text=Plush+Comfort+Toy" alt="Plush Comfort Toy" width="400" height="300" loading="eager" style="width: 100%; height: 250px; object-fit: cover; border-radius: 8px 8px 0 0">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">Plush Comfort Toy</h3>
+                            <p class="product-price">$28.00</p>
+                            <p class="product-description">Ultra-soft plush toy with calming heartbeat simulation for anxious pets.</p>
+                            <a href="product-detail.html" class="btn btn-primary">View Details</a>
+                        </div>
+                    </article>
+
+                    <article class="product-card" data-category="wellness" data-price="120">
+                        <div class="product-image">
+                            <img src="https://placehold.co/400x300/f5f0eb/999999?text=Wellness+Starter+Kit" alt="Wellness Starter Kit" width="400" height="300" loading="eager" style="width: 100%; height: 250px; object-fit: cover; border-radius: 8px 8px 0 0">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">Wellness Starter Kit</h3>
+                            <p class="product-price">$120.00</p>
+                            <p class="product-description">Complete wellness package including supplements, grooming tools, and care guides.</p>
+                            <a href="product-detail.html" class="btn btn-primary">View Details</a>
+                        </div>
+                    </article>
+
+                    <article class="product-card" data-category="food" data-price="55">
+                        <div class="product-image">
+                            <img src="https://placehold.co/400x300/f5f0eb/999999?text=Raw+FreezeDried+Food" alt="Raw Freeze-Dried Food" width="400" height="300" loading="eager" style="width: 100%; height: 250px; object-fit: cover; border-radius: 8px 8px 0 0">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">Raw Freeze-Dried Food</h3>
+                            <p class="product-price">$55.00</p>
+                            <p class="product-description">Nutrient-rich freeze-dried raw food that preserves natural flavors and vitamins.</p>
+                            <a href="product-detail.html" class="btn btn-primary">View Details</a>
+                        </div>
+                    </article>
+
+                    <article class="product-card" data-category="toys" data-price="22">
+                        <div class="product-image">
+                            <img src="https://placehold.co/400x300/f5f0eb/999999?text=Squeaky+Ball+Set" alt="Squeaky Ball Set" width="400" height="300" loading="eager" style="width: 100%; height: 250px; object-fit: cover; border-radius: 8px 8px 0 0">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">Squeaky Ball Set</h3>
+                            <p class="product-price">$22.00</p>
+                            <p class="product-description">Durable rubber balls with different textures for varied play experiences.</p>
+                            <a href="product-detail.html" class="btn btn-primary">View Details</a>
+                        </div>
+                    </article>
+
+                    <article class="product-card" data-category="accessories" data-price="165">
+                        <div class="product-image">
+                            <img src="https://placehold.co/400x300/f5f0eb/999999?text=Designer+Pet+Carrier" alt="Designer Pet Carrier" width="400" height="300" loading="eager" style="width: 100%; height: 250px; object-fit: cover; border-radius: 8px 8px 0 0">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">Designer Pet Carrier</h3>
+                            <p class="product-price">$165.00</p>
+                            <p class="product-description">Luxury travel carrier with breathable mesh and comfortable interior padding.</p>
+                            <a href="product-detail.html" class="btn btn-primary">View Details</a>
+                        </div>
+                    </article>
+
+                    <article class="product-card" data-category="wellness" data-price="42">
+                        <div class="product-image">
+                            <img src="https://placehold.co/400x300/f5f0eb/999999?text=Dental+Health+Chews" alt="Dental Health Chews" width="400" height="300" loading="eager" style="width: 100%; height: 250px; object-fit: cover; border-radius: 8px 8px 0 0">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">Dental Health Chews</h3>
+                            <p class="product-price">$42.00</p>
+                            <p class="product-description">Natural dental chews that help reduce tartar and freshen breath effectively.</p>
+                            <a href="product-detail.html" class="btn btn-primary">View Details</a>
+                        </div>
+                    </article>
+
+                    <article class="product-card" data-category="accessories" data-price="88">
+                        <div class="product-image">
+                            <img src="https://placehold.co/400x300/f5f0eb/999999?text=Heated+Pet+Blanket" alt="Heated Pet Blanket" width="400" height="300" loading="eager" style="width: 100%; height: 250px; object-fit: cover; border-radius: 8px 8px 0 0">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">Heated Pet Blanket</h3>
+                            <p class="product-price">$88.00</p>
+                            <p class="product-description">Self-warming blanket with thermal technology for cozy comfort in any season.</p>
+                            <a href="product-detail.html" class="btn btn-primary">View Details</a>
+                        </div>
+                    </article>
+
+                    <article class="product-card" data-category="food" data-price="32">
+                        <div class="product-image">
+                            <img src="https://placehold.co/400x300/f5f0eb/999999?text=GrainFree+Cat+Food" alt="Grain-Free Cat Food" width="400" height="300" loading="eager" style="width: 100%; height: 250px; object-fit: cover; border-radius: 8px 8px 0 0">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">Grain-Free Cat Food</h3>
+                            <p class="product-price">$32.00</p>
+                            <p class="product-description">High-protein, grain-free formula with real salmon for feline nutritional needs.</p>
+                            <a href="product-detail.html" class="btn btn-primary">View Details</a>
+                        </div>
+                    </article>
+
+                    <article class="product-card" data-category="toys" data-price="18">
+                        <div class="product-image">
+                            <img src="https://placehold.co/400x300/f5f0eb/999999?text=Feather+Wand+Toy" alt="Feather Wand Toy" width="400" height="300" loading="eager" style="width: 100%; height: 250px; object-fit: cover; border-radius: 8px 8px 0 0">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">Feather Wand Toy</h3>
+                            <p class="product-price">$18.00</p>
+                            <p class="product-description">Interactive feather wand that stimulates natural hunting instincts in cats.</p>
+                            <a href="product-detail.html" class="btn btn-primary">View Details</a>
+                        </div>
+                    </article>
+                </div>
+
+                <!-- ============================================
+                     PAGINATION - navigation for multiple pages
+                     ============================================ -->
+                <div style="margin-top: 60px; text-align: center;">
+                    <nav aria-label="Product pagination">
+                        <div style="display: inline-flex; gap: 12px; align-items: center;">
+                            <button class="btn btn-secondary" disabled style="opacity: 0.5;">Previous</button>
+                            <span style="display: flex; gap: 8px;">
+                                <button class="btn active" style="padding: 12px 16px;">1</button>
+                                <button class="btn btn-secondary" style="padding: 12px 16px;">2</button>
+                                <button class="btn btn-secondary" style="padding: 12px 16px;">3</button>
+                            </span>
+                            <button class="btn btn-secondary">Next</button>
+                        </div>
+                    </nav>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================
+             NEWSLETTER SECTION - email signup call-to-action
+             ============================================ -->
+        <section class="section" style="background-color: var(--sage-green); color: var(--pure-white);">
+            <div class="container">
+                <div style="text-align: center; max-width: 600px; margin: 0 auto;">
+                    <h2 class="section-title heading-animate" style="color: var(--pure-white); margin-bottom: 16px;">Stay Connected</h2>
+                    <p class="section-subtitle" style="color: var(--pure-white); opacity: 0.9; margin-bottom: 32px;">Get exclusive access to new products, special offers, and expert pet care tips delivered to your inbox.</p>
+                    <form class="newsletter-form" style="display: flex; gap: 16px; max-width: 400px; margin: 0 auto; flex-wrap: wrap;">
+                        <input type="email" placeholder="Enter your email" required class="form-input" style="flex: 1; min-width: 200px;">
+                        <button type="submit" class="btn btn-primary">Subscribe</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ============================================
+         FOOTER - site footer with links and info
+         ============================================ -->
+    <footer class="section" style="background-color: var(--deep-charcoal); color: var(--warm-cream);">
+        <div class="container">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 40px; margin-bottom: 40px;">
+                <div>
+                    <div class="logo" style="color: var(--warm-cream); margin-bottom: 16px; font-size: 28px;">Pawsome</div>
+                    <p style="opacity: 0.8; line-height: 1.6;">Premium pet products designed with love and crafted for the health and happiness of your beloved companion.</p>
+                </div>
+                <div>
+                    <h4 style="font-family: var(--font-heading); font-size: 18px; margin-bottom: 16px; color: var(--rose-gold);">Quick Links</h4>
+                    <ul style="opacity: 0.8; line-height: 2;">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="products.html">Products</a></li>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="font-family: var(--font-heading); font-size: 18px; margin-bottom: 16px; color: var(--rose-gold);">Contact Info</h4>
+                    <ul style="opacity: 0.8; line-height: 2;">
+                        <li>hello@pawsome.com</li>
+                        <li>(555) 123-4567</li>
+                        <li>123 Pet Street, City, State 12345</li>
+                    </ul>
+                </div>
+            </div>
+            <div style="border-top: 1px solid rgba(248, 246, 240, 0.2); padding-top: 24px; text-align: center; opacity: 0.6;">
+                <p>&copy; 2024 Pawsome. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

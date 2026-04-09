@@ -18,7 +18,10 @@
       "Bash(git commit -m ':*)",
       "Bash(git branch:*)",
       "Bash(git push:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(python:*)",
+      "Bash(python3:*)",
+      "Bash(grep -c \"gsap.fromTo\\\\|clearProps\\\\|product card\" \"C:/Users/Callu/OneDrive/Desktop/CallyTEnterprises/forge-agency/client-sites/callum-thom/test-client-brief/script.js\" echo \"---\" grep \"gsap.from\\\\|gsap.to\" \"C:/Users/Callu/OneDrive/Desktop/CallyTEnterprises/forge-agency/client-sites/callum-thom/test-client-brief/script.js\")"
     ]
   }
 }

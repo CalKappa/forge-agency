@@ -24,6 +24,7 @@ export async function streamAnthropicCall({
   tools,
   toolChoice,
   extraHeaders,
+  signal,
   onChunk,
   onToolUse,
   onComplete,
@@ -33,6 +34,7 @@ export async function streamAnthropicCall({
 
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
+    ...(signal ? { signal } : {}),
     headers: {
       'Content-Type': 'application/json',
       'x-api-key': apiKey,

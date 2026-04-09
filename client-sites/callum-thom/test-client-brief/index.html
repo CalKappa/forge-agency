@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PawLux | Luxury Pet Products & Accessories</title>
+    <meta name="description" content="Discover premium pet products crafted with love for your furry family members. Shop luxury pet accessories, toys, and essentials.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- ============================================
+         HEADER & NAVIGATION - fixed header with logo and menu
+         ============================================ -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">PawLux</a>
+                <nav class="navigation">
+                    <ul class="nav-list">
+                        <li><a href="index.html" class="nav-link active">Home</a></li>
+                        <li><a href="products.html" class="nav-link">Products</a></li>
+                        <li><a href="about.html" class="nav-link">About</a></li>
+                        <li><a href="contact.html" class="nav-link">Contact</a></li>
+                        <li><a href="cart.html" class="nav-link">Cart</a></li>
+                    </ul>
+                    <button class="mobile-menu-toggle" aria-label="Toggle mobile menu">
+                        <span class="hamburger-bar"></span>
+                        <span class="hamburger-bar"></span>
+                        <span class="hamburger-bar"></span>
+                    </button>
+                </nav>
+                <div class="mobile-menu">
+                    <ul class="mobile-nav-list">
+                        <li><a href="index.html" class="mobile-nav-link active">Home</a></li>
+                        <li><a href="products.html" class="mobile-nav-link">Products</a></li>
+                        <li><a href="about.html" class="mobile-nav-link">About</a></li>
+                        <li><a href="contact.html" class="mobile-nav-link">Contact</a></li>
+                        <li><a href="cart.html" class="mobile-nav-link">Cart</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- ============================================
+             HERO SECTION - main landing area with headline and CTA
+             ============================================ -->
+        <section class="hero hero-animate" id="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <h1 class="hero-headline">Luxury Care for Your Beloved Companions</h1>
+                    <p class="hero-subheading">Discover premium pet products crafted with love and designed for the sophisticated pet parent who settles for nothing but the finest.</p>
+                    <div class="hero-cta">
+                        <a href="products.html" class="btn btn-primary">Shop Collection</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================
+             FEATURED PRODUCTS - showcase of top products
+             ============================================ -->
+        <section class="section products-section" id="featured">
+            <div class="container">
+                <div class="products-header">
+                    <h2 class="section-title heading-animate">Featured Collection</h2>
+                    <p class="section-subtitle">Handpicked essentials for the discerning pet parent</p>
+                </div>
+                <div class="featured-products-grid">
+                    <div class="product-card card-animate" data-category="accessories" data-price="89">
+                        <div class="product-image">
+                            <img src="https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=300&fit=crop" alt="Luxury Leather Collar">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">Handcrafted Leather Collar</h3>
+                            <p class="product-price">$89</p>
+                            <p class="product-description">Premium Italian leather with rose gold hardware</p>
+                            <a href="product-detail.html" class="btn btn-secondary">View Details</a>
+                        </div>
+                    </div>
+                    <div class="product-card card-animate" data-category="toys" data-price="45">
+                        <div class="product-image">
+                            <img src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=300&fit=crop" alt="Plush Comfort Toy">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">Organic Comfort Toy</h3>
+                            <p class="product-price">$45</p>
+                            <p class="product-description">Eco-friendly materials with calming lavender scent</p>
+                            <a href="product-detail.html" class="btn btn-secondary">View Details</a>
+                        </div>
+                    </div>
+                    <div class="product-card card-animate" data-category="accessories" data-price="125">
+                        <div class="product-image">
+                            <img src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400&h=300&fit=crop" alt="Designer Pet Bed">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">Memory Foam Bed</h3>
+                            <p class="product-price">$125</p>
+                            <p class="product-description">Orthopedic support with removable cover</p>
+                            <a href="product-detail.html" class="btn btn-secondary">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================
+             BRAND STORY - two-column layout with text and image
+             ============================================ -->
+        <section class="section brand-story" id="story">
+            <div class="container">
+                <div class="story-content">
+                    <div class="story-text">
+                        <h2 class="heading-animate">Crafted with Love, Designed for Life</h2>
+                        <p>At PawLux, we believe your pets deserve the same luxury and care that you would give to any family member. Our curated collection features only the finest materials and craftsmanship.</p>
+                        <p>From hand-stitched leather collars to organic comfort toys, every product is thoughtfully designed to enhance the bond between you and your beloved companion while ensuring their comfort and wellbeing.</p>
+                        <p>We source globally but think locally, partnering with artisans who share our commitment to quality and sustainability.</p>
+                        <a href="about.html" class="btn btn-primary">Our Story</a>
+                    </div>
+                    <div class="story-image">
+                        <img src="https://images.unsplash.com/photo-1544568100-847a948585b9?w=600&h=450&fit=crop" alt="Happy dog with luxury accessories">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================
+             TRUST INDICATORS - social proof and guarantees
+         ============================================ -->
+        <section class="section" id="trust" style="background-color: var(--pure-white); padding: 60px 0;">
+            <div class="container">
+                <div class="products-header">
+                    <h2 class="section-title heading-animate">Why Pet Parents Choose PawLux</h2>
+                </div>
+                <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 40px; text-align: center;">
+                    <div class="card-animate" style="padding: 40px 20px;">
+                        <div style="font-size: 48px; color: var(--rose-gold); margin-bottom: 20px;">🏆</div>
+                        <h3 style="font-family: var(--font-heading); font-size: 20px; margin-bottom: 16px;">Premium Quality</h3>
+                        <p>Hand-selected materials and artisan craftsmanship in every product we offer.</p>
+                    </div>
+                    <div class="card-animate" style="padding: 40px 20px;">
+                        <div style="font-size: 48px; color: var(--rose-gold); margin-bottom: 20px;">🌿</div>
+                        <h3 style="font-family: var(--font-heading); font-size: 20px; margin-bottom: 16px;">Eco-Conscious</h3>
+                        <p>Sustainable materials and ethical sourcing for a better world for our pets.</p>
+                    </div>
+                    <div class="card-animate" style="padding: 40px 20px;">
+                        <div style="font-size: 48px; color: var(--rose-gold); margin-bottom: 20px;">💎</div>
+                        <h3 style="font-family: var(--font-heading); font-size: 20px; margin-bottom: 16px;">Satisfaction Guaranteed</h3>
+                        <p>30-day return policy because we stand behind every product we sell.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================
+             NEWSLETTER SIGNUP - email collection section
+             ============================================ -->
+        <section class="section" id="newsletter" style="background-color: var(--sage-green); color: var(--pure-white); padding: 80px 0;">
+            <div class="container">
+                <div style="text-align: center; max-width: 600px; margin: 0 auto;">
+                    <h2 class="heading-animate" style="font-family: var(--font-heading); font-size: 2.25rem; margin-bottom: 20px; color: var(--pure-white);">Stay in Touch</h2>
+                    <p style="font-size: 18px; margin-bottom: 40px; opacity: 0.9;">Be the first to know about new collections, exclusive offers, and pet care tips.</p>
+                    <form class="newsletter-form" style="display: flex; gap: 16px; max-width: 400px; margin: 0 auto; flex-wrap: wrap;">
+                        <input type="email" placeholder="Enter your email" required style="flex: 1; min-width: 250px; padding: 16px; border: none; border-radius: 4px; font-size: 16px;">
+                        <button type="submit" class="btn" style="background-color: var(--rose-gold); color: var(--pure-white); border: none; white-space: nowrap;">Subscribe</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ============================================
+         FOOTER - site footer with links and information
+         ============================================ -->
+    <footer style="background-color: var(--deep-charcoal); color: var(--warm-cream); padding: 60px 0 30px;">
+        <div class="container">
+            <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 40px; margin-bottom: 40px;">
+                <div>
+                    <h3 style="font-family: var(--font-heading); font-size: 24px; margin-bottom: 20px; color: var(--warm-cream);">PawLux</h3>
+                    <p style="margin-bottom: 20px; opacity: 0.8;">Luxury pet products crafted with love for your beloved companions.</p>
+                    <div style="display: flex; gap: 16px;">
+                        <a href="#" style="color: var(--rose-gold);">Instagram</a>
+                        <a href="#" style="color: var(--rose-gold);">Facebook</a>
+                        <a href="#" style="color: var(--rose-gold);">Twitter</a>
+                    </div>
+                </div>
+                <div>
+                    <h4 style="font-weight: 600; margin-bottom: 20px;">Shop</h4>
+                    <ul style="line-height: 2;">
+                        <li><a href="products.html" style="opacity: 0.8; transition: opacity 0.2s;">All Products</a></li>
+                        <li><a href="products.html" style="opacity: 0.8; transition: opacity 0.2s;">Accessories</a></li>
+                        <li><a href="products.html" style="opacity: 0.8; transition: opacity 0.2s;">Toys</a></li>
+                        <li><a href="products.html" style="opacity: 0.8; transition: opacity 0.2s;">Beds & Comfort</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="font-weight: 600; margin-bottom: 20px;">Support</h4>
+                    <ul style="line-height: 2;">
+                        <li><a href="contact.html" style="opacity: 0.8; transition: opacity 0.2s;">Contact Us</a></li>
+                        <li><a href="#" style="opacity: 0.8; transition: opacity 0.2s;">Shipping Info</a></li>
+                        <li><a href="#" style="opacity: 0.8; transition: opacity 0.2s;">Returns</a></li>
+                        <li><a href="#" style="opacity: 0.8; transition: opacity 0.2s;">Size Guide</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="font-weight: 600; margin-bottom: 20px;">Company</h4>
+                    <ul style="line-height: 2;">
+                        <li><a href="about.html" style="opacity: 0.8; transition: opacity 0.2s;">About Us</a></li>
+                        <li><a href="#" style="opacity: 0.8; transition: opacity 0.2s;">Careers</a></li>
+                        <li><a href="#" style="opacity: 0.8; transition: opacity 0.2s;">Privacy Policy</a></li>
+                        <li><a href="#" style="opacity: 0.8; transition: opacity 0.2s;">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div style="text-align: center; padding-top: 30px; border-top: 1px solid rgba(248, 246, 240, 0.2);">
+                <p style="opacity: 0.7;">&copy; 2024 PawLux. All rights reserved. Made with ❤️ for pets and their families.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
