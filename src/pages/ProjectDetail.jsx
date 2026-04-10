@@ -4163,6 +4163,37 @@ The Forge Agency Team`
     setAdvancing(false)
   }
 
+  // ── Resume interrupted pipeline ──────────────────────────────────────────
+
+  async function resumePipeline() {
+    const brief = briefs[0]?.brief_text ?? `Project: ${project.name}`
+    const pages = project?.pages ?? []
+    const stage = project.current_stage
+
+    if (stage === 'Research') {
+      await runResearcher(brief, null, pages)
+    } else if (stage === 'Design') {
+      await runDesigner(brief, researchOutput?.output_text ?? '', null, pages, ['index.html'])
+    } else if (stage === 'Dev') {
+      await runDeveloper(brief, researchOutput?.output_text ?? '', designOutput?.output_text ?? '', null, pages)
+    } else if (stage === 'QA' || stage === 'Review') {
+      const { data: freshRecs } = await supabase.from('agent_outputs').select('agent_name, output_text').eq('project_id', projectId)
+      const css  = freshRecs?.find(o => o.agent_name === 'Developer-CSS')?.output_text ?? ''
+      const js   = freshRecs?.find(o => o.agent_name === 'Developer-JS')?.output_text  ?? ''
+      const htmlPageRecs = (freshRecs ?? []).filter(o => o.agent_name.startsWith('Developer-HTML-'))
+      const html = htmlPageRecs.length
+        ? htmlPageRecs.map(r => `=== ${r.agent_name.replace('Developer-HTML-', '')} ===\n\n${r.output_text}`).join('\n\n---\n\n')
+        : (freshRecs?.find(o => o.agent_name === 'Developer-HTML')?.output_text ?? '')
+      if (stage === 'QA') {
+        await runQA(brief, css, js, html)
+      } else {
+        const research = freshRecs?.find(o => o.agent_name === 'researcher')?.output_text ?? ''
+        const design   = freshRecs?.find(o => o.agent_name === 'designer')?.output_text   ?? ''
+        await runReviewer(brief, research, design, html, css, js)
+      }
+    }
+  }
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   if (loading) return <DetailSkeleton />
@@ -4226,6 +4257,19 @@ The Forge Agency Team`
   const devHtmlOutputs    = agentOutputs.filter(o => o.agent_name.startsWith('Developer-HTML-'))
   // Primary status record — use Stack as representative
   const devOutput         = devStackOutput ?? devHtmlOutput ?? devCssOutput ?? devPagesOutput ?? devJsOutput ?? devHtmlOutputs[0] ?? null
+
+  // ── Interrupted pipeline detection ────────────────────────────────────────
+  // current_stage says we're in a stage but no output for it exists yet —
+  // the run was started then the page was refreshed before it could save.
+  const interruptedStage = !isAgentRunning && !loading && (() => {
+    if (project.current_stage === 'Research' && !researchOutput) return 'Research'
+    if (project.current_stage === 'Design'   && !designOutput)   return 'Design'
+    if (project.current_stage === 'Dev'      && !agentOutputs.some(o => o.agent_name === 'Developer-CSS')) return 'Dev'
+    if (project.current_stage === 'QA'       && !qaOutput)       return 'QA'
+    if (project.current_stage === 'Review'   && !reviewerOutput) return 'Review'
+    return null
+  })()
+
   // Per-page status helpers
   const projectPages = project?.pages ?? []
   function getPageStatus(filename) {
@@ -4955,6 +4999,25 @@ The Forge Agency Team`
               No pages detected yet. Click <span className="font-medium">Redetect Pages</span> to extract them from the brief.
             </p>
           )}
+        </div>
+      )}
+
+      {/* ── Interrupted pipeline resume banner ── */}
+      {interruptedStage && (
+        <div className="flex items-center justify-between gap-3 px-5 py-3 rounded-lg bg-amber-500/10 border border-amber-500/30">
+          <div className="flex items-center gap-2.5">
+            <span className="text-amber-400 text-base">⚠</span>
+            <p className="text-sm text-amber-300">
+              Pipeline was interrupted — click to resume from <span className="font-semibold">{interruptedStage}</span>
+            </p>
+          </div>
+          <button
+            onClick={resumePipeline}
+            disabled={isAgentRunning}
+            className="px-3 py-1.5 rounded text-xs font-medium bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Resume Pipeline
+          </button>
         </div>
       )}
 
