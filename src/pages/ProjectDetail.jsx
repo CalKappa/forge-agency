@@ -2431,11 +2431,31 @@ export default function ProjectDetail() {
       return
     }
 
-    const { isReplication: researchRepl, replicationUrl: researchReplUrl } = await fetchReplicationConfig()
+    const { isReplication: researchRepl, replicationUrl: researchReplUrlRaw } = await fetchReplicationConfig()
+
+    // Fallback: extract replication URL from the compiled brief text if the projects table fields are empty
+    let researchReplUrl = researchReplUrlRaw
+    if (researchRepl && !researchReplUrl) {
+      const urlMatch = briefText.match(
+        /(?:replication mode[^.]*?analyse|replication url\s*[:\s]+|existing site url\s*[:\s]+|existing site\s*[:\s]+)\s*(https?:\/\/[^\s,*\]]+)/i
+      )
+      if (urlMatch) researchReplUrl = urlMatch[1].trim()
+      if (researchReplUrl) console.log('[Researcher] Replication URL extracted from brief text:', researchReplUrl)
+    }
+
     const pagesCtx = pages?.length ? `\n\nThis site has the following pages: ${pages.map(p => `${p.name} (${p.filename})`).join(', ')}. Consider the content and research needs for each page.` : ''
     let userContent = `Client Brief:\n\n${briefText}${pagesCtx}`
     if (feedback) userContent += `\n\n---\n\nAdditional instructions from the project manager:\n\n${feedback}`
-    const researchSystem = RESEARCHER_SYSTEM + (researchRepl ? replicationAddition('researcher', researchReplUrl) : '')
+
+    // Build system prompt — prepend strong replication instruction when in replication mode
+    let researchSystem = RESEARCHER_SYSTEM + (researchRepl ? replicationAddition('researcher', researchReplUrl) : '')
+    if (researchRepl && researchReplUrl) {
+      researchSystem = `THIS IS A SITE REPLICATION PROJECT. The site to replicate is: ${researchReplUrl}. You have web search available — use it immediately to fetch and analyse this URL without asking the user for any input. Search for the URL, analyse the homepage, navigation structure, page layout, colour scheme, typography, sections and content. Do not ask the user to provide the URL or any other information — everything you need is available via web search. Your job is to produce a detailed replication blueprint documenting exactly how the existing site is built.\n\n---\n\n${researchSystem}`
+      console.log('[Researcher] Replication mode — web search enabled, URL:', researchReplUrl)
+    }
+
+    // Enable web search tool for replication projects so the model can autonomously fetch the target site
+    const researchTools = researchRepl ? [{ type: 'web_search_20250305', name: 'web_search' }] : undefined
 
     pipeline.start({ projectId, projectName: project?.name, clientName: project?.clients?.name, agentName: 'researcher', stepLabel: 'Research Report' })
     try {
@@ -2445,6 +2465,7 @@ export default function ProjectDetail() {
         skillName:    'researcher',
         model:        'claude-sonnet-4-20250514',
         maxTokens:    30000,
+        ...(researchTools ? { tools: researchTools } : {}),
         onChunk: (chunk) => {
           streamRef.current += chunk
           setStreamingDisplay(streamRef.current)
