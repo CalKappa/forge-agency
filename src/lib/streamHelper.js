@@ -1,3 +1,5 @@
+import { loadSkill } from './skills'
+
 /**
  * streamAnthropicCall — unified fetch-based streaming helper for all Anthropic API calls.
  *
@@ -11,6 +13,7 @@
  * @param {string}   params.systemPrompt  - System prompt string
  * @param {string}  [params.model]        - Model ID (default: claude-opus-4-6)
  * @param {number}  [params.maxTokens]    - max_tokens (default: 30000)
+ * @param {string}  [params.skillName]    - Optional skill key — prepends SKILL.md content to systemPrompt
  * @param {Function}[params.onChunk]      - Called with each text chunk as it arrives
  * @param {Function}[params.onComplete]   - Called with full accumulated text on completion
  *
@@ -25,12 +28,23 @@ export async function streamAnthropicCall({
   toolChoice,
   extraHeaders,
   signal,
+  skillName,
   onChunk,
   onToolUse,
   onComplete,
 }) {
   const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY
   if (!apiKey) throw new Error('VITE_ANTHROPIC_API_KEY is not set')
+
+  // Skill injection — prepend SKILL.md content when skillName is provided
+  if (skillName) {
+    try {
+      const skill = await loadSkill(skillName)
+      systemPrompt = `${skill}\n\n---\n\n${systemPrompt}`
+    } catch (err) {
+      console.warn(`[streamAnthropicCall] Skill "${skillName}" failed to load — proceeding without it:`, err.message)
+    }
+  }
 
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',

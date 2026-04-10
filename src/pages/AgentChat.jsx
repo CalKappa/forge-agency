@@ -419,6 +419,7 @@ export default function AgentChat() {
       await streamAnthropicCall({
         messages:     history,
         systemPrompt: agent.system,
+        skillName:    agent.skillName,
         model,
         maxTokens:    2048,
         tools:        WEB_SEARCH_TOOLS,

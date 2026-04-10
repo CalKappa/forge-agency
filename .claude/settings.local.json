@@ -26,7 +26,21 @@
       "Bash(npx acorn:*)",
       "Bash(awk 'BEGIN{b=0} {b+=length\\($0\\)+1; if\\(b>=39381 && !found\\){print NR\": \"$0; found=1}}' src/pages/ProjectDetail.jsx)",
       "Bash(sed -i '183s/styles\\\\\\\\.\\\\\\\\`$/styles.\\\\`/' src/pages/ProjectDetail.jsx)",
-      "Bash(sed -n '183p' src/pages/ProjectDetail.jsx)"
+      "Bash(sed -n '183p' src/pages/ProjectDetail.jsx)",
+      "Bash(awk -F\"'\" '{print $2}')",
+      "Bash(sed -n '2330,2336p' /c/Users/Callu/OneDrive/Desktop/CallyTEnterprises/forge-agency/src/pages/ProjectDetail.jsx)",
+      "Bash(sed -n '2434,2440p' /c/Users/Callu/OneDrive/Desktop/CallyTEnterprises/forge-agency/src/pages/ProjectDetail.jsx)",
+      "Bash(sed -n '2533,2539p' /c/Users/Callu/OneDrive/Desktop/CallyTEnterprises/forge-agency/src/pages/ProjectDetail.jsx)",
+      "Bash(sed -n '2618,2624p' /c/Users/Callu/OneDrive/Desktop/CallyTEnterprises/forge-agency/src/pages/ProjectDetail.jsx)",
+      "Bash(sed -n '2793,2799p' /c/Users/Callu/OneDrive/Desktop/CallyTEnterprises/forge-agency/src/pages/ProjectDetail.jsx)",
+      "Bash(sed -n '3010,3016p' /c/Users/Callu/OneDrive/Desktop/CallyTEnterprises/forge-agency/src/pages/ProjectDetail.jsx)",
+      "Bash(sed -n '3054,3060p' /c/Users/Callu/OneDrive/Desktop/CallyTEnterprises/forge-agency/src/pages/ProjectDetail.jsx)",
+      "Bash(sed -n '3485,3491p' /c/Users/Callu/OneDrive/Desktop/CallyTEnterprises/forge-agency/src/pages/ProjectDetail.jsx)",
+      "Bash(sed -n '3595,3601p' /c/Users/Callu/OneDrive/Desktop/CallyTEnterprises/forge-agency/src/pages/ProjectDetail.jsx)",
+      "Bash(sed -n '3782,3788p' /c/Users/Callu/OneDrive/Desktop/CallyTEnterprises/forge-agency/src/pages/ProjectDetail.jsx)",
+      "Bash(sed -n '3532,3538p' /c/Users/Callu/OneDrive/Desktop/CallyTEnterprises/forge-agency/src/pages/ProjectDetail.jsx)",
+      "Bash(sed -n '3548,3554p' /c/Users/Callu/OneDrive/Desktop/CallyTEnterprises/forge-agency/src/pages/ProjectDetail.jsx)",
+      "Bash(sed -n '3564,3570p' /c/Users/Callu/OneDrive/Desktop/CallyTEnterprises/forge-agency/src/pages/ProjectDetail.jsx)"
     ]
   }
 }
