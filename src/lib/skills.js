@@ -19,7 +19,7 @@ const SKILL_MODULES = import.meta.glob(
 
 const SKILL_MAP = {
   orchestrator: '/forge-skills/using-forge-skills/SKILL.md',
-  researcher:   '/forge-skills/brainstorming/SKILL.md',
+  researcher:   '/forge-skills/using-forge-skills/SKILL.md',
   designer:     '/forge-skills/designer/SKILL.md',
   developer:    '/forge-skills/developer/SKILL.md',
   qa:           '/forge-skills/qa-agent/SKILL.md',

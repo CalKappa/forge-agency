@@ -7,6 +7,16 @@ description: >
   document both exist and are approved.
 ---
 
+## Animation Library — GSAP vs Vanilla
+
+Check the design brief's **Animation Style** section before writing any animation code.
+
+- If the design brief specifies **GSAP** or **ScrollTrigger**: load both via CDN in the HTML `<head>` before `styles.css` — `<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js">` and `<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js">`. Register ScrollTrigger at the top of `script.js`. Use `gsap.from()` for hero entrances. Use `ScrollTrigger` for all scroll animations.
+- If the design brief specifies **vanilla** or is silent: use `IntersectionObserver` + CSS class toggles only. No GSAP. No CDN script tags.
+- Never mix both approaches in the same project.
+
+---
+
 ## Output Type — Default
 
 Build in plain HTML/CSS/JS unless explicitly told otherwise.

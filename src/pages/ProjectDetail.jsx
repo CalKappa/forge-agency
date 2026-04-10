@@ -62,7 +62,11 @@ function sanitiseExtractedPages(pages) {
 // ── Agent system prompts ──────────────────────────────────────────────────────
 const RESEARCHER_SYSTEM = `You are an expert web research analyst for a web design agency. When given a client brief you will research the industry, target audience, competitor websites, content strategy and SEO keywords. Produce a thorough structured research report. Always start with a title and one-paragraph summary. Use ## for main section headings, ### for subheadings, **bold** for key terms, - for bullet lists, and --- between major sections. Use clear markdown formatting throughout.`
 
-const DESIGNER_BRIEF_SYSTEM = `You are an expert UI/UX designer for a web design agency. You will be given a client brief and a research report. Produce a detailed design brief. Always start with a title and one-paragraph summary. Use ## for main section headings such as Brand Direction, Colour Palette, Typography, Layout Structure, Component Specifications, and User Experience Notes. Use ### for subheadings, **bold** for key values like hex codes and font names, - for bullet lists, and --- between major sections. Use clear markdown formatting throughout.`
+const DESIGNER_BRIEF_SYSTEM = `You are an expert UI/UX designer for a web design agency. You will be given a client brief and a research report. Produce a detailed design brief. Always start with a title and one-paragraph summary. Use ## for main section headings such as Brand Direction, Colour Palette, Typography, Layout Structure, Component Specifications, and User Experience Notes. Use ### for subheadings, **bold** for key values like hex codes and font names, - for bullet lists, and --- between major sections. Use clear markdown formatting throughout.
+
+CSS VARIABLES: Include a dedicated ## CSS Variables section listing every design token as a CSS custom property. Always include: --color-primary, --color-secondary, --color-accent, --color-background, --color-surface, --color-text, --color-text-muted, --font-heading, --font-body, --font-size-base, --spacing-section, --border-radius, --transition-speed. Add any additional variables specific to the project.
+
+ANIMATION STYLE: Include a dedicated ## Animation Style section. Specify: the overall animation feel (e.g. subtle and professional, energetic and bold, smooth and luxurious), the preferred animation library (GSAP with ScrollTrigger for complex sequences, or vanilla CSS with IntersectionObserver for lightweight projects), hero entrance animation description, scroll-reveal behaviour for cards and sections, any hover micro-interactions, and page transition style if applicable. Be specific — the developer will implement exactly what is written here.`
 
 const DESIGNER_SUMMARY_SYSTEM = `You are a design brief summariser. Take the following detailed design brief and extract only the essential information needed to generate an SVG wireframe layout. Output a concise summary of maximum 300 words covering: page sections and their layout structure, key content elements in each section, and any important layout notes. Do not include colour hex codes, typography details, or brand philosophy.`
 
@@ -135,8 +139,8 @@ WIREFRAME COMPLIANCE — CRITICAL: The CSS must support the exact layout shown i
 
 const DEVELOPER_JS_SYSTEM = `You are an expert web developer. You are given the CSS stylesheet already written. Use the exact same class names and IDs from that CSS. Write all interactions, animations, navigation behaviour, form handling and any other dynamic functionality. IntersectionObserver callbacks must add the exact same class names that the CSS uses to reveal elements — never use animate-in if the CSS expects visible, or any other mismatch. Output raw JavaScript only with no HTML, no CSS, no script tags, no explanation and no markdown code blocks.
 
-ANIMATION LIBRARY — VANILLA JAVASCRIPT AND CSS ONLY:
-Never use GSAP, ScrollTrigger, or any third-party animation library. Use only vanilla JavaScript and CSS animations. For scroll animations use the Intersection Observer API exclusively. For all animations use CSS transitions and CSS keyframes defined in the stylesheet — never import or reference an animation library. Do not add any CDN script tags for animation libraries in your JavaScript output.
+ANIMATION LIBRARY — CHECK CSS BEFORE WRITING ANIMATIONS:
+Read the CSS stylesheet provided before writing any animation code. If the stylesheet contains GSAP calls (gsap.from, gsap.to, ScrollTrigger) or CDN script tags for GSAP then use GSAP for all animations: register ScrollTrigger at the top with gsap.registerPlugin(ScrollTrigger), use gsap.from() for hero animations wrapped in window.addEventListener('load', ...), and use ScrollTrigger for all scroll animations. If the stylesheet uses no GSAP and relies on CSS transitions with IntersectionObserver class toggles then use vanilla JavaScript only: use IntersectionObserver to add CSS classes, no GSAP, no CDN imports. Never mix the two approaches. Never add GSAP CDN script tags in your JavaScript output — the HTML already includes them if needed.
 
 SCROLL ANIMATIONS — INTERSECTION OBSERVER PATTERN:
 Implement smooth scroll-reveal animations using IntersectionObserver and CSS class toggles. The correct pattern is: create an IntersectionObserver that adds the class is-visible when an element enters the viewport, and define the animation purely in CSS using transition: opacity 0.6s ease, transform 0.6s ease on the target class. Never set opacity: 0 on any element using JavaScript — always set the initial hidden state in CSS using a class like .card-animate { opacity: 0; transform: translateY(20px); } and restore it with the CSS class toggle .card-animate.is-visible { opacity: 1; transform: translateY(0); }. This ensures content remains visible if JavaScript fails. Apply IntersectionObserver to all animatable elements: section headings, cards, grid items, images, and any element that should animate on scroll. Use threshold: 0.1 so animations trigger when 10 percent of the element is visible. Use rootMargin: '0px 0px -50px 0px' to trigger slightly before the element fully enters the viewport.
@@ -204,7 +208,7 @@ When authentication is required include a login modal or login page with: an ema
 SUPABASE STORAGE — HTML REQUIREMENTS WHEN DOWNLOADABLE FILES ARE REQUESTED:
 When downloadable files are requested include a downloads section or downloads page with a clean file listing. Each file entry should show: a file type icon (use an inline SVG or a simple emoji like 📄 for PDF, 🖼 for image, 🎬 for video, 🎵 for audio, 📦 for ZIP), the file name, a file size placeholder in parentheses such as (2.4 MB), and a Download button. Each download button must have a data-bucket attribute set to your-bucket-name and a data-file attribute set to the filename including extension such as filename.pdf. Style the download button with a clear download arrow icon and a distinct hover state using the primary accent colour. Group files by type if multiple file types are present.`
 
-const DEVELOPER_PAGES_SYSTEM = `You are an expert web developer. Based on the client brief and design brief output ONLY a detailed implementation guide for all remaining pages and components that need to be built after the homepage. For each page or component include: the filename, the key HTML structure needed, any specific CSS notes, and any JavaScript interactions required. Use markdown formatting.
+const DEVELOPER_PAGES_SYSTEM = `You are an expert web developer. Based on the client brief and design brief output ONLY a detailed implementation guide for all remaining pages and components that need to be built after the homepage. Do not write any code — this is a planning document only. The developer agent will use this guide to generate each file in a separate step, so the guide must be specific enough that each page can be built independently from the brief, the design brief, and this guide alone. For each page or component include: the filename, the key HTML structure needed, any specific CSS notes, and any JavaScript interactions required. Use markdown formatting.
 
 SUPABASE AUTH — ADDITIONAL PAGES WHEN AUTHENTICATION IS REQUESTED:
 When authentication is required include these dedicated pages in the implementation guide: 1) login.html — a standalone login page with an email and password form, a Sign in with Google button if Google login is requested, a magic link option if magic link is requested, a link to signup.html, and a Forgot password link. On load check for an existing session using supabase.auth.getSession and redirect to the members area if already logged in. 2) signup.html — a standalone sign up page with email, password, and confirm password fields, a submit button that calls supabase.auth.signUp, and a success message telling the user to check their email. Include a link back to login.html. 3) A members area or dashboard page (e.g. dashboard.html or members.html) — for authenticated users only. On load call supabase.auth.getSession and redirect to login.html if no session exists. Show the user email, a personalised welcome message, the protected content from the brief, and a visible Logout button. Include implementation notes explaining that the page is protected and the session check must be the first thing that runs on DOMContentLoaded.
@@ -295,7 +299,7 @@ For each lesson output a JSON object in a JSON array. Each object must have exac
 
 Only extract lessons from items that were marked FAIL or WARNING. Do not invent lessons — only extract from actual findings. Output ONLY the JSON array with no explanation, no markdown, no code blocks. If there are no lessons to extract, output an empty array [].`
 
-const PROJ_ORCHESTRATOR_SYSTEM = `You are the orchestrator for an AI web design agency. You will be given a detailed structured client brief. Break it down into four clearly labelled task lists for: 1) Researcher — what to research about the industry, audience, competitors and SEO. 2) Designer — what design decisions to make, what pages to wireframe, what brand direction to follow. 3) Developer — what pages to build, what technical requirements to implement, what integrations to set up. 4) Reviewer — what specific things to check against the brief during the quality review. Be specific and actionable for each agent. Use markdown formatting with clear headings.`
+const PROJ_ORCHESTRATOR_SYSTEM = `You are the orchestrator for an AI web design agency. You will be given a detailed structured client brief. Break it down into five clearly labelled task lists for: 1) Researcher — what to research about the industry, audience, competitors and SEO. 2) Designer — what design decisions to make, what pages to wireframe, what brand direction to follow. 3) Developer — what pages to build, what technical requirements to implement, what integrations to set up. 4) QA — what technical quality checks to run against the delivered code: cross-browser compatibility, accessibility, performance, mobile responsiveness, broken links, and any feature-specific checks the brief requires. 5) Reviewer — what specific things to check against the brief during the final quality review. Be specific and actionable for each agent. Use markdown formatting with clear headings.`
 
 const _FIX = (role) => `You are an expert ${role} making a targeted fix to your previous output. You will be given the original brief, your previous output and a specific issue to fix. Your job is to fix ONLY what has been described and leave everything else completely identical. Do not rewrite, restructure or improve anything that was not mentioned in the fix request. Output only the complete fixed version with no explanation, no preamble and no commentary.`
 
@@ -2800,7 +2804,6 @@ export default function ProjectDetail() {
       const { inputTokens: dfIn, outputTokens: dfOut, stopReason: dfStop } = await streamAnthropicCall({
         messages:     [{ role: 'user', content: userContent }],
         systemPrompt: DESIGNER_FIX_SYSTEM,
-        skillName:    'designer',
         model:        'claude-sonnet-4-20250514',
         maxTokens:    30000,
         onChunk: (chunk) => {
@@ -3495,7 +3498,6 @@ export default function ProjectDetail() {
       const { text: qaText } = await streamAnthropicCall({
         messages:     [{ role: 'user', content: userContent }],
         systemPrompt: QA_SYSTEM,
-        skillName:    'qa',
         model:        'claude-sonnet-4-20250514',
         maxTokens:    30000,
       })
@@ -3543,7 +3545,6 @@ export default function ProjectDetail() {
             const { text: fixedCss } = await streamAnthropicCall({
               messages:     [{ role: 'user', content: `${buildFixPrompt(fail, fileState.css)}\n\n---\n\nCurrent CSS file (styles.css):\n\n${fileState.css}` }],
               systemPrompt: QA_FIX_CSS_SYSTEM,
-              skillName:    'developer',
               model:        'claude-sonnet-4-20250514',
               maxTokens:    12000,
             })
@@ -3560,7 +3561,6 @@ export default function ProjectDetail() {
             const { text: fixedJs } = await streamAnthropicCall({
               messages:     [{ role: 'user', content: `${buildFixPrompt(fail, fileState.js)}\n\n---\n\nCurrent JavaScript file (script.js):\n\n${fileState.js}` }],
               systemPrompt: QA_FIX_JS_SYSTEM,
-              skillName:    'developer',
               model:        'claude-sonnet-4-20250514',
               maxTokens:    12000,
             })
@@ -3577,7 +3577,6 @@ export default function ProjectDetail() {
               const { text: fixedHtml } = await streamAnthropicCall({
                 messages:     [{ role: 'user', content: `${buildFixPrompt(fail, currentHtml)}\n\n---\n\nCurrent HTML file (${htmlRec.agent_name.replace('Developer-HTML-', '')}):\n\n${currentHtml}` }],
                 systemPrompt: QA_FIX_HTML_SYSTEM,
-                skillName:    'developer',
                 model:        'claude-sonnet-4-20250514',
                 maxTokens:    12000,
               })
@@ -3609,7 +3608,6 @@ export default function ProjectDetail() {
       const { text: qa2Text } = await streamAnthropicCall({
         messages:     [{ role: 'user', content: `Client Brief:\n\n${briefText}\n\n---\n\nCSS File (styles.css):\n\n${postCss}\n\n---\n\nJavaScript File (script.js):\n\n${postJs}\n\n---\n\nHTML Files:\n\n${postHtml}` }],
         systemPrompt: QA_SYSTEM,
-        skillName:    'qa',
         model:        'claude-sonnet-4-20250514',
         maxTokens:    30000,
       })
@@ -3797,7 +3795,6 @@ export default function ProjectDetail() {
       const { inputTokens: rvIn, outputTokens: rvOut, stopReason: rvStop } = await streamAnthropicCall({
         messages:     [{ role: 'user', content: userContent }],
         systemPrompt: REVIEWER_SYSTEM,
-        skillName:    'reviewer',
         maxTokens:    30000,
         onChunk: (chunk) => {
           reviewStreamRef.current += chunk
@@ -3869,7 +3866,6 @@ export default function ProjectDetail() {
       const { inputTokens: rfxIn, outputTokens: rfxOut, stopReason: rfxStop } = await streamAnthropicCall({
         messages:     [{ role: 'user', content: uc }],
         systemPrompt: REVIEWER_FIX_SYSTEM,
-        skillName:    'reviewer',
         maxTokens:    30000,
         onChunk: (chunk) => {
           reviewStreamRef.current += chunk

@@ -9,7 +9,7 @@ export const AGENT_CONFIG = {
     color:       'blue',
     description: 'Industry research, competitor analysis & content strategy',
     skillName:   'researcher',
-    system:      'You are a expert web research analyst for a web design agency. You research industries, competitors, target audiences and content strategy for client websites. Be thorough and specific.',
+    system:      'You are an expert web research analyst for a web design agency. You research industries, competitors, target audiences and content strategy for client websites. Be thorough and specific.',
   },
   designer: {
     key:         'designer',
