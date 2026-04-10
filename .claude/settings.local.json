@@ -21,7 +21,12 @@
       "Bash(curl:*)",
       "Bash(python:*)",
       "Bash(python3:*)",
-      "Bash(grep -c \"gsap.fromTo\\\\|clearProps\\\\|product card\" \"C:/Users/Callu/OneDrive/Desktop/CallyTEnterprises/forge-agency/client-sites/callum-thom/test-client-brief/script.js\" echo \"---\" grep \"gsap.from\\\\|gsap.to\" \"C:/Users/Callu/OneDrive/Desktop/CallyTEnterprises/forge-agency/client-sites/callum-thom/test-client-brief/script.js\")"
+      "Bash(grep -c \"gsap.fromTo\\\\|clearProps\\\\|product card\" \"C:/Users/Callu/OneDrive/Desktop/CallyTEnterprises/forge-agency/client-sites/callum-thom/test-client-brief/script.js\" echo \"---\" grep \"gsap.from\\\\|gsap.to\" \"C:/Users/Callu/OneDrive/Desktop/CallyTEnterprises/forge-agency/client-sites/callum-thom/test-client-brief/script.js\")",
+      "Bash(npx --yes acorn --ecma2020 --module src/pages/ProjectDetail.jsx)",
+      "Bash(npx acorn:*)",
+      "Bash(awk 'BEGIN{b=0} {b+=length\\($0\\)+1; if\\(b>=39381 && !found\\){print NR\": \"$0; found=1}}' src/pages/ProjectDetail.jsx)",
+      "Bash(sed -i '183s/styles\\\\\\\\.\\\\\\\\`$/styles.\\\\`/' src/pages/ProjectDetail.jsx)",
+      "Bash(sed -n '183p' src/pages/ProjectDetail.jsx)"
     ]
   }
 }

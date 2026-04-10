@@ -103,7 +103,9 @@ const DEVELOPER_CSS_SYSTEM = `You are an expert web developer. Based on the desi
 
 CRITICAL CSS RULE — Never use width: 1200px or any other fixed pixel width on any container, wrapper, section or div. Always use width: 100% combined with max-width: 1200px and margin: 0 auto for centering. The correct pattern is always: width: 100%; max-width: 1200px; margin: 0 auto; — never just width: 1200px alone. This applies to every container class including .container, .wrapper, .content, .inner, .section-inner and any similar class. A fixed pixel width will break the layout on screens narrower than that width and will fail the quality check.
 
-Quality requirements you must follow without exception: Use a max-width of 1400px or wider for the main container — never restrict content to a narrow column on large screens. Always use width: 100% with a max-width and margin: 0 auto for centering — never use a fixed pixel width that would look narrow on large monitors. All layouts must be fully responsive with proper breakpoints at 1200px, 1024px, 768px and 480px. The mobile navigation hamburger menu must be fully implemented in CSS with a visible hamburger icon at 768px and below — use a checkbox hack or CSS classes toggled by JavaScript. Typography must scale fluidly — use clamp() for font sizes where appropriate. Never use fixed heights on sections — use min-height with padding instead. Images must use max-width: 100% and height: auto. Flexbox and Grid layouts must have proper fallbacks and wrapping. Test every layout mentally at 320px, 768px, 1280px and 2560px widths before outputting.
+MULTI-RESOLUTION SUPPORT — MANDATORY: All stylesheets must support every common monitor resolution from mobile through ultrawide. 1) Always define CSS variables for container widths at the top of the file using these exact breakpoints: --container-sm: 100% for mobile portrait up to 480px, --container-md: 720px for mobile landscape and tablet up to 768px, --container-lg: 960px for small desktop and laptop up to 1024px, --container-xl: 1200px for standard desktop up to 1280px, --container-2xl: 1320px for 1440p monitors, --container-full: 1600px for full HD at 1920px and above. 2) Always include this media query block for 1440p and above: @media (min-width: 1440px) { .container, .wrapper, .content, .inner, .section-inner, [class*="-container"], [class*="-wrapper"] { max-width: var(--container-2xl); } body { font-size: 112%; } h1 { font-size: clamp(2.8rem, 5vw, 4.5rem); } h2 { font-size: clamp(2rem, 3.5vw, 3.2rem); } section, .section { padding: 120px 0; } } 3) At 1920px and above: @media (min-width: 1920px) { .container, .wrapper, .content, .inner, .section-inner, [class*="-container"], [class*="-wrapper"] { max-width: var(--container-full); } } 4) At 2560px and above for 2K and ultrawide: @media (min-width: 2560px) { .container, .wrapper, .content, .inner, .section-inner, [class*="-container"], [class*="-wrapper"] { max-width: 2000px; } body { font-size: 120%; } } 5) Never let content look narrow or left-aligned on wide screens — every section element must have width: 100% on the section itself with a max-width container inside using margin: 0 auto. If a section does not have width: 100% on the outer element the content will appear left-aligned on 1440p and wider screens — this is always a bug. 6) The hero section specifically must always be width: 100vw or width: 100% relative to the viewport with no max-width on the section itself — only the inner hero content wrapper should have a max-width. Never write max-width on .hero, .hero-section or any equivalent top-level section element. 7) Before outputting the final CSS mentally test the layout at these five widths: 375px (iPhone SE), 768px (iPad), 1280px (laptop), 1440px (1440p monitor), 1920px (full HD). If content at any of these widths would appear narrower than 80 percent of the viewport fix it before outputting.
+
+Quality requirements you must follow without exception: Use a max-width of 1320px or wider for the main container — never restrict content to a narrow column on large screens. Always use width: 100% with a max-width and margin: 0 auto for centering — never use a fixed pixel width that would look narrow on large monitors. All layouts must be fully responsive with proper breakpoints at 480px, 768px, 1024px, 1280px, 1440px, 1920px and 2560px. The mobile navigation hamburger menu must be fully implemented in CSS with a visible hamburger icon at 768px and below — use a checkbox hack or CSS classes toggled by JavaScript. Typography must scale fluidly — use clamp() for font sizes where appropriate. Never use fixed heights on sections — use min-height with padding instead. Images must use max-width: 100% and height: auto. Flexbox and Grid layouts must have proper fallbacks and wrapping. Test every layout mentally at 375px, 768px, 1280px, 1440px and 1920px widths before outputting.
 
 You must always include rules for these three JavaScript-driven state classes: (1) .scrolled — applied to the header when the user scrolls past 80px, style with a solid background colour and box-shadow so the header is readable over page content; (2) .is-open — applied to the mobile menu element when the hamburger is clicked, use display: block and max-height: 100vh so the menu becomes visible; (3) .error — applied to form inputs that fail validation, style with a red border (border-color: #ef4444) and a light red background (background-color: #fef2f2). These classes are always added by script.js so they must always have a matching CSS rule.
 
@@ -123,39 +125,40 @@ HERO VISIBILITY — CRITICAL: Always set opacity: 1 and visibility: visible as t
 
 FULL-WIDTH ELEMENTS — CRITICAL: The html, body, header, nav, footer and all full-width section elements must always have width: 100% with no max-width restriction on the element itself. Only content containers inside sections should have max-width. Never apply max-width directly to section, header, footer, nav, html or body elements.
 
-STAGGER ANIMATIONS — CRITICAL: Never use opacity as part of a stagger animation on product cards or any grid items. Stagger animations must only use transform properties like y or scale — never opacity. Products, cards and grid items must always remain fully visible regardless of animation state. The correct pattern for card animations is: gsap.from(cards, { y: 20, duration: 0.5, ease: 'power2.out' }) with no stagger and no opacity. Always add a visibility reset immediately before any GSAP animation that targets cards or grid items: elements.forEach(function(el) { el.style.opacity = '1'; el.style.visibility = 'visible'; }); Also place a global reset as the very first executable line of the script — before DOMContentLoaded and before gsap.registerPlugin — targeting all card-like elements: document.querySelectorAll("[class*='product'], [class*='card'], [class*='item']").forEach(function(el) { el.style.opacity = '1'; el.style.visibility = 'visible'; el.style.transform = 'none'; });
+STAGGER ANIMATIONS — CRITICAL: Never use opacity as part of a stagger animation initial state set via JavaScript inline styles. All animation initial states must be defined in CSS only. For card and grid item stagger animations use CSS animation-delay increments set via JavaScript (e.g. card.style.animationDelay = i * 0.1 + 's') and trigger the animation by adding a CSS class — the animation itself is defined entirely in CSS keyframes or transitions. The correct CSS pattern for staggered card reveal is: .card-animate { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; } .card-animate.is-visible { opacity: 1; transform: translateY(0); } JavaScript sets the animation-delay then adds is-visible via IntersectionObserver. Products, cards and grid items must always remain fully visible at their default CSS state (without any animation class applied).
+
+CSS ANIMATIONS — DEFINE ALL ANIMATION STATES IN CSS ONLY: Never rely on JavaScript to set opacity: 0 or any other hidden state on elements. All animation initial states and transitions must be defined in CSS using classes. Use this mandatory pattern for scroll reveal animations: .card-animate { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; } .card-animate.is-visible { opacity: 1; transform: translateY(0); } Apply this same pattern for all animatable element types — .heading-animate, .hero-animate, .section-animate, .fade-left, .fade-right, .fade-up — each with appropriate initial transform and transition definitions. The CSS default state (without any animation class) must always be opacity: 1 and visible so that content remains readable if JavaScript fails to load or execute. Only apply opacity: 0 as the initial state via an animation class (e.g. .card-animate) — never on the bare element selector. This ensures progressive enhancement: content is always visible, and animation is a layered enhancement on top.
 
 WIREFRAME COMPLIANCE — CRITICAL: The CSS must support the exact layout shown in the wireframe. If the wireframe shows a split two-column hero with image on the right, build a two-column CSS Grid or Flexbox layout for the hero section with the image on the right. If the wireframe shows overlapping sections, use negative margins, absolute positioning or CSS transforms to create the overlap. If the wireframe shows a three-column card grid, write a CSS Grid with three columns. If the wireframe shows a sidebar layout, write a two-column grid with a narrow sidebar and wide main area. Match the wireframe structure precisely — do not default to a simple centred single-column layout when the wireframe specifies something more complex.`
 
 const DEVELOPER_JS_SYSTEM = `You are an expert web developer. You are given the CSS stylesheet already written. Use the exact same class names and IDs from that CSS. Write all interactions, animations, navigation behaviour, form handling and any other dynamic functionality. IntersectionObserver callbacks must add the exact same class names that the CSS uses to reveal elements — never use animate-in if the CSS expects visible, or any other mismatch. Output raw JavaScript only with no HTML, no CSS, no script tags, no explanation and no markdown code blocks.
 
-GSAP ANIMATION LIBRARY — MANDATORY:
-Always use GSAP as the primary animation library. The HTML file will already include these two CDN script tags in the head before script.js — do not add them in your JavaScript output, they are handled by the HTML developer:
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-At the very top of your script, after the opening comment block, register ScrollTrigger: gsap.registerPlugin(ScrollTrigger);
-Wrap all GSAP setup code in a DOMContentLoaded listener. Wrap all ScrollTrigger animations in a window load listener to ensure all elements and images are fully ready before scroll positions are calculated.
+ANIMATION LIBRARY — VANILLA JAVASCRIPT AND CSS ONLY:
+Never use GSAP, ScrollTrigger, or any third-party animation library. Use only vanilla JavaScript and CSS animations. For scroll animations use the Intersection Observer API exclusively. For all animations use CSS transitions and CSS keyframes defined in the stylesheet — never import or reference an animation library. Do not add any CDN script tags for animation libraries in your JavaScript output.
 
-ANIMATION STYLE — READ FROM BRIEF AND IMPLEMENT ACCORDINGLY:
-The brief will specify an Animation style field. Implement it as follows:
-- Subtle and professional: use gentle opacity and y-axis fade-ins on scroll. fromVars: { opacity: 0, y: 30 }, toVars: { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }. Use ScrollTrigger with start: 'top 85%'.
-- Modern and dynamic: use staggered reveals, parallax section backgrounds, and smooth scale transforms on scroll. Mix fromVars including y, scale and opacity. Use scrub: 1 for parallax elements. Apply stagger: 0.15 on grouped elements.
-- Bold and creative: use dramatic x or y axis slides (x: ±100, y: 80), rotation effects (rotation: 10), staggered timeline sequences (gsap.timeline with ScrollTrigger), and scale animations (scale: 0.8). Make entrances feel intentional and energetic.
-- Minimal: apply only a single simple fade-in on DOMContentLoaded for the entire page body (opacity 0 to 1, duration 0.4). No ScrollTrigger, no scroll animations whatsoever.
-- Custom: read the special effects description from the brief and implement the requested effects as closely as possible using GSAP.
+SCROLL ANIMATIONS — INTERSECTION OBSERVER PATTERN:
+Implement smooth scroll-reveal animations using IntersectionObserver and CSS class toggles. The correct pattern is: create an IntersectionObserver that adds the class is-visible when an element enters the viewport, and define the animation purely in CSS using transition: opacity 0.6s ease, transform 0.6s ease on the target class. Never set opacity: 0 on any element using JavaScript — always set the initial hidden state in CSS using a class like .card-animate { opacity: 0; transform: translateY(20px); } and restore it with the CSS class toggle .card-animate.is-visible { opacity: 1; transform: translateY(0); }. This ensures content remains visible if JavaScript fails. Apply IntersectionObserver to all animatable elements: section headings, cards, grid items, images, and any element that should animate on scroll. Use threshold: 0.1 so animations trigger when 10 percent of the element is visible. Use rootMargin: '0px 0px -50px 0px' to trigger slightly before the element fully enters the viewport.
+
+ANIMATION STYLE — READ FROM BRIEF AND IMPLEMENT USING CSS CLASSES:
+The brief will specify an Animation style field. Implement it as follows using IntersectionObserver + CSS class toggles only:
+- Subtle and professional: gentle fade-in from bottom — add is-visible which transitions opacity 0→1 and translateY(20px)→translateY(0) over 0.6s ease.
+- Modern and dynamic: staggered reveals using CSS animation-delay on grouped items — add is-visible and set incremental animation-delay (0.1s, 0.2s, 0.3s etc.) on each child item using a loop in JavaScript before observing. Use translateY and scale transforms in CSS keyframes.
+- Bold and creative: dramatic directional slides using CSS classes — add is-visible-left for elements entering from left (translateX(-60px)→translateX(0)), is-visible-right for elements from right, is-visible-up for elements from bottom (translateY(60px)→translateY(0)). Vary the CSS transition duration between 0.5s and 1s across sections.
+- Minimal: apply only a single CSS class page-loaded to the body on DOMContentLoaded — define a CSS transition on the body for opacity 0→1 over 0.4s. No scroll animations whatsoever.
+- Custom: read the special effects description from the brief and implement using CSS transitions and IntersectionObserver.
 
 ANIMATION VARIETY — MANDATORY RULES:
-Never use the same animation pattern twice in the same file. Vary entrance directions across sections — some from bottom (y: 40), some from left (x: -60), some from right (x: 60). Vary durations between 0.4 and 1.2 seconds. Vary easing between 'power2.out', 'back.out(1.2)' and 'expo.out'. Always use stagger (stagger: 0.1 to 0.2) on grouped elements such as cards, team members, testimonials, service items, and list items.
+Never use the same CSS class and timing for every element. Vary animation directions across sections — some elements fade from bottom (.fade-up), some from left (.fade-left), some from right (.fade-right). Vary CSS transition durations between 0.4s and 1.0s. For grouped elements like cards, add incremental animation-delay values in JavaScript before the IntersectionObserver is set up, e.g. cards.forEach((card, i) => card.style.animationDelay = (i * 0.1) + 's').
 
 HERO ANIMATION — READ FROM BRIEF AND IMPLEMENT:
-The brief will specify a Hero animation preference field. Implement each selected option:
-- Fade in: gsap.from(heroElement, { opacity: 0, y: 20, duration: 1, ease: 'power2.out' }) on DOMContentLoaded.
-- Parallax scroll: add a ScrollTrigger scrub parallax to the hero background image — gsap.to(heroBg, { yPercent: 40, ease: 'none', scrollTrigger: { trigger: heroSection, start: 'top top', end: 'bottom top', scrub: true } }).
-- Typewriter text: implement a GSAP character-by-character text reveal on the hero headline — split the text into individual character spans and stagger animate them in with opacity and slight y movement.
-- Gradient animation: use gsap.to() with repeat: -1 and yoyo: true to smoothly cycle the hero background through 3 brand-relevant colours using CSS custom properties or direct style changes.
+The brief will specify a Hero animation preference field. Implement each selected option using CSS and vanilla JavaScript only:
+- Fade in: add a CSS class hero-loaded to the hero section on DOMContentLoaded — define the animation in CSS as a transition from opacity 0 and translateY(20px) to opacity 1 and translateY(0) over 1s ease. The CSS initial state must be set with a class, never inline via JavaScript.
+- Parallax scroll: implement with a scroll event listener — on scroll calculate scrollY and apply transform: translateY(scrollY * 0.4 + 'px') to the hero background element. Use requestAnimationFrame for performance.
+- Typewriter text: implement a character-by-character typewriter in vanilla JavaScript — split the hero headline text into individual characters, wrap each in a span, and use setTimeout with increasing delays to reveal each character by toggling a visible CSS class.
+- Gradient animation: use a CSS keyframe animation defined in the stylesheet that cycles background-position on a gradient or cycles CSS custom property values — trigger it by adding a class gradient-animate to the hero on load.
 - Video background: add a note in the code: /* VIDEO BACKGROUND REQUESTED — add a <video> tag as the hero background in HTML with autoplay muted loop playsinline attributes */.
-- Particle background: add a note in the code: /* PARTICLE BACKGROUND REQUESTED — load tsParticles via CDN: <script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script> then initialise with tsParticles.load("tsparticles", { particles: { number: { value: 80 }, color: { value: "#ffffff" }, opacity: { value: 0.3 }, size: { value: 3 }, move: { enable: true, speed: 1 } } }) */.
-- Custom: implement the specific hero animation described in the brief using GSAP.
+- Particle background: add a note in the code: /* PARTICLE BACKGROUND REQUESTED — implement using HTML5 canvas API as described in the canvas particle system instructions */.
+- Custom: implement the specific hero animation described in the brief using CSS transitions and vanilla JavaScript.
 If multiple hero animations are selected implement all of them.
 
 FILE HEADER COMMENT — MANDATORY:
@@ -163,7 +166,8 @@ Add a comment block at the very top of every JavaScript file in this exact forma
 /*
  * Animation Style: [animation style from brief]
  * Hero Animation: [hero animation preferences from brief, comma separated]
- * GSAP Effects Used: [list every GSAP effect implemented, one per line, e.g. fade-in on scroll (sections), stagger reveal (cards), parallax (hero bg), typewriter (hero headline)]
+ * Animation Method: Vanilla JS + CSS transitions + IntersectionObserver (no third-party libraries)
+ * CSS Classes Used for Animation: [list every CSS animation class toggled, one per line]
  */
 
 You must implement a fully working mobile navigation menu. The hamburger button must toggle a visible class on the mobile menu making it slide in or fade in. Add event listeners for the hamburger button click, close the menu when a nav link is clicked, and close the menu when clicking outside it. Also implement smooth scroll for anchor links, an IntersectionObserver for scroll animations that adds the exact class names defined in the CSS — check the CSS before using any class name in classList.add(), header scroll behaviour that adds a scrolled class when the user scrolls past 80px, and form validation with proper error and success states.
@@ -176,13 +180,11 @@ When the brief specifies that authentication is required you must implement a fu
 SUPABASE STORAGE — IMPLEMENT WHEN DOWNLOADABLE FILES ARE REQUESTED:
 When downloadable files are requested implement Supabase Storage integration as follows: 1) For public downloads create a function called downloadFile that takes a bucket name and file path, calls supabase.storage.from(bucketName).getPublicUrl(filePath) to get the public URL, then triggers a download by creating a temporary anchor element with the href set to the public URL and the download attribute set to the filename and clicking it programmatically. 2) For protected downloads create a function called downloadProtectedFile that first checks for a valid Supabase auth session using supabase.auth.getSession — if no session exists redirect to the login page; if a session exists call supabase.storage.from(bucketName).createSignedUrl(filePath, 60) to generate a temporary signed URL valid for 60 seconds, then trigger the download using the same anchor approach. 3) Add click event listeners to all download buttons in the HTML — read the data-bucket and data-file attributes from each button and pass them to the appropriate download function. 4) Add a comment block above the storage section of the JS file in this exact format: /* SUPABASE STORAGE SETUP — Create a storage bucket in your Supabase dashboard and upload your files there. Update the bucket name and file paths in the download buttons to match your uploaded files. Set the bucket to public for public downloads or private for protected downloads */
 
-CRITICAL ANIMATION RULE — Never animate hero text or hero content with opacity 0 as a starting state unless you are 100% certain the animation will complete successfully. For hero sections specifically always use this safe pattern: set the initial state AFTER the element is visible by using gsap.from() instead of gsap.set() followed by gsap.to(). Use gsap.from(".hero-content", { opacity: 0, y: 30, duration: 1, ease: "power2.out" }) which starts invisible and animates to the natural visible state — never use gsap.set(".hero-content", { opacity: 0 }) without a guaranteed follow-up animation. Always wrap hero animations in a window load event listener not DOMContentLoaded to ensure all resources are ready before animating. Always add a failsafe by setting a CSS rule .hero-content { opacity: 1 } as the default and only overriding it with GSAP — this way if GSAP fails to load or the animation errors the content remains visible. Never use ScrollTrigger on hero elements since the hero is already in view on page load — ScrollTrigger animations only trigger when elements scroll into view which means if the hero is the starting point the animation may never fire.`
+CRITICAL ANIMATION RULE — Never set opacity: 0 on any element using JavaScript. The initial hidden state must always be defined in CSS using a class, never applied inline via JavaScript. For hero sections add a CSS class hero-loaded on DOMContentLoaded and define the transition from hidden to visible in CSS — this way if JavaScript fails the hero content remains visible at its default CSS state. Never use IntersectionObserver on hero elements since the hero is already in view on page load — IntersectionObserver animations only trigger when elements scroll into view so the hero animation must fire on DOMContentLoaded or window load instead. Always add a failsafe by ensuring the CSS default state of all animatable elements is opacity: 1 — only override to opacity: 0 via a CSS animation class, never via JavaScript inline styles.`
 
-const DEVELOPER_HTML_SYSTEM = `You are an expert web developer. You are given the CSS and JavaScript files already written. Use the exact same class names and IDs from those files. In the head section include: meta charset UTF-8, meta viewport, the page title, any Google Fonts links from the CSS, and a link tag with rel=stylesheet href=styles.css. Just before the closing body tag include the following script tags in this exact order: first the GSAP CDN script, then the ScrollTrigger CDN script, then the main script.js — like this:
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+const DEVELOPER_HTML_SYSTEM = `You are an expert web developer. You are given the CSS and JavaScript files already written. Use the exact same class names and IDs from those files. In the head section include: meta charset UTF-8, meta viewport, the page title, any Google Fonts links from the CSS, and a link tag with rel=stylesheet href=styles.css. Just before the closing body tag include only the script tag for the main JavaScript file — like this:
 <script src="script.js"></script>
-No inline styles, no inline JavaScript. Output raw HTML only with no explanation and no markdown code blocks.
+Do not include any CDN script tags for GSAP, ScrollTrigger, or any animation library — the project uses only vanilla JavaScript and CSS animations with no third-party dependencies. No inline styles, no inline JavaScript. Output raw HTML only with no explanation and no markdown code blocks.
 
 The HTML must include a properly structured mobile navigation with a hamburger button element containing three span elements for the three bars, and a mobile menu div that is hidden by default and shown by JavaScript. The hamburger button must have a clear class name that matches what the CSS and JavaScript expect. Every section must span the full browser width with content centred inside a max-width container — never restrict the section itself to a narrow width. Use semantic HTML5 elements throughout — header, nav, main, section, article, aside, footer.
 
@@ -222,10 +224,45 @@ Always include these sections when relevant to the features requested:
 
 End the guide with this exact note as a final section: ---\n\n*This guide was prepared by Forge Agency. If you need help with setup, please contact us.*`
 
+const DEVELOPER_CORE_CSS_SYSTEM = `You are an expert web developer generating the CSS stylesheet for a website. Output ONLY the complete raw CSS stylesheet with no explanation and no markdown code blocks.
+
+MULTI-RESOLUTION: Define CSS variables for container widths (--container-xl: 1200px, --container-2xl: 1320px, --container-full: 1600px). Include @media (min-width: 1440px) expanding containers to 1320px and increasing font sizes by ~12%. Include @media (min-width: 1920px) expanding containers to 1600px. All sections must use width: 100% with a max-width inner container centred via margin: 0 auto. Hero section must be width: 100% or 100vw with no max-width on the section itself.
+
+ANIMATION STATES: Define all animation initial states and transitions in CSS only. Use this pattern for scroll reveal: .card-animate { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; } .card-animate.is-visible { opacity: 1; transform: translateY(0); }. Hero elements must default to opacity: 1 — GSAP will animate from a specified state using gsap.from() so CSS must never hide them.
+
+REQUIRED STATE CLASSES: Always define rules for: .scrolled, .is-open, .is-visible, .active, .expanded, .hidden, .visible, .error, .animated, .in-view, .open, .collapsed, .card-animate, .heading-animate, .hero-animate, .fade-up, .fade-left, .fade-right.
+
+SECTION COMMENTS: Add /* ====== SECTION NAME ====== */ before every group of related rules.
+
+RESPONSIVE BREAKPOINTS: Include max-width 1024px (tablet), max-width 768px (mobile landscape — collapse nav to hamburger, stack all columns), max-width 480px (mobile portrait — 16px min font, 44px min touch targets, no horizontal scroll).
+
+CLASS REGISTRY: At the very end of the CSS file, after all rules, append this exact block listing every class name that JavaScript will need to toggle, query, or animate:
+/* CSS-CLASS-REGISTRY: class1,class2,class3 */
+Include every animation class, state class, toggle class, active class, open class, visible class, scrolled class, ripple class, expanded class and any other class JavaScript will interact with. This registry is machine-parsed — use only a single comma-separated line with no spaces after commas.`
+
+const DEVELOPER_CORE_JS_SYSTEM = `You are an expert web developer generating the JavaScript file for a website. The CSS stylesheet has already been written. Output ONLY the complete raw JavaScript file with no explanation and no markdown code blocks.
+
+GSAP ANIMATIONS: Use GSAP loaded via CDN — gsap.min.js and ScrollTrigger.min.js are already loaded in the HTML before script.js. Register ScrollTrigger at the top: gsap.registerPlugin(ScrollTrigger). Always wrap every GSAP call in a null check: const el = document.querySelector('.hero'); if (!el) return; Always use gsap.from() for hero animations — gsap.from('.hero-content', { opacity: 0, y: 30, duration: 1, ease: 'power2.out' }) — never gsap.set() followed by gsap.to() as that causes opacity trapping. Wrap all hero gsap.from() calls in window.addEventListener('load', ...). Wrap all ScrollTrigger animations in window.addEventListener('load', ...).
+
+APPROVED CLASS LIST: You must only use class names from the CSS-CLASS-REGISTRY provided in the CSS context. Never use a class name in classList.add(), classList.remove(), classList.toggle(), querySelector(), or any GSAP selector that does not appear in the registry. If you genuinely need a new class that is not in the registry, add it to your JavaScript but also add a comment at the very top of the file (before any code) in this exact format on its own line:
+/* ADD-TO-CSS: .classname { property: value; } */
+One ADD-TO-CSS comment per class. These will be automatically appended to the stylesheet.
+
+INTERACTIVE COMPONENTS: Implement all of the following fully: mobile nav hamburger toggle (add is-open to nav menu, transform hamburger spans to X), smooth scroll for all anchor links, header scroll behaviour (add scrolled class at 80px), IntersectionObserver for scroll animations (add is-visible to .card-animate, .heading-animate, .fade-up, .fade-left, .fade-right elements), stat counter animations (count from 0 to target on scroll into view), accordion/FAQ toggles (toggle is-open and active, set aria-expanded), tabs (toggle active on button and panel), sliders/carousels (translateX with prev/next buttons), modals (toggle hidden/active, lock body scroll), form validation (check required fields, regex email, show .error class on invalid inputs). Add null checks before every DOM query.
+
+FILE HEADER COMMENT — MANDATORY (must be the very first lines, before any ADD-TO-CSS comments):
+/*
+ * Animation Style: [animation style from brief]
+ * Hero Animation: [hero animation preferences from brief, comma separated]
+ * GSAP Effects Used: [list every GSAP effect, one per line]
+ */
+
+SELF-AUDIT: At the very end of the file, add a comment block listing every interactive component: component name, trigger selector, action taken.`
+
 const QA_SYSTEM = `You are a senior QA engineer for a web design agency. You will be given the HTML, CSS, and JavaScript files for a website. Run a comprehensive automated quality check and produce a structured QA report. Check for these issues in this exact order and label each as PASS, FAIL, or WARNING:
 
 1) Viewport meta tag — does every HTML file contain <meta name="viewport" content="width=device-width, initial-scale=1.0">. List any files missing it.
-2) GSAP opacity trap — does the JavaScript set opacity: 0 on any content elements without a guaranteed animation to restore visibility. List every affected selector.
+2) JS opacity trap — does the JavaScript set opacity: 0 or visibility: hidden inline on any content elements without a guaranteed CSS class toggle to restore visibility. This includes any element.style.opacity = '0' or element.style.visibility = 'hidden' calls. List every affected selector.
 3) Missing CSS classes — are there any classList.add() calls in the JS that have no matching CSS rule. List every missing class name.
 4) Fixed pixel widths — are there any width values above 600px set directly on section, header, footer, or body elements outside a media query. List every occurrence.
 5) Mobile breakpoints — does the CSS include at least one media query at max-width 768px or below.
@@ -275,7 +312,7 @@ const REVIEWER_FIX_SYSTEM = `You are a senior quality assurance reviewer making 
 function devHtmlPageSystem(pageName) {
   return `You are an expert web developer. Generate the complete HTML file for the ${pageName} page. Use the shared styles.css and script.js files already generated. Make sure the navigation links to all other pages using their correct filenames. Use the design brief and the specific wireframe for this page as reference. Output raw HTML only with no explanation and no markdown code blocks.
 
-The following script tags must be included on every page in this exact order. In the head section before the closing head tag include: first link rel=stylesheet href=styles.css. Just before the closing body tag include these four tags in order: first script src=https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js, second script src=https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js, third script src=script.js. Never omit the GSAP script tags — they must be present on every page for animations to work.
+The following script tags must be included on every page. In the head section before the closing head tag include: link rel=stylesheet href=styles.css. Just before the closing body tag include only: script src=script.js. Do not include any CDN script tags for GSAP, ScrollTrigger, or any animation library — this project uses only vanilla JavaScript and CSS animations with no third-party dependencies.
 
 Add appropriate CSS classes and IDs to all elements that will be animated: hero sections should have class hero-animate, section headings should have class heading-animate, cards and grid items should have class card-animate, and the hero headline should have class hero-headline if a typewriter effect is requested in the brief.
 
@@ -622,6 +659,40 @@ function stripCodeFences(text) {
     .replace(/^```(?:html|css|javascript|js)?\s*\n?/gim, '')
     .replace(/^```\s*$/gim, '')
     .trim()
+}
+
+// Extract animation/toggle class names from a CSS string for use as HTML page context.
+function extractAnimationClasses(cssText) {
+  if (!cssText) return []
+  const keywords = /animate|active|visible|open|scrolled|ripple|expanded|loaded|in-view|fade|slide|hero-/i
+  const classRe = /\.(-?[a-zA-Z_][\w-]*)/g
+  const seen = new Set()
+  let m
+  while ((m = classRe.exec(cssText)) !== null) {
+    if (keywords.test(m[1])) seen.add(m[1])
+  }
+  return [...seen]
+}
+
+// Validate that every classList operation in JS targets a class defined in CSS. Logs warnings only.
+function validateClasslistSync(cssText, jsText) {
+  if (!cssText || !jsText) return
+  const cssClasses = new Set()
+  const cssClassRe = /\.(-?[a-zA-Z_][\w-]*)/g
+  let cm
+  while ((cm = cssClassRe.exec(cssText)) !== null) cssClasses.add(cm[1])
+
+  const jsOpsRe = /classList\.(?:add|remove|toggle)\(\s*['"]([^'"]+)['"]/g
+  let jm
+  const mismatches = []
+  while ((jm = jsOpsRe.exec(jsText)) !== null) {
+    if (!cssClasses.has(jm[1])) mismatches.push(jm[1])
+  }
+  if (mismatches.length) {
+    console.warn(`[Developer-Core] classList mismatch — JS uses ${mismatches.length} class(es) with no CSS rule:`, mismatches)
+  } else {
+    console.log('[Developer-Core] ✓ classList sync OK — all JS-toggled classes exist in CSS')
+  }
 }
 
 // CSS rules to patch in for commonly-missing JavaScript-driven state classes.
@@ -2816,7 +2887,7 @@ export default function ProjectDetail() {
     const effectivePages  = pages?.length ? pages : [{ name: 'Home', filename: 'index.html' }]
     setPageStatuses(Object.fromEntries(effectivePages.map(p => [p.filename, 'pending'])))
     const allPagesCtx     = `\n\nAll pages in this site: ${effectivePages.map(p => `${p.name} → ${p.filename}`).join(', ')}.`
-    const totalSteps      = 3 + effectivePages.length
+    const totalSteps      = 2 + effectivePages.length
 
     // ── Pre-step: summarise design brief + research down to developer-relevant context ──
     const devSummaryInput = `Design Brief:\n\n${designText}\n\n---\n\nResearch Report:\n\n${researchText}`
@@ -2907,6 +2978,121 @@ export default function ProjectDetail() {
       validateCrossFileClasses(cssText, jsText)
     }
 
+    // ── Two coordinated calls: CSS first, then JS with class registry ────────
+
+    // Shared upsert helper for Developer-CSS / Developer-JS records
+    async function upsertDevFile(agentName, content, tokenUsage) {
+      const { data: ex } = await supabase
+        .from('agent_outputs').select('id')
+        .eq('project_id', projectId).eq('agent_name', agentName)
+        .order('created_at', { ascending: false }).limit(1)
+      if (ex?.[0]?.id) {
+        await safeUpdate('agent_outputs', ex[0].id, { output_text: content, token_usage: tokenUsage, status: 'complete' })
+        return ex[0].id
+      }
+      const { data: nr, error: nie } = await supabase
+        .from('agent_outputs')
+        .insert({ project_id: projectId, agent_name: agentName, output_text: content, token_usage: tokenUsage, status: 'complete' })
+        .select().single()
+      if (nie) throw new Error(`[Developer-Core] INSERT ${agentName} failed: ${nie.message}`)
+      return nr.id
+    }
+
+    async function runDevCore(stepLabel, userContent) {
+      // ── Step 2a: CSS ───────────────────────────────────────────────────────
+      const cssStepLabel = stepLabel.replace('CSS & JavaScript', 'CSS Stylesheet')
+      pipeline.setStep('Developer-CSS', cssStepLabel, pipeline.progress ?? 0)
+      setDevCurrentStep('Developer-CSS')
+      setDevCurrentStepLabel(cssStepLabel)
+      setDevCurrentStepText('')
+
+      let cssRaw = ''
+      const { inputTokens: cssIn, outputTokens: cssOut, stopReason: cssStop } = await streamAnthropicCall({
+        messages:     [{ role: 'user', content: userContent }],
+        systemPrompt: DEVELOPER_CORE_CSS_SYSTEM,
+        model:        'claude-sonnet-4-20250514',
+        maxTokens:    30000,
+        onChunk: (chunk) => {
+          cssRaw += chunk
+          setDevCurrentStepText(cssRaw)
+          pipeline.append(chunk)
+        },
+      })
+      if (cssStop === 'max_tokens') console.warn('[Developer-Core CSS] WARNING: cut off at token limit')
+      if (!cssRaw.trim()) throw new Error('[Developer-Core CSS] ABORT: empty output')
+
+      const cssText = stripCodeFences(cssRaw)
+      const cssTokenUsage = { input_tokens: cssIn, output_tokens: cssOut, total_tokens: cssIn + cssOut, stop_reason: cssStop }
+
+      // Save CSS immediately so it's available if JS fails
+      await upsertDevFile('Developer-CSS', cssText, cssTokenUsage)
+      console.log(`[Developer-Core] ✓ CSS saved: ${cssText.length} chars`)
+
+      // ── Parse CSS-CLASS-REGISTRY from the CSS output ───────────────────────
+      let classRegistry = []
+      const registryMatch = cssText.match(/\/\*\s*CSS-CLASS-REGISTRY:\s*([^*]+)\*\//)
+      if (registryMatch) {
+        classRegistry = registryMatch[1].trim().split(',').map(c => c.trim()).filter(Boolean)
+        console.log(`[Developer-Core] Class registry parsed: ${classRegistry.length} classes`)
+      } else {
+        // Fallback: extract from CSS if registry block is missing
+        classRegistry = extractAnimationClasses(cssText)
+        console.warn('[Developer-Core] CSS-CLASS-REGISTRY block not found — falling back to extractAnimationClasses()')
+      }
+      const registryList = classRegistry.map(c => c.startsWith('.') ? c : `.${c}`).join(', ')
+
+      // ── Step 2b: JS ────────────────────────────────────────────────────────
+      const jsStepLabel = stepLabel.replace('CSS & JavaScript', 'JavaScript')
+      pipeline.setStep('Developer-JS', jsStepLabel, pipeline.progress ?? 0)
+      setDevCurrentStep('Developer-JS')
+      setDevCurrentStepLabel(jsStepLabel)
+      setDevCurrentStepText('')
+
+      const jsUserContent = `${userContent}\n\n---\n\nCSS stylesheet (styles.css) already written:\n\n${cssText}\n\nAPPROVED CLASS REGISTRY — only use these class names in all classList operations, querySelector calls and GSAP selectors: ${registryList}`
+
+      let jsRaw = ''
+      const { inputTokens: jsIn, outputTokens: jsOut, stopReason: jsStop } = await streamAnthropicCall({
+        messages:     [{ role: 'user', content: jsUserContent }],
+        systemPrompt: DEVELOPER_CORE_JS_SYSTEM,
+        model:        'claude-sonnet-4-20250514',
+        maxTokens:    30000,
+        onChunk: (chunk) => {
+          jsRaw += chunk
+          setDevCurrentStepText(jsRaw)
+          pipeline.append(chunk)
+        },
+      })
+      if (jsStop === 'max_tokens') console.warn('[Developer-Core JS] WARNING: cut off at token limit')
+      if (!jsRaw.trim()) throw new Error('[Developer-Core JS] ABORT: empty output')
+
+      let jsText = stripCodeFences(jsRaw)
+      const jsTokenUsage = { input_tokens: jsIn, output_tokens: jsOut, total_tokens: jsIn + jsOut, stop_reason: jsStop }
+
+      // ── Scan for ADD-TO-CSS comments and append them to the CSS ───────────
+      const addToCssRe = /\/\*\s*ADD-TO-CSS:\s*([^*]+)\*\//g
+      let addToCssMatch
+      const extraRules = []
+      while ((addToCssMatch = addToCssRe.exec(jsText)) !== null) {
+        extraRules.push(addToCssMatch[1].trim())
+      }
+      let finalCssText = cssText
+      if (extraRules.length > 0) {
+        finalCssText = cssText + '\n\n/* ====== AUTO-APPENDED FROM JS ADD-TO-CSS ====== */\n' + extraRules.join('\n')
+        await upsertDevFile('Developer-CSS', finalCssText, cssTokenUsage)
+        console.log(`[Developer-Core] ✓ Appended ${extraRules.length} ADD-TO-CSS rule(s) to Developer-CSS`)
+      }
+
+      await upsertDevFile('Developer-JS', jsText, jsTokenUsage)
+      console.log(`[Developer-Core] ✓ JS saved: ${jsText.length} chars`)
+
+      // ── Post-generation cross-file validation (warnings only) ─────────────
+      validateClasslistSync(finalCssText, jsText)
+
+      setDevCurrentStep(null)
+      await load()
+      return { cssText: finalCssText, jsText }
+    }
+
     // ── Fetch top lessons learned to guide this build ────────────────────────
     let lessonsPrefix = ''
     try {
@@ -2948,20 +3134,22 @@ export default function ProjectDetail() {
       // Step 1: Tech Stack and File Structure
       await runDevStep(`Step 1 of ${totalSteps}: Tech Stack and File Structure`, DEVELOPER_STACK_SYSTEM + devReplSnippet, summaryWithFeedback, 'Developer-Stack')
 
-      // Step 2: CSS — generated from design brief + wireframe layout context
-      pipeline.setStep('Developer-CSS', `Step 2 of ${totalSteps}: CSS Stylesheet`, Math.round(1 / totalSteps * 100))
-      const cssText = await runDevStep(`Step 2 of ${totalSteps}: CSS Stylesheet`, lessonsPrefix + DEVELOPER_CSS_SYSTEM + devReplSnippet, summaryContext + indexWireCtxForCss, 'Developer-CSS', { transform: stripCodeFences })
+      // Step 2: Developer-Core — generates CSS + JS in one coordinated call
+      pipeline.setStep('Developer-Core', `Step 2 of ${totalSteps}: CSS & JavaScript`, Math.round(1 / totalSteps * 100))
+      const coreCtx = summaryContext + indexWireCtxForCss + (lessonsPrefix ? `\n\n---\n\n${lessonsPrefix}` : '') + devReplSnippet
+      const { cssText, jsText } = await runDevCore(`Step 2 of ${totalSteps}: CSS & JavaScript`, coreCtx)
 
-      // Step 3: JS — receives the CSS so it can use matching class names
-      pipeline.setStep('Developer-JS', `Step 3 of ${totalSteps}: JavaScript`, Math.round(2 / totalSteps * 100))
-      const jsCtx  = `${summaryContext}\n\n---\n\nCSS stylesheet (styles.css) already written:\n\n${cssText}`
-      const jsText = await runDevStep(`Step 3 of ${totalSteps}: JavaScript`, lessonsPrefix + DEVELOPER_JS_SYSTEM + devReplSnippet, jsCtx, 'Developer-JS', { transform: stripCodeFences })
+      // Extract animation/toggle class names to pass as context to each HTML page
+      const animClasses = extractAnimationClasses(cssText)
+      const animClassHint = animClasses.length
+        ? `\n\nUse exactly these class names from the stylesheet — do not invent new class names. The CSS already defines these animation and toggle classes: ${animClasses.map(c => `.${c}`).join(', ')}.`
+        : ''
 
-      // Step 4: Generate index.html only — remaining pages generated after per-page approval
+      // Step 3: Generate index.html only — remaining pages generated after per-page approval
       const indexPage = effectivePages.find(p => p.filename === 'index.html') ?? effectivePages[0]
       console.log(`[Developer] HTML generation — starting with: ${indexPage.filename} (${indexPage.name}). ${effectivePages.length > 1 ? `${effectivePages.length - 1} further page(s) pending per-page approval.` : 'Single-page project.'}`)
       setPageStatuses(prev => ({ ...prev, [indexPage.filename]: 'generating' }))
-      pipeline.setStep(`Developer-HTML-${indexPage.filename}`, `Step 4 of ${totalSteps}: HTML – ${indexPage.name}`, Math.round(3 / totalSteps * 100))
+      pipeline.setStep(`Developer-HTML-${indexPage.filename}`, `Step 3 of ${totalSteps}: HTML – ${indexPage.name}`, Math.round(2 / totalSteps * 100))
       const { data: indexWireRec } = await supabase
         .from('agent_outputs')
         .select('output_wireframe, output_text')
@@ -2970,10 +3158,10 @@ export default function ProjectDetail() {
         .maybeSingle()
       const indexWireCtx = buildWireframeContext(indexWireRec?.output_wireframe, indexWireRec?.output_text, indexPage.name)
       console.log(`[Developer] Wireframe for ${indexPage.filename}: ${indexWireRec?.output_wireframe ? `found (${indexWireCtx.length} chars context)` : 'not found'}`)
-      const indexHtmlCtx = `${summaryContext}\n\n---\n\nCSS stylesheet (styles.css) already written:\n\n${cssText}\n\n---\n\nJavaScript (script.js) already written:\n\n${jsText}${indexWireCtx}`
+      const indexHtmlCtx = `${summaryContext}\n\n---\n\nCSS stylesheet (styles.css) already written:\n\n${cssText}\n\n---\n\nJavaScript (script.js) already written:\n\n${jsText}${animClassHint}${indexWireCtx}`
       try {
         await runDevStep(
-          `Step 4 of ${totalSteps}: HTML for ${indexPage.name} (${indexPage.filename})`,
+          `Step 3 of ${totalSteps}: HTML for ${indexPage.name} (${indexPage.filename})`,
           lessonsPrefix + devHtmlPageSystem(indexPage.name) + devReplSnippet,
           indexHtmlCtx,
           `Developer-HTML-${indexPage.filename}`,
@@ -3088,7 +3276,11 @@ export default function ProjectDetail() {
       .from('agent_outputs').select('output_wireframe, output_text')
       .eq('project_id', projectId).eq('agent_name', `Designer-Wireframe-${page.filename}`).maybeSingle()
     const wireCtx = buildWireframeContext(wireRec?.output_wireframe, wireRec?.output_text, page.name)
-    const ctx = `Design Brief:\n\n${design}${allPagesCtx}\n\n---\n\nCSS stylesheet (styles.css):\n\n${css}\n\n---\n\nJavaScript (script.js):\n\n${js}${wireCtx}`
+    const retryAnimHint = (() => {
+      const cls = extractAnimationClasses(css)
+      return cls.length ? `\n\nUse exactly these class names from the stylesheet — do not invent new class names. The CSS already defines these animation and toggle classes: ${cls.map(c => `.${c}`).join(', ')}.` : ''
+    })()
+    const ctx = `Design Brief:\n\n${design}${allPagesCtx}\n\n---\n\nCSS stylesheet (styles.css):\n\n${css}\n\n---\n\nJavaScript (script.js):\n\n${js}${retryAnimHint}${wireCtx}`
     console.log(`[Developer] Retrying HTML for ${page.filename}`)
     setPageStatuses(prev => ({ ...prev, [page.filename]: 'generating' }))
     setIsDeveloping(true)
@@ -3131,7 +3323,11 @@ export default function ProjectDetail() {
       .eq('project_id', projectId).eq('agent_name', `Designer-Wireframe-${page.filename}`).maybeSingle()
     const wireCtx = buildWireframeContext(wireRec?.output_wireframe, wireRec?.output_text, page.name)
     console.log(`[Developer] Wireframe for ${page.filename}: ${wireRec?.output_wireframe ? `found (${wireCtx.length} chars context)` : 'not found'}`)
-    const htmlCtx = `${baseCtx}\n\n---\n\nCSS stylesheet (styles.css) already written:\n\n${css}\n\n---\n\nJavaScript (script.js) already written:\n\n${js}${wireCtx}`
+    const pageAnimHint = (() => {
+      const cls = extractAnimationClasses(css)
+      return cls.length ? `\n\nUse exactly these class names from the stylesheet — do not invent new class names. The CSS already defines these animation and toggle classes: ${cls.map(c => `.${c}`).join(', ')}.` : ''
+    })()
+    const htmlCtx = `${baseCtx}\n\n---\n\nCSS stylesheet (styles.css) already written:\n\n${css}\n\n---\n\nJavaScript (script.js) already written:\n\n${js}${pageAnimHint}${wireCtx}`
     console.log(`[Developer] Generating HTML for ${page.filename} (${page.name}) via per-page approval flow`)
     let singlePageLessonsPrefix = ''
     try {
@@ -3263,7 +3459,7 @@ export default function ProjectDetail() {
     const { checkNum, detail } = failItem
     switch (checkNum) {
       case 1:  return `You are fixing an HTML file. Add <meta name="viewport" content="width=device-width, initial-scale=1.0"> as the second line in the head section. The affected issue: ${detail}. Output the complete fixed HTML file only.`
-      case 2:  return `You are fixing a specific JavaScript bug. The GSAP opacity trap issue: ${detail}. Add a window load event listener that sets opacity: 1 and visibility: visible on all affected selectors before any GSAP code runs. Output the complete fixed JavaScript file only.`
+      case 2:  return `You are fixing a specific JavaScript bug. The JS opacity trap issue: ${detail}. Remove any element.style.opacity = '0' or element.style.visibility = 'hidden' inline assignments — move those initial hidden states to CSS classes instead, and ensure the JavaScript only adds/removes CSS classes to reveal elements. Output the complete fixed JavaScript file only.`
       case 3:  return `You are fixing missing CSS rules. The following classes are used in JavaScript but missing from the stylesheet: ${detail}. Add CSS rules for each missing class using sensible default styles based on the class names. Output the complete fixed CSS file only.`
       case 4:  return `You are fixing CSS layout issues. Replace these fixed pixel width declarations with width: 100% and an appropriate max-width: ${detail}. Output the complete fixed CSS file only.`
       case 5:  return `You are fixing missing mobile breakpoints in CSS. Add responsive media query rules at max-width: 768px to address: ${detail}. Output the complete fixed CSS file only.`
