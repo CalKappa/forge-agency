@@ -778,7 +778,7 @@ export default function ClientBrief() {
 
     // 5. Trigger Orchestrator — awaited so the promise is not abandoned.
     //    The success screen is already visible; this runs in the background.
-    console.log('[ClientBrief] About to trigger Orchestrator')
+    console.log('[ClientBrief] Client brief submitted — triggering Orchestrator automatically')
     await triggerOrchestrator(projectId, clientId, briefText)
     console.log('[ClientBrief] triggerOrchestrator returned')
   }

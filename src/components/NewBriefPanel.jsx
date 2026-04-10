@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { safeUpdate } from '../lib/supabaseHelpers'
-import { ORCHESTRATOR_SYSTEM } from '../lib/anthropic'
 import { streamAnthropicCall } from '../lib/streamHelper'
 import { useUI } from '../context/UIContext'
 
@@ -172,45 +171,8 @@ export default function NewBriefPanel({ open, onClose }) {
       }
     }
 
-    // 3. Stream orchestrator response
-    const replicationContext = form.isReplication && form.replicationUrl.trim()
-      ? `\n\nREPLICATION MODE: Agents must analyse ${form.replicationUrl.trim()} and mirror its structure, layout, navigation and design as closely as possible. This is a like-for-like rebuild, not a redesign.`
-      : ''
-    setPhase('streaming')
-    const orchAbort   = new AbortController()
-    const orchTimeout = setTimeout(() => orchAbort.abort(), 120_000)
-    try {
-      let fullResponse = ''
-      await streamAnthropicCall({
-        messages:     [{ role: 'user', content: fullBriefText + pagesContext + replicationContext }],
-        systemPrompt: ORCHESTRATOR_SYSTEM,
-        model:        'claude-sonnet-4-20250514',
-        maxTokens:    2048,
-        signal:       orchAbort.signal,
-        onChunk: (chunk) => {
-          fullResponse += chunk
-          setResult(prev => prev + chunk)
-        },
-      })
-      clearTimeout(orchTimeout)
-
-      // 4. Persist the full orchestrator response
-      await safeUpdate('briefs', inserted.id, { orchestrator_response: fullResponse })
-
-      setPhase('done')
-    } catch (err) {
-      clearTimeout(orchTimeout)
-      const isTimeout = err.name === 'AbortError' || /abort/i.test(err.message)
-      if (isTimeout) {
-        const fallback = 'Orchestrator timed out — please use the Send to Orchestrator button on the project detail page to retry.'
-        await safeUpdate('briefs', inserted.id, { orchestrator_response: fallback }).catch(() => {})
-        setResult(fallback)
-        setPhase('done')
-      } else {
-        setError(err.message ?? 'Failed to get orchestrator response')
-        setPhase('error')
-      }
-    }
+    console.log('[NewBriefPanel] Quick brief submitted — Orchestrator handled separately')
+    setPhase('done')
   }
 
   function handleReset() {
@@ -424,7 +386,7 @@ export default function NewBriefPanel({ open, onClose }) {
               <div className="flex items-center gap-2">
                 <SparklesIcon className={`w-4 h-4 ${isStreaming ? 'text-violet-400 animate-pulse' : 'text-violet-400'}`} />
                 <span className="text-xs font-medium text-zinc-300">
-                  {isStreaming ? 'Orchestrating…' : phase === 'error' ? 'Error' : 'Orchestration complete'}
+                  {phase === 'error' ? 'Error' : 'Brief submitted'}
                 </span>
               </div>
 

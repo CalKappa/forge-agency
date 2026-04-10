@@ -6,8 +6,6 @@ import { streamAnthropicCall } from '../lib/streamHelper'
 import { useToast } from '../context/ToastContext'
 import { useUI } from '../context/UIContext'
 
-const ORCHESTRATOR_SYSTEM = `You are the orchestrator for an AI web design agency. You will be given a detailed structured client brief. Break it down into four clearly labelled task lists for: 1) Researcher — what to research about the industry, audience, competitors and SEO. 2) Designer — what design decisions to make, what pages to wireframe, what brand direction to follow. 3) Developer — what pages to build, what technical requirements to implement, what integrations to set up. 4) Reviewer — what specific things to check against the brief during the quality review. Be specific and actionable for each agent. Use markdown formatting with clear headings.`
-
 const PAGE_EXTRACTOR_SYSTEM = `Output ONLY a valid JSON array of page objects. Every page must have a unique filename. Never include the same page twice. The homepage must appear exactly once with filename index.html. For filenames use only lowercase letters, numbers and hyphens — no special characters, no ampersands, no spaces. For page names use plain readable English with no special characters — replace ampersands with the word and. Each object must have two keys: name which is the page name for example Home, About, Services, Contact, and filename which is the HTML filename for example index.html, about.html, services.html, contact.html. Output only the raw JSON array with no explanation and no markdown code blocks.`
 
 function sanitiseExtractedPages(pages) {
@@ -1189,47 +1187,7 @@ export default function NewBrief() {
       }
     }
 
-    // Trigger orchestrator — same streaming pattern as the quick brief panel
-    if (projectId) {
-      setSubmitPhase('orchestrating')
-      console.log('[NewBrief] Orchestrator triggered from structured brief submission — project:', projectId, 'client:', clientId)
-      const orchAbort  = new AbortController()
-      const orchTimeout = setTimeout(() => orchAbort.abort(), 120_000)
-      try {
-        let orchFullResponse = ''
-        await streamAnthropicCall({
-          messages:     [{ role: 'user', content: briefText }],
-          systemPrompt: ORCHESTRATOR_SYSTEM,
-          model:        'claude-sonnet-4-20250514',
-          maxTokens:    8000,
-          signal:       orchAbort.signal,
-          onChunk:      (chunk) => { orchFullResponse += chunk },
-        })
-        clearTimeout(orchTimeout)
-
-        await supabase.from('agent_outputs').insert({
-          project_id:  projectId,
-          agent_name:  'Orchestrator',
-          output_text: orchFullResponse,
-          status:      'approved',
-        })
-        console.log('[NewBrief] Orchestrator response saved to agent_outputs — length:', orchFullResponse.length)
-      } catch (err) {
-        clearTimeout(orchTimeout)
-        const isTimeout = err.name === 'AbortError' || /abort/i.test(err.message)
-        if (isTimeout) {
-          console.warn('[NewBrief] Orchestrator timed out after 120s — saving fallback')
-          await supabase.from('agent_outputs').insert({
-            project_id:  projectId,
-            agent_name:  'Orchestrator',
-            output_text: 'Orchestrator timed out — please use the Send to Orchestrator button on the project detail page to retry.',
-            status:      'pending',
-          }).catch(() => {})
-        } else {
-          console.warn('[NewBrief] Orchestrator failed:', err.message)
-        }
-      }
-    }
+    console.log('[NewBrief] Structured brief submitted — Orchestrator handled separately')
 
     setSubmitPhase('done')
     setSubmitting(false)
