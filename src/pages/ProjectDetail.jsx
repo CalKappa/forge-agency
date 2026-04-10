@@ -2172,7 +2172,7 @@ export default function ProjectDetail() {
       systemPrompt: system,
       skillName:    'developer',
       model:        'claude-sonnet-4-20250514',
-      maxTokens:    opts.maxTokens ?? 100000,
+      maxTokens:    opts.maxTokens ?? 64000,
       onChunk: (chunk) => {
         text += chunk
         setDevCurrentStepText(text)
@@ -3023,7 +3023,7 @@ export default function ProjectDetail() {
         systemPrompt: DEVELOPER_CORE_CSS_SYSTEM,
         skillName:    'developer',
         model:        'claude-sonnet-4-20250514',
-        maxTokens:    100000,
+        maxTokens:    64000,
         onChunk: (chunk) => {
           cssRaw += chunk
           setDevCurrentStepText(cssRaw)
@@ -3068,7 +3068,7 @@ export default function ProjectDetail() {
         systemPrompt: DEVELOPER_CORE_JS_SYSTEM,
         skillName:    'developer',
         model:        'claude-sonnet-4-20250514',
-        maxTokens:    100000,
+        maxTokens:    64000,
         onChunk: (chunk) => {
           jsRaw += chunk
           setDevCurrentStepText(jsRaw)
@@ -5764,7 +5764,7 @@ The Forge Agency Team`
                     const uc = `Original Client Brief:\n\n${brief}\n\n---\n\nYour Previous Output:\n\n${rec.output_text}\n\n---\n\nIssue to Fix:\n\n${issue}`
                     await saveRevision('Developer-Stack', rec)
                     let fixed = ''
-                    const { inputTokens: stkIn, outputTokens: stkOut, stopReason: stkStop } = await streamAnthropicCall({ messages: [{ role: 'user', content: uc }], systemPrompt: DEVELOPER_STACK_FIX_SYSTEM, skillName: 'developer', model: 'claude-sonnet-4-20250514', maxTokens: 100000, onChunk: (chunk) => { fixed += chunk; onProgress(fixed) } })
+                    const { inputTokens: stkIn, outputTokens: stkOut, stopReason: stkStop } = await streamAnthropicCall({ messages: [{ role: 'user', content: uc }], systemPrompt: DEVELOPER_STACK_FIX_SYSTEM, skillName: 'developer', model: 'claude-sonnet-4-20250514', maxTokens: 64000, onChunk: (chunk) => { fixed += chunk; onProgress(fixed) } })
                     const tu = { input_tokens: stkIn, output_tokens: stkOut, total_tokens: stkIn + stkOut, stop_reason: stkStop }
                     const { error } = await safeUpdate('agent_outputs', rec.id, { output_text: fixed, token_usage: tu }, { output_text: fixed })
                     if (error) throw new Error(error.message)
@@ -5803,7 +5803,7 @@ The Forge Agency Team`
                     const uc = `Original Client Brief:\n\n${brief}\n\n---\n\nJavaScript file (for reference):\n\n${devJsOutput?.output_text ?? ''}\n\n---\n\nHTML file (for reference):\n\n${devHtmlOutput?.output_text ?? ''}\n\n---\n\nCSS file to fix:\n\n${devCssOutput.output_text}\n\n---\n\nIssue to Fix:\n\n${issue}`
                     await saveRevision('Developer-CSS', devCssOutput)
                     let fixed = ''
-                    const { inputTokens: cssIn, outputTokens: cssOut, stopReason: cssStop } = await streamAnthropicCall({ messages: [{ role: 'user', content: uc }], systemPrompt: DEVELOPER_CSS_FIX_SYSTEM, skillName: 'developer', model: 'claude-sonnet-4-20250514', maxTokens: 100000, onChunk: (chunk) => { fixed += chunk; onProgress(fixed) } })
+                    const { inputTokens: cssIn, outputTokens: cssOut, stopReason: cssStop } = await streamAnthropicCall({ messages: [{ role: 'user', content: uc }], systemPrompt: DEVELOPER_CSS_FIX_SYSTEM, skillName: 'developer', model: 'claude-sonnet-4-20250514', maxTokens: 64000, onChunk: (chunk) => { fixed += chunk; onProgress(fixed) } })
                     const tu = { input_tokens: cssIn, output_tokens: cssOut, total_tokens: cssIn + cssOut, stop_reason: cssStop }
                     fixed = stripCodeFences(fixed)
                     const { error } = await safeUpdate('agent_outputs', devCssOutput.id, { output_text: fixed, token_usage: tu }, { output_text: fixed })
@@ -5872,7 +5872,7 @@ The Forge Agency Team`
                     const uc = `Original Client Brief:\n\n${brief}\n\n---\n\nCSS file (for reference — use these exact class names):\n\n${devCssOutput?.output_text ?? ''}\n\n---\n\nHTML file (for reference):\n\n${devHtmlOutput?.output_text ?? ''}\n\n---\n\nJavaScript file to fix:\n\n${devJsOutput.output_text}\n\n---\n\nIssue to Fix:\n\n${issue}`
                     await saveRevision('Developer-JS', devJsOutput)
                     let fixed = ''
-                    const { inputTokens: jsIn, outputTokens: jsOut, stopReason: jsStop } = await streamAnthropicCall({ messages: [{ role: 'user', content: uc }], systemPrompt: DEVELOPER_JS_FIX_SYSTEM, skillName: 'developer', model: 'claude-sonnet-4-20250514', maxTokens: 100000, onChunk: (chunk) => { fixed += chunk; onProgress(fixed) } })
+                    const { inputTokens: jsIn, outputTokens: jsOut, stopReason: jsStop } = await streamAnthropicCall({ messages: [{ role: 'user', content: uc }], systemPrompt: DEVELOPER_JS_FIX_SYSTEM, skillName: 'developer', model: 'claude-sonnet-4-20250514', maxTokens: 64000, onChunk: (chunk) => { fixed += chunk; onProgress(fixed) } })
                     const tu = { input_tokens: jsIn, output_tokens: jsOut, total_tokens: jsIn + jsOut, stop_reason: jsStop }
                     fixed = stripCodeFences(fixed)
                     const { error } = await safeUpdate('agent_outputs', devJsOutput.id, { output_text: fixed, token_usage: tu }, { output_text: fixed })
@@ -5955,7 +5955,7 @@ The Forge Agency Team`
                             const uc = `Original Client Brief:\n\n${brief}\n\n---\n\nCSS file (styles.css — use these exact class names):\n\n${devCssOutput?.output_text ?? ''}\n\n---\n\nJavaScript file (script.js):\n\n${devJsOutput?.output_text ?? ''}\n\n---\n\nHTML file to fix (${pg.filename}):\n\n${htmlRec.output_text}\n\n---\n\nIssue to Fix:\n\n${issue}`
                             await saveRevision(htmlRec.agent_name, htmlRec)
                             let fixed = ''
-                            const { inputTokens: hpIn, outputTokens: hpOut, stopReason: hpStop } = await streamAnthropicCall({ messages: [{ role: 'user', content: uc }], systemPrompt: devHtmlPageFixSystem(pg.name), skillName: 'developer', model: 'claude-sonnet-4-20250514', maxTokens: 100000, onChunk: (chunk) => { fixed += chunk; onProgress(fixed) } })
+                            const { inputTokens: hpIn, outputTokens: hpOut, stopReason: hpStop } = await streamAnthropicCall({ messages: [{ role: 'user', content: uc }], systemPrompt: devHtmlPageFixSystem(pg.name), skillName: 'developer', model: 'claude-sonnet-4-20250514', maxTokens: 64000, onChunk: (chunk) => { fixed += chunk; onProgress(fixed) } })
                             const tu = { input_tokens: hpIn, output_tokens: hpOut, total_tokens: hpIn + hpOut, stop_reason: hpStop }
                             fixed = stripCodeFences(fixed)
                             const { error } = await safeUpdate('agent_outputs', htmlRec.id, { output_text: fixed, token_usage: tu }, { output_text: fixed })
@@ -6041,7 +6041,7 @@ The Forge Agency Team`
                     const uc = `Original Client Brief:\n\n${brief}\n\n---\n\nYour Previous Output:\n\n${rec.output_text}\n\n---\n\nIssue to Fix:\n\n${issue}`
                     await saveRevision('Developer-Pages', rec)
                     let fixed = ''
-                    const { inputTokens: pgIn, outputTokens: pgOut, stopReason: pgStop } = await streamAnthropicCall({ messages: [{ role: 'user', content: uc }], systemPrompt: DEVELOPER_PAGES_FIX_SYSTEM, skillName: 'developer', model: 'claude-sonnet-4-20250514', maxTokens: 100000, onChunk: (chunk) => { fixed += chunk; onProgress(fixed) } })
+                    const { inputTokens: pgIn, outputTokens: pgOut, stopReason: pgStop } = await streamAnthropicCall({ messages: [{ role: 'user', content: uc }], systemPrompt: DEVELOPER_PAGES_FIX_SYSTEM, skillName: 'developer', model: 'claude-sonnet-4-20250514', maxTokens: 64000, onChunk: (chunk) => { fixed += chunk; onProgress(fixed) } })
                     const tu = { input_tokens: pgIn, output_tokens: pgOut, total_tokens: pgIn + pgOut, stop_reason: pgStop }
                     const { error } = await safeUpdate('agent_outputs', rec.id, { output_text: fixed, token_usage: tu }, { output_text: fixed })
                     if (error) throw new Error(error.message)
